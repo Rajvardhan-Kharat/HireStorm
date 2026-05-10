@@ -1,0 +1,105 @@
+/* ═══════════════════════════════════════════════════════════════════
+   PUBLIC APPLICATION FORM
+═══════════════════════════════════════════════════════════════════ */
+.drive-form-page { max-width: 800px; margin: 40px auto; background: var(--clr-surface); border: 1px solid var(--clr-border); border-radius: var(--r-xl); box-shadow: var(--shadow-lg); overflow: hidden; }
+.drive-form-header { background: linear-gradient(135deg, var(--clr-primary), var(--clr-accent)); padding: var(--sp-8); color: #fff; text-align: center; }
+.drive-form-college-badge { display: inline-flex; align-items: center; gap: 12px; background: rgba(255,255,255,0.2); backdrop-filter: blur(10px); padding: 8px 16px; border-radius: var(--r-full); margin-bottom: var(--sp-4); }
+.drive-form-college-badge span { font-size: 1.5rem; }
+.drive-form-college-name { font-weight: 800; font-size: 0.95rem; }
+.drive-form-university { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.05em; opacity: 0.8; }
+.drive-form-title { font-size: 2rem; font-weight: 800; margin-bottom: var(--sp-4); line-height: 1.2; }
+.drive-form-jd-summary { display: flex; flex-wrap: wrap; justify-content: center; gap: var(--sp-3); font-size: 0.85rem; font-weight: 600; }
+.drive-form-jd-summary span { background: rgba(0,0,0,0.2); padding: 6px 12px; border-radius: var(--r-sm); }
+
+.drive-form-body { padding: var(--sp-8); }
+.drive-form-section { margin-bottom: var(--sp-8); }
+.drive-form-section-title { font-size: 1.2rem; font-weight: 800; color: var(--clr-text); margin-bottom: var(--sp-5); padding-bottom: 8px; border-bottom: 2px solid var(--clr-surface-2); }
+.drive-form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--sp-5); }
+.drive-form-field { display: flex; flex-direction: column; gap: 6px; }
+.drive-form-field.full-width { grid-column: 1 / -1; }
+.drive-form-field label { font-size: 0.85rem; font-weight: 600; color: var(--clr-text-2); }
+.drive-form-field input, .drive-form-field select, .drive-form-field textarea { background: var(--clr-surface-2); border: 1.5px solid var(--clr-border); padding: 12px 14px; border-radius: var(--r-sm); font-size: 0.95rem; color: var(--clr-text); outline: none; transition: all var(--t-fast); }
+.drive-form-field input:focus, .drive-form-field select:focus, .drive-form-field textarea:focus { border-color: var(--clr-primary); box-shadow: 0 0 0 3px var(--clr-primary-dim); }
+.drive-form-hint { font-size: 0.75rem; color: var(--clr-text-3); margin-top: 4px; }
+
+.drive-form-submit-section { margin-top: var(--sp-8); text-align: center; }
+.drive-form-disclaimer { display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 0.8rem; color: var(--clr-text-3); margin-bottom: var(--sp-4); }
+.drive-form-submit-btn { width: 100%; max-width: 320px; background: var(--clr-primary); color: #fff; border: none; padding: 16px; border-radius: var(--r-md); font-size: 1.1rem; font-weight: 800; cursor: pointer; transition: all 0.2s; display: inline-flex; justify-content: center; align-items: center; gap: 10px; }
+.drive-form-submit-btn:hover { background: var(--clr-primary-hover); transform: translateY(-2px); box-shadow: 0 8px 20px var(--clr-primary-glow); }
+.drive-form-submit-btn:disabled { opacity: 0.7; cursor: not-allowed; transform: none; box-shadow: none; }
+
+.drive-form-loading, .drive-form-error { min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; background: var(--clr-bg); text-align: center; padding: 20px; }
+.drive-form-spinner { width: 50px; height: 50px; border: 4px solid var(--clr-border); border-top-color: var(--clr-primary); border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 20px; }
+.drive-form-spinner-sm { width: 20px; height: 20px; border: 2px solid rgba(255,255,255,0.3); border-top-color: #fff; border-radius: 50%; animation: spin 1s linear infinite; }
+.drive-form-error span { font-size: 4rem; margin-bottom: 16px; }
+.drive-form-error h2 { font-size: 1.8rem; color: var(--clr-text); margin-bottom: 8px; }
+.drive-form-error p { color: var(--clr-text-2); font-size: 1.1rem; }
+
+/* Success Screen */
+.drive-form-success { min-height: 100vh; display: flex; align-items: center; justify-content: center; background: var(--clr-bg); padding: 20px; }
+.drive-success-card { background: var(--clr-surface); padding: 60px 40px; border-radius: var(--r-xl); text-align: center; box-shadow: var(--shadow-lg); max-width: 500px; width: 100%; border: 1px solid var(--clr-border); animation: fadeUp 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+.drive-success-icon { font-size: 5rem; margin-bottom: 20px; }
+.drive-success-card h1 { font-size: 2.2rem; font-weight: 800; color: var(--clr-text); margin-bottom: 16px; letter-spacing: -0.02em; }
+.drive-success-card p { color: var(--clr-text-2); font-size: 1.05rem; margin-bottom: 30px; line-height: 1.6; }
+.drive-success-next { background: var(--clr-surface-2); padding: 20px; border-radius: var(--r-md); }
+.drive-success-next p { margin: 0; font-size: 0.95rem; color: var(--clr-text); }
+
+/* ATS Score Ring */
+.drive-ats-result { background: var(--clr-text); color: var(--clr-bg); padding: 30px; border-radius: var(--r-lg); margin: 30px 0; position: relative; overflow: hidden; }
+.ats-score-ring { width: 100px; height: 100px; margin: 0 auto 16px; }
+.ats-score-label { font-size: 1rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; opacity: 0.8; margin-bottom: 16px; }
+.ats-analysis { font-size: 0.9rem; line-height: 1.5; opacity: 0.9; font-style: italic; background: rgba(255,255,255,0.1); padding: 16px; border-radius: var(--r-sm); margin: 0; }
+
+/* ═══════════════════════════════════════════════════════════════════
+   ADMIN CAMPUS STYLES
+═══════════════════════════════════════════════════════════════════ */
+.admin-campus-page { padding: var(--sp-8); max-width: 1300px; margin: 0 auto; }
+.admin-campus-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--sp-8); }
+.admin-campus-header h1 { font-size: 2rem; font-weight: 800; margin-bottom: 4px; }
+.admin-campus-header p { color: var(--clr-text-2); }
+.admin-campus-stats { display: grid; grid-template-columns: repeat(5, 1fr); gap: var(--sp-4); margin-bottom: var(--sp-8); }
+.admin-campus-stat { background: var(--clr-surface); border: 1px solid var(--clr-border); padding: var(--sp-4); border-radius: var(--r-md); display: flex; flex-direction: column; align-items: center; text-align: center; gap: 8px; }
+.admin-campus-stat-icon { font-size: 1.8rem; }
+.admin-campus-stat strong { font-size: 1.8rem; font-weight: 800; line-height: 1; }
+.admin-campus-stat span { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: var(--clr-text-3); }
+.admin-campus-section { background: var(--clr-surface); border: 1px solid var(--clr-border); border-radius: var(--r-lg); padding: var(--sp-6); margin-bottom: var(--sp-8); }
+.admin-campus-section h2 { font-size: 1.3rem; font-weight: 800; margin-bottom: var(--sp-5); }
+.admin-colleges-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: var(--sp-4); }
+.admin-college-chip { background: var(--clr-surface-2); border: 1px solid var(--clr-border-2); padding: var(--sp-4); border-radius: var(--r-md); position: relative; }
+.admin-college-chip-code { font-size: 1.2rem; font-weight: 800; color: var(--clr-text); margin-bottom: 4px; }
+.admin-college-chip-name { font-size: 0.85rem; color: var(--clr-text-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 8px; }
+.admin-college-chip-uni { display: inline-block; padding: 2px 8px; border-radius: var(--r-sm); font-size: 0.7rem; font-weight: 700; text-transform: uppercase; margin-bottom: 12px; }
+.uni-sppu { background: rgba(79, 70, 229, 0.1); color: var(--clr-primary); }
+.uni-mumbai { background: rgba(168, 85, 247, 0.1); color: var(--clr-accent); }
+.admin-college-chip-stats { font-size: 0.8rem; font-weight: 600; color: var(--clr-text-3); border-top: 1px solid var(--clr-border); padding-top: 8px; }
+
+.admin-campus-drives-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--sp-5); }
+.admin-campus-filters { display: flex; gap: var(--sp-3); }
+.admin-campus-filters select { width: 180px; padding: 8px 12px; }
+.drive-college-code { display: block; font-weight: 800; color: var(--clr-text); }
+.drive-college-city { font-size: 0.75rem; color: var(--clr-text-3); text-transform: uppercase; }
+.drive-title-cell { font-weight: 600; max-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* Admin Drive Detail Modal */
+.modal-tabs { display: flex; gap: 4px; padding: 0 var(--sp-6); border-bottom: 1px solid var(--clr-border); margin-bottom: var(--sp-5); }
+.modal-tab-btn { background: none; border: none; padding: 12px 20px; font-weight: 600; color: var(--clr-text-2); cursor: pointer; border-bottom: 3px solid transparent; transition: all 0.2s; }
+.modal-tab-btn.active { color: var(--clr-primary); border-bottom-color: var(--clr-primary); }
+.drive-detail-info { padding: 0 var(--sp-2); }
+.drive-info-row { display: flex; align-items: center; padding: 12px 0; border-bottom: 1px dashed var(--clr-border); }
+.drive-info-label { width: 240px; font-weight: 600; color: var(--clr-text-2); }
+.drive-info-val { flex: 1; font-weight: 700; color: var(--clr-text); display: flex; align-items: center; gap: 12px; }
+.status-change-select { width: 200px; padding: 6px 10px; font-size: 0.85rem; }
+.form-url-row code { background: var(--clr-surface-2); padding: 6px 10px; border-radius: var(--r-sm); font-size: 0.85rem; border: 1px solid var(--clr-border); }
+.form-url-row button { background: none; border: none; cursor: pointer; font-size: 1.2rem; }
+.drive-jd-box { margin-top: var(--sp-6); background: var(--clr-surface-2); padding: var(--sp-5); border-radius: var(--r-md); border: 1px solid var(--clr-border); }
+.drive-jd-box h3 { font-size: 1.1rem; font-weight: 800; margin-bottom: var(--sp-3); }
+.jd-tags { display: flex; gap: 16px; margin-bottom: 16px; font-size: 0.9rem; font-weight: 600; }
+.jd-skills { display: flex; flex-wrap: wrap; gap: 8px; }
+.skill-chip { background: var(--clr-surface); border: 1px solid var(--clr-border-2); padding: 4px 10px; border-radius: var(--r-full); font-size: 0.8rem; font-weight: 600; }
+.drive-actions { margin-top: var(--sp-6); display: flex; justify-content: flex-end; }
+.score-pill { display: inline-block; padding: 4px 12px; border-radius: var(--r-full); font-weight: 800; font-size: 0.85rem; }
+.score-pill.high { background: rgba(16, 185, 129, 0.2); color: #10b981; }
+.score-pill.mid { background: rgba(249, 115, 22, 0.2); color: #f97316; }
+.score-pill.low { background: rgba(239, 68, 68, 0.2); color: #ef4444; }
+.btn-select-intern { background: var(--clr-success); color: #000; border: none; padding: 6px 12px; border-radius: var(--r-sm); font-weight: 700; font-size: 0.8rem; cursor: pointer; }
+.btn-select-intern:hover { filter: brightness(1.1); }

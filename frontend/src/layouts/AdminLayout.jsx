@@ -1,5 +1,5 @@
 import { NavLink, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, Users, Building, Code2, Star, CreditCard, LogOut, Shield, BookOpen, Sun, Moon } from 'lucide-react';
+import { LayoutDashboard, Users, Building, Code2, Star, CreditCard, LogOut, Shield, BookOpen, Sun, Moon, GraduationCap } from 'lucide-react';
 import useAuthStore from '../store/authStore';
 import useThemeStore from '../store/themeStore';
 
@@ -8,6 +8,7 @@ const navItems = [
   { to: '/admin/users',        icon: <Users size={16} />,           label: 'Users' },
   { to: '/admin/companies',    icon: <Building size={16} />,        label: 'Companies' },
   { to: '/admin/hackathons',   icon: <Code2 size={16} />,           label: 'Hackathons' },
+  { to: '/admin/drives',       icon: <GraduationCap size={16} />,   label: 'Campus Drives' },
   { to: '/admin/ilm',          icon: <Star size={16} />,            label: 'Internships' },
   { to: '/admin/courses',      icon: <BookOpen size={16} />,        label: 'Course CMS' },
   { to: '/admin/transactions', icon: <CreditCard size={16} />,      label: 'Transactions' },

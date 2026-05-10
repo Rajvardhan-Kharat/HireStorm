@@ -19,6 +19,7 @@ const courseRoutes = require('./routes/course.routes');
 const paymentRoutes = require('./routes/payment.routes');
 const adminRoutes = require('./routes/admin.routes');
 const notificationRoutes = require('./routes/notification.routes');
+const campusRoutes = require('./routes/campus.routes');
 
 // Jobs & Workers
 require('./jobs/reviewCycleJob');          // node-cron: daily log reminders, monthly reviews
@@ -57,6 +58,7 @@ app.use(`${API}/courses`, courseRoutes);
 app.use(`${API}/payments`, paymentRoutes);
 app.use(`${API}/admin`, adminRoutes);
 app.use(`${API}/notifications`, notificationRoutes);
+app.use(`${API}/college`, campusRoutes);
 
 // 404
 app.use((req, res) => {

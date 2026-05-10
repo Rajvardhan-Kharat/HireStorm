@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { SocketProvider } from './context/SocketContext';
+import { CollegeAuthProvider } from './context/CollegeAuthContext';
 import useAuthStore from './store/authStore';
 import useThemeStore from './store/themeStore';
 
@@ -51,7 +52,13 @@ import AdminHackathonReview  from './pages/admin/AdminHackathonReview';
 import AdminCreateHackathon  from './pages/admin/AdminCreateHackathon';
 import AdminTransactions     from './pages/admin/AdminTransactions';
 import AdminCourseCMS        from './pages/admin/AdminCourseCMS';
+import AdminCampusDrives     from './pages/admin/AdminCampusDrives';
 import CourseDetail          from './pages/student/CourseDetail';
+
+// ── College ───────────────────────────────────────────────────────────
+import CollegeLogin         from './pages/college/CollegeLogin';
+import CollegePortal        from './pages/college/CollegePortal';
+import DriveApplicationForm from './pages/college/DriveApplicationForm';
 
 // ── Route Guards ──────────────────────────────────────────────────────
 const ProtectedRoute = ({ children, allowedRoles }) => {
@@ -91,7 +98,8 @@ export default function App() {
 
   return (
     <BrowserRouter>
-      <SocketProvider>
+      <CollegeAuthProvider>
+        <SocketProvider>
         <Toaster
           position="top-right"
           toastOptions={{
@@ -111,6 +119,11 @@ export default function App() {
           <Route path="/login"    element={<RedirectIfAuth><Login    /></RedirectIfAuth>} />
           <Route path="/register" element={<RedirectIfAuth><Register /></RedirectIfAuth>} />
           <Route path="/verify/:certId" element={<ComingSoon title="Certificate Verification" />} />
+
+          {/* ── College & Public Forms ──────────────────────── */}
+          <Route path="/college/login" element={<CollegeLogin />} />
+          <Route path="/college/:slug" element={<CollegePortal />} />
+          <Route path="/apply/:token" element={<DriveApplicationForm />} />
 
           {/* ── Student ───────────────────────────────────────── */}
           <Route path="/dashboard"          element={<ProtectedRoute><StudentDashboard /></ProtectedRoute>} />
@@ -160,6 +173,7 @@ export default function App() {
           <Route path="/admin/ilm"          element={<ProtectedRoute allowedRoles={['PLATFORM_ADMIN','SUPER_ADMIN']}><AdminILM        /></ProtectedRoute>} />
           <Route path="/admin/transactions" element={<ProtectedRoute allowedRoles={['PLATFORM_ADMIN','SUPER_ADMIN']}><AdminTransactions /></ProtectedRoute>} />
           <Route path="/admin/courses"      element={<ProtectedRoute allowedRoles={['PLATFORM_ADMIN','SUPER_ADMIN']}><AdminCourseCMS /></ProtectedRoute>} />
+          <Route path="/admin/drives"       element={<ProtectedRoute allowedRoles={['PLATFORM_ADMIN','SUPER_ADMIN']}><AdminCampusDrives /></ProtectedRoute>} />
 
           {/* ── 404 ───────────────────────────────────────────── */}
           <Route path="*" element={
@@ -172,6 +186,7 @@ export default function App() {
           } />
         </Routes>
       </SocketProvider>
+      </CollegeAuthProvider>
     </BrowserRouter>
   );
 }

@@ -7,6 +7,11 @@ const internshipSchema = new mongoose.Schema({
   hackathon: { type: mongoose.Schema.Types.ObjectId, ref: 'Hackathon' },
   company:   { type: mongoose.Schema.Types.ObjectId, ref: 'Company' },
 
+  // Source of internship
+  source:      { type: String, enum: ['HACKATHON', 'CAMPUS_DRIVE', 'DIRECT'], default: 'HACKATHON' },
+  campusDrive: { type: mongoose.Schema.Types.ObjectId, ref: 'CampusDrive', default: null },
+  college:     { type: mongoose.Schema.Types.ObjectId, ref: 'College',     default: null },
+
   startDate: { type: Date },
   endDate:   { type: Date },
 

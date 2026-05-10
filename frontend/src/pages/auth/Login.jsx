@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import useAuthStore from '../../store/authStore';
 import toast from 'react-hot-toast';
-import { Mail, Lock, ArrowRight, CheckCircle2 } from 'lucide-react';
+import { Mail, Lock, ArrowRight, CheckCircle2, GraduationCap } from 'lucide-react';
 
 const features = [
   'Browse 500+ internships & jobs',
@@ -129,6 +129,28 @@ export default function Login() {
             Don't have an account?{' '}
             <Link to="/register" style={{ fontWeight:600 }}>Create one free →</Link>
           </p>
+
+          {/* College portal link */}
+          <Link
+            to="/college/login"
+            style={{
+              display:'flex', alignItems:'center', justifyContent:'center', gap:8,
+              marginTop:14,
+              padding:'10px 16px',
+              borderRadius:'var(--r-sm)',
+              border:'1.5px solid var(--clr-border)',
+              background:'var(--clr-surface-2)',
+              color:'var(--clr-text-2)',
+              fontSize:'0.82rem', fontWeight:600,
+              textDecoration:'none',
+              transition:'all 0.18s',
+            }}
+            onMouseEnter={e => { e.currentTarget.style.borderColor='var(--clr-primary)'; e.currentTarget.style.color='var(--clr-primary)'; }}
+            onMouseLeave={e => { e.currentTarget.style.borderColor='var(--clr-border)'; e.currentTarget.style.color='var(--clr-text-2)'; }}
+          >
+            <GraduationCap size={15}/>
+            College / Institution? Sign in here →
+          </Link>
         </div>
       </div>
     </div>

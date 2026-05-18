@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import axios from '../../api/axios';   // ← configured instance with auto token-refresh
 import toast from 'react-hot-toast';
 import useAuthStore from '../../store/authStore';
+import { DriveSkillPicker } from '../../components/SkillPicker';
 
 const API = '';   // base URL already set on the axios instance
 
@@ -29,7 +30,7 @@ function CreateDriveModal({ colleges, onClose, onCreated }) {
     collegeId: '', title: '', description: '',
     driveDate: '', venue: '', mode: 'OFFLINE',
     jd: {
-      role: '', skills: '', stipend: '', duration: '3 months',
+      role: '', skills: [], stipend: '', duration: '3 months',
       eligibility: '', minCGPA: 6.0, eligibleDisciplines: [], description: '',
     },
     shortlistingCriteria: { minATSScore: 60, minCGPA: 6.0, minClass10: 60, minClass12: 60, slots: 30 },
@@ -58,9 +59,7 @@ function CreateDriveModal({ colleges, onClose, onCreated }) {
           ...form.jd,
           stipend: Number(form.jd.stipend),
           minCGPA: Number(form.jd.minCGPA),
-          skills: typeof form.jd.skills === 'string'
-            ? form.jd.skills.split(',').map(s => s.trim()).filter(Boolean)
-            : form.jd.skills,
+          skills: form.jd.skills,
         },
       };
       const { data } = await axios.post(`/college/admin/drives`, payload);
@@ -137,7 +136,12 @@ function CreateDriveModal({ colleges, onClose, onCreated }) {
               <div className="form-row">
                 <div className="form-field">
                   <label>Role / Position *</label>
-                  <input type="text" value={form.jd.role} onChange={e => setJD('role', e.target.value)} placeholder="Software Developer Intern" />
+                  <input
+                    type="text"
+                    value={form.jd.role}
+                    onChange={e => { setJD('role', e.target.value); setJD('skills', []); }}
+                    placeholder="Software Developer Intern"
+                  />
                 </div>
                 <div className="form-field">
                   <label>Stipend (₹/month)</label>
@@ -160,8 +164,12 @@ function CreateDriveModal({ colleges, onClose, onCreated }) {
                 </div>
               </div>
               <div className="form-field">
-                <label>Required Skills (comma separated)</label>
-                <input type="text" value={form.jd.skills} onChange={e => setJD('skills', e.target.value)} placeholder="Python, React, SQL..." />
+                <label>Required Skills</label>
+                <DriveSkillPicker
+                  role={form.jd.role}
+                  selected={form.jd.skills}
+                  onChange={skills => setJD('skills', skills)}
+                />
               </div>
 
               {/* ── Dynamic Discipline Picker ─────────────────────── */}

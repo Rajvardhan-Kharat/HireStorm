@@ -14,7 +14,14 @@ const COMMERCE = ['B.Com General','B.Com (Accounting & Finance)','B.Com (Banking
 const LAW = ['BA LLB (5-Year Integrated)','BBA LLB (5-Year Integrated)','LLB (3-Year)','LLM','Corporate Law','Intellectual Property Law'];
 const MEDICAL = ['MBBS','MD - General Medicine','MS - Surgery','B.Sc Nursing','M.Sc Nursing','BDS','BPT (Physiotherapy)','B.Pharm'];
 const SCIENCE = ['Physics','Chemistry','Mathematics','Computer Science (B.Sc)','Biotechnology (B.Sc)','Microbiology','Statistics'];
-const DESIGN = ['Product Design','Communication Design','Textile Design','Animation','UX Design','Architecture (B.Arch)'];
+const DESIGN = [
+  'Product Design','Communication Design','Graphic Design','Textile & Fashion Design',
+  'Animation & VFX','UX Design & Interaction Design','Architecture (B.Arch)',
+  'Interior Design','Jewellery Design','Industrial Design','Game Design',
+  'Photography','Film & Video Production','Motion Graphics','UI/UX Design',
+  'Furniture Design','Ceramic & Glass Design','Leather Design','Toy Design',
+  'New Media Design','Design Thinking & Innovation',
+];
 
 const colleges = [
   // ── PUNE — Engineering ───────────────────────────────────────────────────
@@ -343,6 +350,240 @@ const colleges = [
     phone:'+91 79 2630 1428', website:'https://ldce.ac.in',
     tpo:{ name:'Prof. Rajesh Shah', email:'tpo@ldce.ac.in', phone:'+91 9876543245' },
     disciplines:[...ENG],
+  },
+
+  // ── PUNE — Design (MIT-ADT) ──────────────────────────────────────────────
+  {
+    name:'MIT Art, Design and Technology University', slug:'mit-adt', code:'MITADT',
+    type:'DESIGN', university:'MIT-ADT University', city:'Pune', state:'Maharashtra',
+    email:'tpo@mitadt.edu.in', password:'MITADT@Drive2025',
+    address:'Rajbaug, Loni Kalbhor, Pune - 412201',
+    phone:'+91 20 3071 7000', website:'https://mitadt.edu.in',
+    tpo:{ name:'Prof. Swati Kulkarni', email:'tpo@mitadt.edu.in', phone:'+91 9876543250' },
+    disciplines:[
+      'Product Design','Communication Design','Graphic Design','Animation & VFX',
+      'Interior Design','Industrial Design','UI/UX Design','Fashion Design',
+      'Game Design','Film & Video Production','Architecture (B.Arch)',
+      'Design Thinking & Innovation','Textile & Fashion Design',
+    ],
+  },
+  {
+    name:'Symbiosis School of Design', slug:'ssd-pune', code:'SSD',
+    type:'DESIGN', university:'Symbiosis International University', city:'Pune', state:'Maharashtra',
+    email:'tpo@ssd.edu.in', password:'SSD@Drive2025',
+    address:'Gram Lavale, Tal Mulshi, Pune - 412115',
+    phone:'+91 20 3911 6300', website:'https://ssd.edu.in',
+    tpo:{ name:'Prof. Nisha Verma', email:'tpo@ssd.edu.in', phone:'+91 9876543251' },
+    disciplines:['Communication Design','Product Design','Graphic Design','Interior Design','UI/UX Design','Fashion Design'],
+  },
+
+  // ── PUNE — Engineering (more) ────────────────────────────────────────────
+  {
+    name:'Maharashtra Institute of Technology', slug:'mit-pune', code:'MITPUNE',
+    type:'ENGINEERING', university:'SPPU', city:'Pune', state:'Maharashtra',
+    email:'tpo@mitpune.edu.in', password:'MITPUNE@Drive2025',
+    address:'S. No. 124, Paud Road, Kothrud, Pune - 411038',
+    phone:'+91 20 2540 3100', website:'https://mitpune.edu.in',
+    tpo:{ name:'Prof. Asha Deshpande', email:'tpo@mitpune.edu.in', phone:'+91 9876543252' },
+    disciplines:[...ENG],
+  },
+  {
+    name:'Indira College of Engineering and Management', slug:'icem-pune', code:'ICEM',
+    type:'ENGINEERING', university:'SPPU', city:'Pune', state:'Maharashtra',
+    email:'tpo@icem.edu.in', password:'ICEM@Drive2025',
+    address:'Parandwadi, Pune - 410506',
+    phone:'+91 2114 661 800', website:'https://icem.edu.in',
+    tpo:{ name:'Prof. Ramesh Kadam', email:'tpo@icem.edu.in', phone:'+91 9876543253' },
+    disciplines:['Computer Science','Information Technology','Mechanical Engineering','Civil Engineering','EXTC'],
+  },
+  {
+    name:'Sinhgad College of Engineering', slug:'scoe-pune', code:'SCOE',
+    type:'ENGINEERING', university:'SPPU', city:'Pune', state:'Maharashtra',
+    email:'tpo@scoe.ac.in', password:'SCOE@Drive2025',
+    address:'Vadgaon (Bk), Off Sinhgad Road, Pune - 411041',
+    phone:'+91 20 2435 0226', website:'https://www.sinhgad.edu',
+    tpo:{ name:'Prof. Pradeep Kore', email:'tpo@scoe.ac.in', phone:'+91 9876543254' },
+    disciplines:[...ENG],
+  },
+
+  // ── MUMBAI — Design ──────────────────────────────────────────────────────
+  {
+    name:'Pearl Academy Mumbai', slug:'pearl-mumbai', code:'PEARLMUM',
+    type:'DESIGN', university:'Pearl Academy (Autonomous)', city:'Mumbai', state:'Maharashtra',
+    email:'tpo@pearlacademy.com', password:'PEARL@Drive2025',
+    address:'Andheri West, Mumbai - 400058',
+    phone:'+91 22 6158 2525', website:'https://pearlacademy.com',
+    tpo:{ name:'Prof. Malvika Nair', email:'tpo@pearlacademy.com', phone:'+91 9876543255' },
+    disciplines:['Fashion Design','Textile & Fashion Design','Communication Design','Graphic Design','Interior Design','Jewellery Design','Leather Design'],
+  },
+  {
+    name:'Rachana Sansad School of Design', slug:'rssd-mumbai', code:'RSSD',
+    type:'DESIGN', university:'Mumbai University', city:'Mumbai', state:'Maharashtra',
+    email:'tpo@rssd.edu', password:'RSSD@Drive2025',
+    address:'Sir J.J. Road, Byculla, Mumbai - 400008',
+    phone:'+91 22 2373 6282', website:'https://rssd.edu',
+    tpo:{ name:'Prof. Anjali Patil', email:'tpo@rssd.edu', phone:'+91 9876543256' },
+    disciplines:['Product Design','Graphic Design','Communication Design','Animation & VFX','Interior Design','Industrial Design'],
+  },
+  {
+    name:'Whistling Woods International', slug:'wwi-mumbai', code:'WWI',
+    type:'DESIGN', university:'Whistling Woods (Autonomous)', city:'Mumbai', state:'Maharashtra',
+    email:'tpo@whistlingwoods.net', password:'WWI@Drive2025',
+    address:'Film City Complex, Goregaon East, Mumbai - 400065',
+    phone:'+91 22 2840 1232', website:'https://whistlingwoods.net',
+    tpo:{ name:'Prof. Rishi Kapoor', email:'tpo@whistlingwoods.net', phone:'+91 9876543257' },
+    disciplines:['Film & Video Production','Motion Graphics','Photography','Communication Design','Game Design'],
+  },
+
+  // ── BENGALURU — Design ───────────────────────────────────────────────────
+  {
+    name:'Srishti Manipal Institute of Art, Design and Technology', slug:'srishti-bengaluru', code:'SRISHTI',
+    type:'DESIGN', university:'Manipal Academy of Higher Education', city:'Bengaluru', state:'Karnataka',
+    email:'tpo@srishti.ac.in', password:'SRISHTI@Drive2025',
+    address:'Yelahanka, Bengaluru - 560064',
+    phone:'+91 80 4624 0000', website:'https://srishti.ac.in',
+    tpo:{ name:'Prof. Kavya Rao', email:'tpo@srishti.ac.in', phone:'+91 9876543258' },
+    disciplines:['Product Design','Communication Design','Graphic Design','Animation & VFX','UX Design & Interaction Design','Game Design','New Media Design','Photography','Film & Video Production','Textile & Fashion Design','Design Thinking & Innovation'],
+  },
+  {
+    name:'M.S. Ramaiah Institute of Technology', slug:'msrit', code:'MSRIT',
+    type:'ENGINEERING', university:'VTU', city:'Bengaluru', state:'Karnataka',
+    email:'tpo@msrit.edu', password:'MSRIT@Drive2025',
+    address:'MSR Nagar, MSRIT Post, Bengaluru - 560054',
+    phone:'+91 80 2360 0822', website:'https://msrit.edu',
+    tpo:{ name:'Prof. Deepa Murthy', email:'tpo@msrit.edu', phone:'+91 9876543259' },
+    disciplines:[...ENG, 'Industrial Engineering & Management','Medical Electronics'],
+  },
+  {
+    name:'PES University', slug:'pes-bengaluru', code:'PESU',
+    type:'ENGINEERING', university:'PES University (Autonomous)', city:'Bengaluru', state:'Karnataka',
+    email:'tpo@pes.edu', password:'PESU@Drive2025',
+    address:'100 Feet Ring Road, BSK III Stage, Bengaluru - 560085',
+    phone:'+91 80 2672 0886', website:'https://pes.edu',
+    tpo:{ name:'Prof. Rajan Hegde', email:'tpo@pes.edu', phone:'+91 9876543260' },
+    disciplines:[...ENG, 'Robotics & AI','Mechatronics'],
+  },
+
+  // ── DELHI — Design ───────────────────────────────────────────────────────
+  {
+    name:'National Institute of Fashion Technology Delhi', slug:'nift-delhi', code:'NIFTD',
+    type:'DESIGN', university:'NIFT (Autonomous)', city:'Delhi', state:'Delhi',
+    email:'tpo@nift.ac.in', password:'NIFTD@Drive2025',
+    address:'Hauz Khas, New Delhi - 110016',
+    phone:'+91 11 2654 9100', website:'https://nift.ac.in',
+    tpo:{ name:'Prof. Ritu Sharma', email:'tpo@nift.ac.in', phone:'+91 9876543261' },
+    disciplines:['Fashion Design','Textile & Fashion Design','Leather Design','Jewellery Design','Knitwear Design','Accessory Design','Fashion Management','Fashion Communication'],
+  },
+  {
+    name:'Pearl Academy Delhi', slug:'pearl-delhi', code:'PEARLDEL',
+    type:'DESIGN', university:'Pearl Academy (Autonomous)', city:'Delhi', state:'Delhi',
+    email:'tpo@pearl-delhi.edu', password:'PEARLDEL@Drive2025',
+    address:'Naraina, New Delhi - 110028',
+    phone:'+91 11 4512 4100', website:'https://pearlacademy.com',
+    tpo:{ name:'Prof. Shikha Malhotra', email:'tpo@pearl-delhi.edu', phone:'+91 9876543262' },
+    disciplines:['Fashion Design','Interior Design','Graphic Design','Communication Design','Textile & Fashion Design'],
+  },
+  {
+    name:'Netaji Subhas University of Technology', slug:'nsut', code:'NSUT',
+    type:'ENGINEERING', university:'NSUT (Autonomous)', city:'Delhi', state:'Delhi',
+    email:'tpo@nsut.ac.in', password:'NSUT@Drive2025',
+    address:'Sector 3, Dwarka, New Delhi - 110078',
+    phone:'+91 11 2530 6100', website:'https://nsut.ac.in',
+    tpo:{ name:'Prof. Mohan Lal', email:'tpo@nsut.ac.in', phone:'+91 9876543263' },
+    disciplines:['Computer Science','Electronics & Communication','Information Technology','Mechanical Engineering','Electrical Engineering','AIDS (AI & Data Science)'],
+  },
+
+  // ── AHMEDABAD — Design (more NID) ────────────────────────────────────────
+  {
+    name:'National Institute of Design — Andhra Pradesh', slug:'nid-ap', code:'NIDAP',
+    type:'DESIGN', university:'NID (Autonomous)', city:'Amravati', state:'Andhra Pradesh',
+    email:'tpo@nidap.ac.in', password:'NIDAP@Drive2025',
+    address:'Amaravati, Andhra Pradesh - 522503',
+    phone:'+91 863 222 5100', website:'https://nidap.ac.in',
+    tpo:{ name:'Prof. Sunita Reddy', email:'tpo@nidap.ac.in', phone:'+91 9876543264' },
+    disciplines:[...DESIGN],
+  },
+
+  // ── CHENNAI — Engineering & Design ───────────────────────────────────────
+  {
+    name:'Anna University', slug:'anna-univ', code:'ANNAU',
+    type:'ENGINEERING', university:'Anna University', city:'Chennai', state:'Tamil Nadu',
+    email:'tpo@annauniv.edu', password:'ANNAU@Drive2025',
+    address:'Sardar Patel Road, Guindy, Chennai - 600025',
+    phone:'+91 44 2235 8500', website:'https://annauniv.edu',
+    tpo:{ name:'Prof. Selvaraj Kumar', email:'tpo@annauniv.edu', phone:'+91 9876543265' },
+    disciplines:[...ENG, 'Geo-Informatics','Marine Engineering','Aerospace Engineering'],
+  },
+  {
+    name:'National Institute of Fashion Technology Chennai', slug:'nift-chennai', code:'NIFTCH',
+    type:'DESIGN', university:'NIFT (Autonomous)', city:'Chennai', state:'Tamil Nadu',
+    email:'tpo@nift-chennai.ac.in', password:'NIFTCH@Drive2025',
+    address:'Taramani, Chennai - 600113',
+    phone:'+91 44 2245 6100', website:'https://nift.ac.in',
+    tpo:{ name:'Prof. Meena Krishnan', email:'tpo@nift-chennai.ac.in', phone:'+91 9876543266' },
+    disciplines:['Fashion Design','Textile & Fashion Design','Knitwear Design','Fashion Management','Fashion Communication','Accessory Design'],
+  },
+  {
+    name:'Vellore Institute of Technology', slug:'vit-vellore', code:'VITVELLORE',
+    type:'ENGINEERING', university:'VIT (Deemed)', city:'Vellore', state:'Tamil Nadu',
+    email:'tpo@vit.ac.in', password:'VITVEL@Drive2025',
+    address:'Vellore - 632014',
+    phone:'+91 416 220 2020', website:'https://vit.ac.in',
+    tpo:{ name:'Prof. Arun Kumar', email:'tpo@vit.ac.in', phone:'+91 9876543267' },
+    disciplines:[...ENG, 'Robotics & Automation','Mechatronics','Aerospace Engineering','AIDS (AI & Data Science)'],
+  },
+
+  // ── HYDERABAD — Engineering ───────────────────────────────────────────────
+  {
+    name:'Osmania University College of Engineering', slug:'ouce', code:'OUCE',
+    type:'ENGINEERING', university:'Osmania University', city:'Hyderabad', state:'Telangana',
+    email:'tpo@ouce.ac.in', password:'OUCE@Drive2025',
+    address:'University Campus, Hyderabad - 500007',
+    phone:'+91 40 2768 2363', website:'https://osmania.ac.in',
+    tpo:{ name:'Prof. Venkatesh Rao', email:'tpo@ouce.ac.in', phone:'+91 9876543268' },
+    disciplines:[...ENG],
+  },
+
+  // ── KOLKATA — Engineering & Design ───────────────────────────────────────
+  {
+    name:'Jadavpur University', slug:'jadavpur', code:'JADU',
+    type:'ENGINEERING', university:'Jadavpur University (Autonomous)', city:'Kolkata', state:'West Bengal',
+    email:'tpo@jadavpur.ac.in', password:'JADU@Drive2025',
+    address:'188, Raja S.C. Mallick Road, Kolkata - 700032',
+    phone:'+91 33 2414 6666', website:'https://jadavpur.ac.in',
+    tpo:{ name:'Prof. Sourav Ghosh', email:'tpo@jadavpur.ac.in', phone:'+91 9876543269' },
+    disciplines:[...ENG, 'Printing Engineering','Food Technology','Pharmaceutical Technology'],
+  },
+  {
+    name:'National Institute of Fashion Technology Kolkata', slug:'nift-kolkata', code:'NIFTKO',
+    type:'DESIGN', university:'NIFT (Autonomous)', city:'Kolkata', state:'West Bengal',
+    email:'tpo@nift-kolkata.ac.in', password:'NIFTKO@Drive2025',
+    address:'Plot No. IIF/7, New Town, Kolkata - 700156',
+    phone:'+91 33 6609 5100', website:'https://nift.ac.in',
+    tpo:{ name:'Prof. Debashri Sen', email:'tpo@nift-kolkata.ac.in', phone:'+91 9876543270' },
+    disciplines:['Fashion Design','Textile & Fashion Design','Leather Design','Fashion Management','Fashion Communication'],
+  },
+
+  // ── JAIPUR — Engineering & Design ────────────────────────────────────────
+  {
+    name:'Malaviya National Institute of Technology', slug:'mnit-jaipur', code:'MNIT',
+    type:'ENGINEERING', university:'NIT (Autonomous)', city:'Jaipur', state:'Rajasthan',
+    email:'tpo@mnit.ac.in', password:'MNIT@Drive2025',
+    address:'JLN Marg, Jaipur - 302017',
+    phone:'+91 141 252 9087', website:'https://mnit.ac.in',
+    tpo:{ name:'Prof. Kapil Sharma', email:'tpo@mnit.ac.in', phone:'+91 9876543271' },
+    disciplines:[...ENG, 'Metallurgical & Materials Engineering'],
+  },
+
+  // ── COIMBATORE — Engineering ──────────────────────────────────────────────
+  {
+    name:'PSG College of Technology', slug:'psgct', code:'PSGCT',
+    type:'ENGINEERING', university:'Anna University', city:'Coimbatore', state:'Tamil Nadu',
+    email:'tpo@psgct.ac.in', password:'PSGCT@Drive2025',
+    address:'Peelamedu, Coimbatore - 641004',
+    phone:'+91 422 434 3400', website:'https://psgct.ac.in',
+    tpo:{ name:'Prof. Krishnamurthy V', email:'tpo@psgct.ac.in', phone:'+91 9876543272' },
+    disciplines:[...ENG, 'Production Engineering','Robotics & Automation'],
   },
 ];
 

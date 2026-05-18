@@ -3,7 +3,8 @@ import StudentLayout from '../../layouts/StudentLayout';
 import api from '../../api/axios';
 import useAuthStore from '../../store/authStore';
 import toast from 'react-hot-toast';
-import { User, Mail, Link2, GitFork, Globe, Plus, X, Save, Edit3, Code2 } from 'lucide-react';
+import { User, Mail, Link2, GitFork, Globe, Save, Edit3, Code2 } from 'lucide-react';
+import { StudentSkillPicker } from '../../components/SkillPicker';
 
 export default function Profile() {
   const { user, setAuth, accessToken } = useAuthStore();
@@ -12,7 +13,6 @@ export default function Profile() {
   const [saving, setSaving] = useState(false);
   const [editSection, setEditSection] = useState(null);
   const [form, setForm] = useState({});
-  const [newSkill, setNewSkill] = useState('');
 
   useEffect(() => {
     api.get('/auth/me')
@@ -57,13 +57,6 @@ export default function Profile() {
     } finally { setSaving(false); }
   };
 
-  const addSkill = () => {
-    const s = newSkill.trim();
-    if (s && !form.skills.includes(s)) {
-      setForm(p => ({ ...p, skills: [...p.skills, s] }));
-      setNewSkill('');
-    }
-  };
   const removeSkill = (s) => setForm(p => ({ ...p, skills: p.skills.filter(x => x !== s) }));
 
   const completeness = () => {
@@ -249,24 +242,10 @@ export default function Profile() {
               </div>
               {editSection === 'skills' ? (
                 <div>
-                  <div style={{ display:'flex', flexWrap:'wrap', gap:8, marginBottom:14 }}>
-                    {form.skills.map(s => (
-                      <span key={s} className="chip" style={{ gap:6 }}>
-                        {s}
-                        <button onClick={() => removeSkill(s)} style={{ background:'none', border:'none', cursor:'pointer', color:'var(--clr-text-3)', padding:0, display:'flex' }}><X size={12}/></button>
-                      </span>
-                    ))}
-                  </div>
-                  <div style={{ display:'flex', gap:8 }}>
-                    <input
-                      value={newSkill}
-                      onChange={e => setNewSkill(e.target.value)}
-                      onKeyDown={e => e.key === 'Enter' && addSkill()}
-                      placeholder="Add skill (e.g. React, Python)"
-                      style={{ flex:1 }}
-                    />
-                    <button className="btn btn-outline btn-sm" onClick={addSkill}><Plus size={13}/></button>
-                  </div>
+                  <StudentSkillPicker
+                    skills={form.skills}
+                    onChange={skills => setForm(p => ({ ...p, skills }))}
+                  />
                 </div>
               ) : (
                 form.skills.length > 0 ? (

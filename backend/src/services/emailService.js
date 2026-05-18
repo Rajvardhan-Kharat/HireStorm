@@ -200,3 +200,171 @@ exports.sendTeamInvite = async (toEmail, teamName, inviteUrl) => {
 
 /** Legacy compat */
 exports.sendOfferMagicLink = exports.sendInternshipOffer;
+
+/* ─── Campus Drive Pipeline Templates ──────────────────────────────────────── */
+
+/** Send AI Skills Test link to shortlisted student */
+exports.sendAITestInvite = async (toEmail, studentName, role, testUrl, driveTitle) => {
+  return sendEmail(
+    toEmail,
+    `🧠 AI Skills Assessment — ${driveTitle}`,
+    `Hi ${studentName}, complete your AI skills test for the ${role} role.`,
+    `<div style="font-family:'Segoe UI',sans-serif;max-width:600px;margin:auto;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,.08)">
+      <div style="background:linear-gradient(135deg,#4f46e5,#7c3aed);padding:32px 40px;text-align:center">
+        <div style="font-size:28px;margin-bottom:8px">🧠</div>
+        <h1 style="color:#fff;margin:0;font-size:22px;font-weight:700">AI Skills Assessment</h1>
+        <p style="color:rgba(255,255,255,.8);margin:8px 0 0;font-size:14px">${driveTitle}</p>
+      </div>
+      <div style="padding:36px 40px">
+        <p style="color:#1e293b;font-size:16px">Hi <strong>${studentName}</strong>,</p>
+        <p style="color:#475569;font-size:14px;line-height:1.7">Congratulations on being shortlisted for <strong>${role}</strong>! Complete the AI Skills Assessment to proceed.</p>
+        <div style="background:#f0f4ff;border-left:4px solid #4f46e5;border-radius:8px;padding:16px 20px;margin:24px 0">
+          <p style="color:#4f46e5;font-weight:700;margin:0 0 8px;font-size:13px">📋 ASSESSMENT DETAILS</p>
+          <p style="color:#334155;margin:4px 0;font-size:13px">• 10 multiple-choice questions (role-relevant)</p>
+          <p style="color:#334155;margin:4px 0;font-size:13px">• Time limit: 20 minutes</p>
+          <p style="color:#334155;margin:4px 0;font-size:13px">• Passing score: 60%+</p>
+          <p style="color:#334155;margin:4px 0;font-size:13px">• Link valid for 48 hours</p>
+        </div>
+        <div style="text-align:center;margin:32px 0">
+          <a href="${testUrl}" style="display:inline-block;background:linear-gradient(135deg,#4f46e5,#7c3aed);color:#fff;text-decoration:none;padding:14px 36px;border-radius:8px;font-weight:700;font-size:15px">🚀 Start My Assessment</a>
+        </div>
+        <p style="color:#94a3b8;font-size:12px;text-align:center">Or copy: <span style="color:#4f46e5">${testUrl}</span></p>
+      </div>
+      <div style="background:#f8fafc;padding:20px 40px;text-align:center;border-top:1px solid #e2e8f0">
+        <p style="color:#94a3b8;font-size:12px;margin:0">⚡ HireStorm — Campus Placement Division</p>
+      </div>
+    </div>`
+  );
+};
+
+/** Interview invite with Google Meet link */
+exports.sendCampusInterviewInvite = async (toEmail, studentName, role, meetLink, scheduledAt, driveTitle) => {
+  const timeStr = scheduledAt
+    ? new Date(scheduledAt).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', dateStyle: 'full', timeStyle: 'short' })
+    : 'To be communicated';
+  return sendEmail(
+    toEmail,
+    `📅 Interview Scheduled — ${role} | ${driveTitle}`,
+    `Hi ${studentName}, your interview is scheduled. Join: ${meetLink}`,
+    `<div style="font-family:'Segoe UI',sans-serif;max-width:600px;margin:auto;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,.08)">
+      <div style="background:linear-gradient(135deg,#0ea5e9,#4f46e5);padding:32px 40px;text-align:center">
+        <div style="font-size:32px;margin-bottom:8px">📅</div>
+        <h1 style="color:#fff;margin:0;font-size:22px;font-weight:700">Interview Scheduled!</h1>
+        <p style="color:rgba(255,255,255,.85);margin:8px 0 0;font-size:14px">${driveTitle}</p>
+      </div>
+      <div style="padding:36px 40px">
+        <p style="color:#1e293b;font-size:16px">Hi <strong>${studentName}</strong>,</p>
+        <p style="color:#475569;font-size:14px;line-height:1.7">You passed the AI Skills Assessment! You've been selected for a <strong>final interview</strong> for <strong>${role}</strong>.</p>
+        <div style="background:#f0f9ff;border:1px solid #bae6fd;border-radius:10px;padding:20px 24px;margin:24px 0">
+          <p style="color:#0369a1;font-weight:700;margin:0 0 12px;font-size:13px">🎯 INTERVIEW DETAILS</p>
+          <table style="width:100%;border-collapse:collapse">
+            <tr><td style="color:#64748b;font-size:13px;padding:5px 0;width:140px">📅 Date &amp; Time</td><td style="color:#0f172a;font-size:13px;font-weight:600">${timeStr} (IST)</td></tr>
+            <tr><td style="color:#64748b;font-size:13px;padding:5px 0">💼 Role</td><td style="color:#0f172a;font-size:13px;font-weight:600">${role}</td></tr>
+            <tr><td style="color:#64748b;font-size:13px;padding:5px 0">🖥️ Platform</td><td style="color:#0f172a;font-size:13px;font-weight:600">Google Meet</td></tr>
+          </table>
+        </div>
+        <div style="text-align:center;margin:28px 0">
+          <a href="${meetLink}" style="display:inline-block;background:#0ea5e9;color:#fff;text-decoration:none;padding:14px 36px;border-radius:8px;font-weight:700;font-size:15px">🎥 Join Google Meet</a>
+        </div>
+        <div style="background:#fefce8;border:1px solid #fde68a;border-radius:8px;padding:14px 18px;font-size:13px;color:#92400e">
+          💡 <strong>Tips:</strong> Test camera &amp; mic beforehand. Be ready to discuss your projects and answer technical questions.
+        </div>
+      </div>
+      <div style="background:#f8fafc;padding:20px 40px;text-align:center;border-top:1px solid #e2e8f0">
+        <p style="color:#94a3b8;font-size:12px;margin:0">⚡ HireStorm — Campus Placement Division</p>
+      </div>
+    </div>`
+  );
+};
+
+/** Campus Drive offer letter — HTML-embedded (works without Cloudinary in email) */
+exports.sendCampusOfferLetter = async (toEmail, studentName, role, collegeName, startDate, endDate, stipend, acceptUrl, rejectUrl, driveTitle) => {
+  const start = startDate ? new Date(startDate).toLocaleDateString('en-IN', { year: 'numeric', month: 'long', day: 'numeric' }) : 'As communicated';
+  const end   = endDate   ? new Date(endDate).toLocaleDateString('en-IN', { year: 'numeric', month: 'long', day: 'numeric' }) : 'As communicated';
+  const stip  = stipend   ? `&#8377;${Number(stipend).toLocaleString('en-IN')}/month` : 'As discussed';
+  const today = new Date().toLocaleDateString('en-IN', { year: 'numeric', month: 'long', day: 'numeric' });
+
+  const rows = [
+    ['Role / Position', role || 'Intern'],
+    ['College', collegeName || '—'],
+    ['Start Date', start],
+    ['End Date', end],
+    ['Stipend', stip],
+    ['Type', 'Internship (Full-Time)'],
+  ];
+
+  return sendEmail(
+    toEmail,
+    `🎊 Internship Offer Letter — ${role} | ${driveTitle}`,
+    `Congratulations ${studentName}! You have been selected for ${role}. Please accept or decline within 72 hours.`,
+    `<div style="font-family:'Segoe UI',Arial,sans-serif;max-width:640px;margin:auto;background:#fff;border-radius:14px;overflow:hidden;box-shadow:0 8px 40px rgba(0,0,0,.12)">
+      <div style="background:linear-gradient(135deg,#4f46e5 0%,#7c3aed 100%);padding:36px 48px 28px">
+        <div style="font-size:22px;font-weight:800;color:#fff;letter-spacing:-.5px">&#9889; HireStorm</div>
+        <div style="color:rgba(255,255,255,.7);font-size:12px;margin-top:2px">Campus Placement Division</div>
+        <div style="margin-top:20px;background:rgba(255,255,255,.15);border-radius:10px;padding:14px 20px;text-align:center">
+          <div style="color:#fff;font-size:17px;font-weight:700;letter-spacing:1px">INTERNSHIP OFFER LETTER</div>
+          <div style="color:rgba(255,255,255,.75);font-size:12px;margin-top:4px">Date: ${today}</div>
+        </div>
+      </div>
+      <div style="padding:40px 48px">
+        <p style="color:#1e293b;font-size:16px;margin:0 0 16px">Dear <strong>${studentName}</strong>,</p>
+        <p style="color:#475569;font-size:14px;line-height:1.8;margin:0 0 28px">We are delighted to offer you the position of <strong style="color:#4f46e5">${role}</strong> through the campus placement drive at <strong>${collegeName}</strong>. After evaluating your profile, AI assessment results, and interview performance, we are confident you will be a great addition to our team.</p>
+        <div style="background:#f8faff;border:1px solid #e0e7ff;border-radius:10px;overflow:hidden;margin-bottom:28px">
+          <div style="background:#4f46e5;padding:12px 20px">
+            <span style="color:#fff;font-weight:700;font-size:13px;letter-spacing:.5px">📋 OFFER DETAILS</span>
+          </div>
+          <table style="width:100%;border-collapse:collapse">
+            ${rows.map(([k, v], i) => `<tr style="background:${i % 2 === 0 ? '#f8faff' : '#fff'}"><td style="padding:11px 20px;color:#64748b;font-size:13px;font-weight:600;width:170px;border-bottom:1px solid #e0e7ff">${k}</td><td style="padding:11px 20px;color:#0f172a;font-size:13px;border-bottom:1px solid #e0e7ff">${v}</td></tr>`).join('')}
+          </table>
+        </div>
+        <div style="margin-bottom:28px">
+          <p style="color:#0f172a;font-weight:700;font-size:14px;margin:0 0 10px">📜 Terms &amp; Conditions</p>
+          <ol style="color:#475569;font-size:13px;line-height:2;padding-left:20px;margin:0">
+            <li>This offer is subject to successful background verification.</li>
+            <li>The intern must report on time and maintain professional conduct.</li>
+            <li>All work produced during the internship is the property of the organization.</li>
+            <li>Stipend is paid monthly against daily log submissions.</li>
+            <li>Either party may terminate with 7 days' written notice.</li>
+          </ol>
+        </div>
+        <p style="color:#475569;font-size:13px;margin:0 0 20px">This offer is valid for <strong>72 hours</strong>. Please respond:</p>
+        <div style="text-align:center;margin:28px 0">
+          <a href="${acceptUrl}" style="display:inline-block;background:linear-gradient(135deg,#10b981,#059669);color:#fff;text-decoration:none;padding:14px 32px;border-radius:8px;font-weight:700;font-size:14px;margin-right:12px">&#10003; Accept Offer</a>
+          <a href="${rejectUrl}" style="display:inline-block;background:#f1f5f9;color:#64748b;text-decoration:none;padding:14px 32px;border-radius:8px;font-weight:700;font-size:14px;border:1px solid #e2e8f0">&#10007; Decline</a>
+        </div>
+        <p style="color:#94a3b8;font-size:12px;text-align:center;margin-top:8px">You can also respond through your HireStorm dashboard.</p>
+      </div>
+      <div style="background:#1e1b4b;padding:20px 48px;text-align:center">
+        <p style="color:rgba(255,255,255,.6);font-size:12px;margin:0">&#9889; HireStorm — Connecting Campuses with Opportunity</p>
+      </div>
+    </div>`
+  );
+};
+
+/** AI test failed notification */
+exports.sendAITestFailed = async (toEmail, studentName, role, score, driveTitle) => {
+  return sendEmail(
+    toEmail,
+    `📊 Assessment Result — ${driveTitle}`,
+    `Hi ${studentName}, your AI skills assessment result is ready.`,
+    `<div style="font-family:'Segoe UI',sans-serif;max-width:600px;margin:auto;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,.08)">
+      <div style="background:linear-gradient(135deg,#dc2626,#9f1239);padding:32px 40px;text-align:center">
+        <div style="font-size:32px">📊</div>
+        <h1 style="color:#fff;margin:8px 0 0;font-size:20px">Assessment Results</h1>
+      </div>
+      <div style="padding:36px 40px">
+        <p style="color:#1e293b;font-size:15px">Hi <strong>${studentName}</strong>,</p>
+        <p style="color:#475569;font-size:14px;line-height:1.7">Thank you for completing the AI Skills Assessment for <strong>${role}</strong> in <strong>${driveTitle}</strong>.</p>
+        <div style="background:#fef2f2;border:1px solid #fecaca;border-radius:8px;padding:20px;text-align:center;margin:24px 0">
+          <div style="font-size:36px;font-weight:800;color:#dc2626">${score}%</div>
+          <div style="color:#991b1b;font-size:14px;margin-top:4px">Score (Passing: 60%)</div>
+        </div>
+        <p style="color:#475569;font-size:14px;line-height:1.7">Unfortunately the score did not meet the minimum threshold. Keep developing your skills and we hope to see you in future drives!</p>
+        <p style="color:#94a3b8;font-size:13px;text-align:center;margin-top:28px">— Team HireStorm</p>
+      </div>
+      <div style="background:#f8fafc;padding:16px;text-align:center;border-top:1px solid #e2e8f0">
+        <p style="color:#94a3b8;font-size:12px;margin:0">&#9889; HireStorm — Campus Placement Division</p>
+      </div>
+    </div>`
+  );
+};

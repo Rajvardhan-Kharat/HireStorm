@@ -34,7 +34,7 @@ const driveApplicationSchema = new mongoose.Schema({
   // Status in the drive pipeline
   status: {
     type: String,
-    enum: ['APPLIED', 'UNDER_REVIEW', 'SHORTLISTED', 'REJECTED', 'ROUND_2', 'ROUND_3', 'SELECTED', 'OFFER_SENT'],
+    enum: ['APPLIED','UNDER_REVIEW','SHORTLISTED','AI_TEST_SENT','AI_TEST_COMPLETED','AI_TEST_PASSED','AI_TEST_FAILED','INTERVIEW_SCHEDULED','INTERVIEW_DONE','REJECTED','SELECTED','OFFER_SENT'],
     default: 'APPLIED',
   },
 
@@ -42,6 +42,36 @@ const driveApplicationSchema = new mongoose.Schema({
   selectedAt:    { type: Date },
   rejectedAt:    { type: Date },
   rejectionReason: { type: String },
+
+  // ── AI Skills Test ────────────────────────────────────────────────────────
+  aiTest: {
+    token:        { type: String },          // unique token for the test link
+    sentAt:       { type: Date },
+    submittedAt:  { type: Date },
+    score:        { type: Number },          // 0–100
+    passed:       { type: Boolean },
+    questions:    { type: mongoose.Schema.Types.Mixed }, // [{q, options, correct}]
+    answers:      { type: mongoose.Schema.Types.Mixed }, // {qIndex: chosenOption}
+    feedback:     { type: String },          // AI-generated feedback on answers
+  },
+
+  // ── Interview ─────────────────────────────────────────────────────────────
+  interview: {
+    scheduled:    { type: Boolean, default: false },
+    meetLink:     { type: String },
+    scheduledAt:  { type: Date },
+    notes:        { type: String },
+    outcome:      { type: String, enum: ['PENDING','PASSED','FAILED'], default: 'PENDING' },
+  },
+
+  // ── Offer Letter ──────────────────────────────────────────────────────────
+  offerLetter: {
+    sentAt:       { type: Date },
+    acceptToken:  { type: String },
+    rejectToken:  { type: String },
+    accepted:     { type: Boolean },
+    respondedAt:  { type: Date },
+  },
 
   // Internship created from this application
   internship: { type: mongoose.Schema.Types.ObjectId, ref: 'Internship', default: null },

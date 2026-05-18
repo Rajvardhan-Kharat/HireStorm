@@ -6,6 +6,11 @@ const DriveApplication = require('../models/DriveApplication');
 const Internship = require('../models/Internship');
 const User = require('../models/User');
 const { GoogleGenerativeAI } = require('@google/generative-ai');
+const {
+  sendAITestInvite, sendAITestFailed,
+  sendCampusInterviewInvite, sendCampusOfferLetter,
+} = require('../services/emailService');
+const { generateCampusOfferLetterPDF } = require('../utils/pdfGenerator');
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
@@ -411,12 +416,283 @@ const getCollegePublicInfo = async (req, res) => {
   }
 };
 
+
+// ─── AI Test Pipeline ─────────────────────────────────────────────────────────
+
+// POST /api/v1/college/admin/applications/:appId/send-ai-test
+// Generates AI questions via Gemini and sends test link to student
+const adminSendAITest = async (req, res) => {
+  try {
+    const app = await DriveApplication.findById(req.params.appId).populate('drive');
+    if (!app) return res.status(404).json({ success: false, message: 'Application not found' });
+    if (app.status !== 'SHORTLISTED') return res.status(400).json({ success: false, message: 'Student must be shortlisted first' });
+
+    const role = app.drive?.jd?.role || 'Software Developer Intern';
+    const skills = (app.drive?.jd?.skills || []).join(', ') || 'Programming';
+
+    // Generate 10 MCQ questions via Gemini
+    let questions = [];
+    try {
+      const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+      const prompt = `Generate exactly 10 multiple-choice questions to test a candidate for the role: "${role}".
+Skills to test: ${skills}.
+Each question must have 4 options (A, B, C, D) and one correct answer.
+Return ONLY a valid JSON array like:
+[{"q":"Question text?","options":["A. opt1","B. opt2","C. opt3","D. opt4"],"correct":"A"}]
+No markdown, no extra text.`;
+      const result = await model.generateContent(prompt);
+      const text = result.response.text().trim().replace(/```json|```/g, '');
+      const match = text.match(/\[[\s\S]*\]/);
+      if (match) questions = JSON.parse(match[0]).slice(0, 10);
+    } catch (e) {
+      console.error('[AI Test Gen]', e.message);
+      return res.status(500).json({ success: false, message: 'Failed to generate questions. Try again.' });
+    }
+
+    const token = crypto.randomBytes(32).toString('hex');
+    const testUrl = `${process.env.CLIENT_URL}/ai-test/${token}`;
+
+    app.aiTest = { token, sentAt: new Date(), questions };
+    app.status = 'AI_TEST_SENT';
+    await app.save();
+
+    // Send email
+    try {
+      await sendAITestInvite(
+        app.student.email, app.student.name,
+        role, testUrl, app.drive?.title || 'Campus Drive'
+      );
+    } catch (emailErr) {
+      console.warn('[AI Test Email]', emailErr.message);
+    }
+
+    res.json({ success: true, message: `AI test sent to ${app.student.email}`, testUrl });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
+
+// GET /api/v1/college/test/:token  — student fetches their test
+const getAITest = async (req, res) => {
+  try {
+    const app = await DriveApplication.findOne({ 'aiTest.token': req.params.token }).populate('drive', 'title jd');
+    if (!app || !app.aiTest?.questions) return res.status(404).json({ success: false, message: 'Test not found or expired' });
+    if (app.aiTest.submittedAt) return res.status(400).json({ success: false, message: 'Test already submitted' });
+
+    // Return questions WITHOUT correct answers
+    const safeQuestions = app.aiTest.questions.map(({ q, options }) => ({ q, options }));
+    res.json({
+      success: true,
+      studentName: app.student.name,
+      role: app.drive?.jd?.role || 'Intern',
+      driveTitle: app.drive?.title,
+      questions: safeQuestions,
+      totalQuestions: safeQuestions.length,
+    });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
+
+// POST /api/v1/college/test/:token/submit  — student submits answers
+const submitAITest = async (req, res) => {
+  try {
+    const app = await DriveApplication.findOne({ 'aiTest.token': req.params.token }).populate('drive', 'title jd');
+    if (!app || !app.aiTest?.questions) return res.status(404).json({ success: false, message: 'Test not found' });
+    if (app.aiTest.submittedAt) return res.status(400).json({ success: false, message: 'Test already submitted' });
+
+    const { answers } = req.body; // { "0": "A", "1": "C", ... }
+    const questions = app.aiTest.questions;
+
+    let correct = 0;
+    questions.forEach((q, i) => {
+      const studentAns = (answers[i] || '').trim().charAt(0).toUpperCase();
+      const correctAns = (q.correct || '').trim().charAt(0).toUpperCase();
+      if (studentAns === correctAns) correct++;
+    });
+
+    const score = Math.round((correct / questions.length) * 100);
+    const passed = score >= 60;
+
+    app.aiTest.answers = answers;
+    app.aiTest.score = score;
+    app.aiTest.passed = passed;
+    app.aiTest.submittedAt = new Date();
+    app.aiTest.token = undefined; // invalidate
+    app.status = passed ? 'AI_TEST_PASSED' : 'AI_TEST_FAILED';
+    await app.save();
+
+    const role = app.drive?.jd?.role || 'Intern';
+    const driveTitle = app.drive?.title || 'Campus Drive';
+
+    if (!passed) {
+      try {
+        await sendAITestFailed(app.student.email, app.student.name, role, score, driveTitle);
+      } catch (_) {}
+    }
+
+    res.json({
+      success: true,
+      score,
+      passed,
+      correct,
+      total: questions.length,
+      message: passed
+        ? `🎉 Congratulations! You scored ${score}% and passed the assessment.`
+        : `You scored ${score}%. The minimum passing score is 60%. Better luck next time!`,
+    });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
+
+// POST /api/v1/college/admin/applications/:appId/schedule-interview
+// Admin schedules interview with Google Meet link
+const adminScheduleInterview = async (req, res) => {
+  try {
+    const { meetLink, scheduledAt, notes } = req.body;
+    if (!meetLink) return res.status(400).json({ success: false, message: 'Meet link is required' });
+
+    const app = await DriveApplication.findById(req.params.appId).populate('drive', 'title jd');
+    if (!app) return res.status(404).json({ success: false, message: 'Application not found' });
+    if (app.status !== 'AI_TEST_PASSED') return res.status(400).json({ success: false, message: 'Student must have passed the AI test first' });
+
+    app.interview = { scheduled: true, meetLink, scheduledAt, notes, outcome: 'PENDING' };
+    app.status = 'INTERVIEW_SCHEDULED';
+    await app.save();
+
+    const role = app.drive?.jd?.role || 'Intern';
+    const driveTitle = app.drive?.title || 'Campus Drive';
+
+    try {
+      await sendCampusInterviewInvite(app.student.email, app.student.name, role, meetLink, scheduledAt, driveTitle);
+    } catch (emailErr) {
+      console.warn('[Interview Email]', emailErr.message);
+    }
+
+    res.json({ success: true, message: `Interview scheduled and email sent to ${app.student.email}` });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
+
+// POST /api/v1/college/admin/applications/:appId/send-offer
+// Admin sends internship offer (after interview OR directly after AI test pass)
+const adminSendCampusOffer = async (req, res) => {
+  try {
+    const { startDate, endDate, stipend, skipInterview = false } = req.body;
+    const app = await DriveApplication.findById(req.params.appId).populate('drive college');
+    if (!app) return res.status(404).json({ success: false, message: 'Application not found' });
+
+    const validStatuses = ['AI_TEST_PASSED', 'INTERVIEW_SCHEDULED', 'INTERVIEW_DONE', 'SELECTED'];
+    if (!validStatuses.includes(app.status)) {
+      return res.status(400).json({ success: false, message: `Cannot send offer in status: ${app.status}` });
+    }
+
+    const acceptToken = crypto.randomBytes(32).toString('hex');
+    const rejectToken = crypto.randomBytes(32).toString('hex');
+    const acceptUrl = `${process.env.API_URL}/api/v1/college/offer/accept?token=${acceptToken}`;
+    const rejectUrl = `${process.env.API_URL}/api/v1/college/offer/reject?token=${rejectToken}`;
+
+    const role = app.drive?.jd?.role || 'Intern';
+    const collegeName = app.college?.name || '';
+    const driveTitle = app.drive?.title || 'Campus Drive';
+
+    // Generate PDF (upload to Cloudinary) — but email is HTML so no download needed
+    let pdfUrl = null;
+    try {
+      pdfUrl = await generateCampusOfferLetterPDF({
+        studentName: app.student.name,
+        role, collegeName,
+        startDate, endDate, stipend: stipend?.amount || stipend,
+        uniqueId: app._id.toString(),
+      });
+    } catch (pdfErr) {
+      console.warn('[Offer PDF]', pdfErr.message);
+    }
+
+    app.status = 'OFFER_SENT';
+    app.selectedAt = new Date();
+    app.offerLetter = { sentAt: new Date(), acceptToken, rejectToken };
+    await app.save();
+
+    // Send the beautiful HTML email (no Cloudinary URL needed for display)
+    try {
+      await sendCampusOfferLetter(
+        app.student.email, app.student.name,
+        role, collegeName,
+        startDate, endDate, stipend?.amount || stipend,
+        acceptUrl, rejectUrl, driveTitle
+      );
+    } catch (emailErr) {
+      console.warn('[Offer Email]', emailErr.message);
+    }
+
+    // Update drive stats
+    await CampusDrive.findByIdAndUpdate(app.drive._id, { $inc: { totalSelected: 1 } });
+    await College.findByIdAndUpdate(app.college._id, { $inc: { totalSelected: 1 } });
+
+    res.json({
+      success: true,
+      message: `Offer letter sent to ${app.student.email}`,
+      pdfUrl,
+    });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
+
+// GET /api/v1/college/offer/accept?token=xxx  — student accepts via email link
+const acceptCampusOffer = async (req, res) => {
+  try {
+    const app = await DriveApplication.findOne({ 'offerLetter.acceptToken': req.query.token });
+    if (!app) return res.status(400).send('<h2 style="font-family:sans-serif;color:#f87171">Invalid or expired link.</h2>');
+
+    app.status = 'SELECTED';
+    app.offerLetter.accepted = true;
+    app.offerLetter.respondedAt = new Date();
+    app.offerLetter.acceptToken = undefined;
+    app.offerLetter.rejectToken = undefined;
+    await app.save();
+
+    res.send(`<html><body style="font-family:sans-serif;background:#0f1623;color:#e8edf8;display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0"><div style="text-align:center;padding:40px"><h1 style="color:#34d399;font-size:2rem">🎉 Offer Accepted!</h1><p>Welcome aboard! You have officially accepted the internship offer. Log in to HireStorm to begin your journey.</p><a href="${process.env.CLIENT_URL}/dashboard" style="display:inline-block;margin-top:20px;padding:12px 28px;background:#4f46e5;color:#fff;border-radius:8px;text-decoration:none;font-weight:bold">Go to Dashboard →</a></div></body></html>`);
+  } catch (err) {
+    res.status(500).send('<h2>Server error. Please contact support.</h2>');
+  }
+};
+
+// GET /api/v1/college/offer/reject?token=xxx
+const rejectCampusOffer = async (req, res) => {
+  try {
+    const app = await DriveApplication.findOne({ 'offerLetter.rejectToken': req.query.token });
+    if (!app) return res.status(400).send('<h2 style="font-family:sans-serif;color:#f87171">Invalid or expired link.</h2>');
+
+    app.status = 'REJECTED';
+    app.offerLetter.accepted = false;
+    app.offerLetter.respondedAt = new Date();
+    app.offerLetter.acceptToken = undefined;
+    app.offerLetter.rejectToken = undefined;
+    await app.save();
+
+    res.send(`<html><body style="font-family:sans-serif;background:#0f1623;color:#e8edf8;display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0"><div style="text-align:center;padding:40px"><h1 style="color:#f87171">Offer Declined</h1><p>We respect your decision. Good luck with your future endeavors!</p><a href="${process.env.CLIENT_URL}" style="display:inline-block;margin-top:20px;padding:12px 28px;background:#4f46e5;color:#fff;border-radius:8px;text-decoration:none;font-weight:bold">Back to Home</a></div></body></html>`);
+  } catch (err) {
+    res.status(500).send('<h2>Server error.</h2>');
+  }
+};
+
 module.exports = {
-  // Admin
+  // Admin — colleges
   adminListColleges, adminCreateCollege, adminUpdateCollege, adminDeleteCollege,
+  // Admin — drives
   adminCreateDrive, adminListDrives, adminUpdateDrive,
   adminListApplications, adminShortlistStudents,
   adminUpdateApplication, adminSelectStudentAsIntern,
+  // Admin — AI Test + Interview + Offer pipeline
+  adminSendAITest, adminScheduleInterview, adminSendCampusOffer,
+  // Public test
+  getAITest, submitAITest,
+  // Offer accept/reject
+  acceptCampusOffer, rejectCampusOffer,
   // Public form
   getDriveByToken, submitDriveApplication,
   // College portal

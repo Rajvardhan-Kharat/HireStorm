@@ -59,6 +59,7 @@ import CourseDetail          from './pages/student/CourseDetail';
 import CollegeLogin         from './pages/college/CollegeLogin';
 import CollegePortal        from './pages/college/CollegePortal';
 import DriveApplicationForm from './pages/college/DriveApplicationForm';
+import AITestPage           from './pages/AITestPage';
 
 // ── Route Guards ──────────────────────────────────────────────────────
 const ProtectedRoute = ({ children, allowedRoles }) => {
@@ -124,6 +125,7 @@ export default function App() {
           <Route path="/college/login" element={<CollegeLogin />} />
           <Route path="/college/:slug" element={<CollegePortal />} />
           <Route path="/apply/:token" element={<DriveApplicationForm />} />
+          <Route path="/ai-test/:token" element={<AITestPage />} />
 
           {/* ── Student ───────────────────────────────────────── */}
           <Route path="/dashboard"          element={<ProtectedRoute><StudentDashboard /></ProtectedRoute>} />

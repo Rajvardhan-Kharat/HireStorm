@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import axios from 'axios';
 import toast from 'react-hot-toast';
@@ -6,22 +6,31 @@ import toast from 'react-hot-toast';
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api/v1';
 
 const BRANCHES = ['CSE', 'IT', 'E&TC', 'MECH', 'CIVIL', 'EE', 'INSTRU', 'AIDS', 'AIML', 'OTHER'];
-const YEARS = ['1st Year', '2nd Year', '3rd Year', 'Final Year'];
+const YEARS    = ['1st Year', '2nd Year', '3rd Year', 'Final Year'];
 
 export default function DriveApplicationForm() {
   const { token } = useParams();
-  const [drive, setDrive] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const fileInputRef = useRef(null);
+
+  const [drive, setDrive]         = useState(null);
+  const [loading, setLoading]     = useState(true);
   const [submitting, setSubmitting] = useState(false);
-  const [submitted, setSubmitted] = useState(false);
-  const [result, setResult] = useState(null);
+  const [submitted, setSubmitted]  = useState(false);
+  const [result, setResult]        = useState(null);
+
+  // Resume upload state
+  const [resumeFile, setResumeFile]       = useState(null);   // File object
+  const [resumeUploading, setResumeUploading] = useState(false);
+  const [resumeUploaded, setResumeUploaded]   = useState(false);
+  const [resumeError, setResumeError]     = useState('');
+  const [extractedText, setExtractedText] = useState(''); // from Gemini
 
   const [form, setForm] = useState({
     name: '', email: '', phone: '', rollNo: '',
     branch: '', year: '', cgpa: '', class10: '', class12: '',
     linkedIn: '', portfolio: '',
-    resumeUrl: '', skills: '', projects: '',
-    resumeText: '',
+    resumeUrl: '',
+    skills: '', projects: '',
   });
 
   useEffect(() => {
@@ -29,7 +38,7 @@ export default function DriveApplicationForm() {
       try {
         const { data } = await axios.get(`${API}/college/apply/${token}`);
         setDrive(data.drive);
-      } catch (err) {
+      } catch {
         setDrive(null);
       } finally {
         setLoading(false);
@@ -39,17 +48,71 @@ export default function DriveApplicationForm() {
 
   const set = (field, val) => setForm(f => ({ ...f, [field]: val }));
 
+  // ── Resume upload handler ──────────────────────────────────────────────────
+  const handleResumeSelect = (e) => {
+    const file = e.target.files?.[0];
+    setResumeError('');
+    setResumeUploaded(false);
+    setExtractedText('');
+
+    if (!file) return;
+    if (file.type !== 'application/pdf') {
+      setResumeError('❌ Only PDF files are accepted.');
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      setResumeError('❌ File too large. Maximum size is 5 MB.');
+      return;
+    }
+    setResumeFile(file);
+  };
+
+  const handleResumeUpload = async () => {
+    if (!resumeFile) return;
+    setResumeUploading(true);
+    setResumeError('');
+    try {
+      const fd = new FormData();
+      fd.append('resume', resumeFile);
+      const { data } = await axios.post(`${API}/college/apply/${token}/upload-resume`, fd, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+      set('resumeUrl', data.resumeUrl || '');
+      setExtractedText(data.resumeText || '');
+      setResumeUploaded(true);
+      toast.success('✅ Resume uploaded! AI has extracted the text for ATS scoring.');
+    } catch (err) {
+      setResumeError(err.response?.data?.message || 'Upload failed. Please try again.');
+    } finally {
+      setResumeUploading(false);
+    }
+  };
+
+  const handleRemoveResume = () => {
+    setResumeFile(null);
+    setResumeUploaded(false);
+    setExtractedText('');
+    set('resumeUrl', '');
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  };
+
+  // ── Form submit ──────────────────────────────────────────────────────────────
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!resumeUploaded) {
+      toast.error('Please upload your resume first.');
+      return;
+    }
     setSubmitting(true);
     try {
       const { data } = await axios.post(`${API}/college/apply/${token}`, {
         student: {
           ...form,
-          cgpa: parseFloat(form.cgpa) || null,
-          class10: parseFloat(form.class10) || null,
-          class12: parseFloat(form.class12) || null,
-          skills: form.skills.split(',').map(s => s.trim()).filter(Boolean),
+          cgpa:       parseFloat(form.cgpa)    || null,
+          class10:    parseFloat(form.class10)  || null,
+          class12:    parseFloat(form.class12)  || null,
+          skills:     form.skills.split(',').map(s => s.trim()).filter(Boolean),
+          resumeText: extractedText,   // AI-extracted — used for ATS scoring
         },
       });
       setResult(data);
@@ -62,67 +125,60 @@ export default function DriveApplicationForm() {
     }
   };
 
-  if (loading) {
-    return (
-      <div className="drive-form-loading">
-        <div className="drive-form-spinner" />
-        <p>Loading application form...</p>
-      </div>
-    );
-  }
+  // ── Loading / Error / Success screens ────────────────────────────────────────
+  if (loading) return (
+    <div className="drive-form-loading">
+      <div className="drive-form-spinner" />
+      <p>Loading application form…</p>
+    </div>
+  );
 
-  if (!drive) {
-    return (
-      <div className="drive-form-error">
-        <span>❌</span>
-        <h2>Form Not Found</h2>
-        <p>This application link is invalid or has expired. Contact your college TPO.</p>
-      </div>
-    );
-  }
+  if (!drive) return (
+    <div className="drive-form-error">
+      <span>❌</span>
+      <h2>Form Not Found</h2>
+      <p>This application link is invalid or has expired. Contact your college TPO.</p>
+    </div>
+  );
 
-  if (submitted) {
-    return (
-      <div className="drive-form-success">
-        <div className="drive-success-card">
-          <div className="drive-success-icon">🎉</div>
-          <h1>Application Submitted!</h1>
-          <p>Your application has been received for <strong>{drive.title}</strong> at <strong>{drive.college?.name}</strong>.</p>
+  if (submitted) return (
+    <div className="drive-form-success">
+      <div className="drive-success-card">
+        <div className="drive-success-icon">🎉</div>
+        <h1>Application Submitted!</h1>
+        <p>Your application has been received for <strong>{drive.title}</strong> at <strong>{drive.college?.name}</strong>.</p>
 
-          {result?.atsScore !== null && result?.atsScore !== undefined && (
-            <div className="drive-ats-result">
-              <div className="ats-score-ring">
-                <svg viewBox="0 0 100 100">
-                  <circle cx="50" cy="50" r="42" fill="none" stroke="rgba(255,255,255,0.1)" strokeWidth="8"/>
-                  <circle
-                    cx="50" cy="50" r="42"
-                    fill="none"
-                    stroke={result.atsScore >= 70 ? '#22c55e' : result.atsScore >= 50 ? '#f59e0b' : '#ef4444'}
-                    strokeWidth="8"
-                    strokeDasharray={`${(result.atsScore / 100) * 264} 264`}
-                    strokeLinecap="round"
-                    transform="rotate(-90 50 50)"
-                    style={{ transition: 'stroke-dasharray 1.5s ease' }}
-                  />
-                  <text x="50" y="55" textAnchor="middle" fill="white" fontSize="20" fontWeight="bold">
-                    {result.atsScore}
-                  </text>
-                </svg>
-              </div>
-              <div className="ats-score-label">ATS Score</div>
-              {result.atsAnalysis && (
-                <p className="ats-analysis">{result.atsAnalysis}</p>
-              )}
+        {result?.atsScore !== null && result?.atsScore !== undefined && (
+          <div className="drive-ats-result">
+            <div className="ats-score-ring">
+              <svg viewBox="0 0 100 100">
+                <circle cx="50" cy="50" r="42" fill="none" stroke="rgba(255,255,255,0.1)" strokeWidth="8"/>
+                <circle
+                  cx="50" cy="50" r="42"
+                  fill="none"
+                  stroke={result.atsScore >= 70 ? '#22c55e' : result.atsScore >= 50 ? '#f59e0b' : '#ef4444'}
+                  strokeWidth="8"
+                  strokeDasharray={`${(result.atsScore / 100) * 264} 264`}
+                  strokeLinecap="round"
+                  transform="rotate(-90 50 50)"
+                  style={{ transition: 'stroke-dasharray 1.5s ease' }}
+                />
+                <text x="50" y="55" textAnchor="middle" fill="white" fontSize="20" fontWeight="bold">
+                  {result.atsScore}
+                </text>
+              </svg>
             </div>
-          )}
-
-          <div className="drive-success-next">
-            <p>📧 You'll be notified at <strong>{form.email}</strong> about the shortlisting results.</p>
+            <div className="ats-score-label">ATS Score</div>
+            {result.atsAnalysis && <p className="ats-analysis">{result.atsAnalysis}</p>}
           </div>
+        )}
+
+        <div className="drive-success-next">
+          <p>📧 You'll be notified at <strong>{form.email}</strong> about the shortlisting results.</p>
         </div>
       </div>
-    );
-  }
+    </div>
+  );
 
   return (
     <div className="drive-form-page">
@@ -147,7 +203,8 @@ export default function DriveApplicationForm() {
       </div>
 
       <form onSubmit={handleSubmit} className="drive-form-body">
-        {/* Personal Info */}
+
+        {/* ── Personal Information ──────────────────────────────────────── */}
         <div className="drive-form-section">
           <h2 className="drive-form-section-title">👤 Personal Information</h2>
           <div className="drive-form-grid">
@@ -170,7 +227,7 @@ export default function DriveApplicationForm() {
           </div>
         </div>
 
-        {/* Academic Info */}
+        {/* ── Academic Details ──────────────────────────────────────────── */}
         <div className="drive-form-section">
           <h2 className="drive-form-section-title">🎓 Academic Details</h2>
           <div className="drive-form-grid">
@@ -203,14 +260,10 @@ export default function DriveApplicationForm() {
           </div>
         </div>
 
-        {/* Professional Info */}
+        {/* ── Professional Profile ──────────────────────────────────────── */}
         <div className="drive-form-section">
           <h2 className="drive-form-section-title">💼 Professional Profile</h2>
           <div className="drive-form-grid">
-            <div className="drive-form-field">
-              <label>Resume URL (Google Drive / LinkedIn)</label>
-              <input type="url" value={form.resumeUrl} onChange={e => set('resumeUrl', e.target.value)} placeholder="https://drive.google.com/..." />
-            </div>
             <div className="drive-form-field">
               <label>LinkedIn Profile</label>
               <input type="url" value={form.linkedIn} onChange={e => set('linkedIn', e.target.value)} placeholder="https://linkedin.com/in/..." />
@@ -227,27 +280,132 @@ export default function DriveApplicationForm() {
               <label>Projects / Achievements</label>
               <textarea value={form.projects} onChange={e => set('projects', e.target.value)} rows={3} placeholder="Brief description of your notable projects..." />
             </div>
-            <div className="drive-form-field full-width">
-              <label>Resume Text / Summary (for ATS Scoring) *</label>
-              <textarea value={form.resumeText} onChange={e => set('resumeText', e.target.value)} rows={5} required
-                placeholder="Paste your resume content here for accurate ATS scoring. Include skills, experience, projects, and achievements..." />
-              <small className="drive-form-hint">This text is used by our AI to score your profile. More detail = better score!</small>
-            </div>
           </div>
         </div>
 
+        {/* ── Resume Upload ─────────────────────────────────────────────── */}
+        <div className="drive-form-section">
+          <h2 className="drive-form-section-title">📄 Resume Upload</h2>
+
+          {!resumeUploaded ? (
+            <div className="resume-upload-box">
+              {/* Drop zone */}
+              <div
+                className={`resume-dropzone ${resumeFile ? 'has-file' : ''}`}
+                onClick={() => fileInputRef.current?.click()}
+              >
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="application/pdf"
+                  style={{ display: 'none' }}
+                  onChange={handleResumeSelect}
+                />
+                {resumeFile ? (
+                  <div className="resume-file-selected">
+                    <span className="resume-file-icon">📄</span>
+                    <div className="resume-file-info">
+                      <span className="resume-file-name">{resumeFile.name}</span>
+                      <span className="resume-file-size">{(resumeFile.size / 1024).toFixed(0)} KB</span>
+                    </div>
+                    <button
+                      type="button"
+                      className="resume-remove-btn"
+                      onClick={e => { e.stopPropagation(); handleRemoveResume(); }}
+                    >
+                      ✕
+                    </button>
+                  </div>
+                ) : (
+                  <div className="resume-empty-state">
+                    <div className="resume-upload-icon">⬆️</div>
+                    <div className="resume-upload-label">
+                      <strong>Click to upload your resume</strong>
+                      <span>PDF only · Max 5 MB</span>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {resumeError && (
+                <div className="resume-error-msg">{resumeError}</div>
+              )}
+
+              <div className="resume-upload-meta">
+                <span>🔒 Accepted: PDF only</span>
+                <span>📏 Max file size: 5 MB</span>
+                <span>🤖 AI extracts text for ATS scoring automatically</span>
+              </div>
+
+              {resumeFile && !resumeUploading && (
+                <button
+                  type="button"
+                  className="btn btn-primary resume-upload-btn"
+                  onClick={handleResumeUpload}
+                >
+                  🚀 Upload & Extract with AI
+                </button>
+              )}
+
+              {resumeUploading && (
+                <div className="resume-uploading-state">
+                  <div className="resume-upload-progress">
+                    <div className="resume-upload-progress-bar" />
+                  </div>
+                  <p>📤 Uploading &amp; extracting text with AI… Please wait</p>
+                </div>
+              )}
+            </div>
+          ) : (
+            /* Uploaded success state */
+            <div className="resume-uploaded-success">
+              <div className="resume-success-header">
+                <span className="resume-success-check">✅</span>
+                <div>
+                  <div className="resume-success-title">Resume Uploaded Successfully</div>
+                  <div className="resume-success-filename">{resumeFile?.name}</div>
+                </div>
+                <button type="button" className="resume-change-btn" onClick={handleRemoveResume}>
+                  Change
+                </button>
+              </div>
+              {extractedText && (
+                <div className="resume-extracted-preview">
+                  <div className="resume-extracted-label">
+                    🤖 AI extracted text <span className="resume-extracted-badge">Used for ATS scoring</span>
+                  </div>
+                  <div className="resume-extracted-text">
+                    {extractedText.slice(0, 300)}{extractedText.length > 300 ? '…' : ''}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* ── Submit ────────────────────────────────────────────────────── */}
         <div className="drive-form-submit-section">
           <div className="drive-form-disclaimer">
             <span>🔒</span>
             <span>Your data is secure and will only be shared with the hiring team for this specific drive.</span>
           </div>
-          <button type="submit" disabled={submitting} className="drive-form-submit-btn" id="drive-apply-submit">
+          <button
+            type="submit"
+            disabled={submitting || !resumeUploaded}
+            className="drive-form-submit-btn"
+            id="drive-apply-submit"
+          >
             {submitting ? (
-              <><span className="drive-form-spinner-sm" /> Submitting & Scoring...</>
+              <><span className="drive-form-spinner-sm" /> Submitting &amp; Scoring…</>
+            ) : !resumeUploaded ? (
+              '📄 Upload Resume to Continue'
             ) : (
               '🚀 Submit Application'
             )}
           </button>
+          {!resumeUploaded && (
+            <p className="resume-upload-reminder">⬆️ Please upload your resume above before submitting.</p>
+          )}
         </div>
       </form>
     </div>

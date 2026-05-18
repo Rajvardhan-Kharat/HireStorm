@@ -1,9 +1,22 @@
 const express = require('express');
-const router = express.Router();
-const { protect } = require('../middleware/auth');
+const router  = express.Router();
+const multer  = require('multer');
+const { protect }        = require('../middleware/auth');
 const { protectCollege } = require('../middleware/collegeAuth');
-const { authLimiter } = require('../middleware/rateLimiter');
-const { allowRoles } = require('../middleware/rbac');
+const { authLimiter }    = require('../middleware/rateLimiter');
+const { allowRoles }     = require('../middleware/rbac');
+
+// Multer — memory storage (we stream buffer to Cloudinary)
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits:  { fileSize: 5 * 1024 * 1024 }, // 5 MB hard limit
+  fileFilter: (_req, file, cb) => {
+    if (file.mimetype === 'application/pdf') cb(null, true);
+    else cb(new Error('Only PDF files are accepted.'), false);
+  },
+});
+
+const { uploadResumeAndExtractText } = require('../controllers/resumeUpload.controller');
 
 const {
   collegeLogin, collegeRefreshToken, collegeLogout, getCollegeMe,
@@ -68,6 +81,8 @@ router.delete('/admin/:id',                            protect, allowRoles('SUPE
 router.get('/public/:slug',          getCollegePublicInfo);
 router.get('/apply/:token',          getDriveByToken);
 router.post('/apply/:token',         submitDriveApplication);
+// Resume upload — PDF only, 5 MB max, Gemini extracts text
+router.post('/apply/:token/upload-resume', upload.single('resume'), uploadResumeAndExtractText);
 
 // ── AI Test (public — student accesses via email link) ────────────────────────
 router.get('/test/:token',           getAITest);

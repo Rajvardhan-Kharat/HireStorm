@@ -587,18 +587,37 @@ const colleges = [
   },
 ];
 
+// ── Normalise TPO names ────────────────────────────────────────────────────────
+// We never hardcode individual TPO names — they change every year.
+// The platform will address them as "Respected TPO, <College Name>".
+const normalisedColleges = colleges.map(c => ({
+  ...c,
+  tpo: {
+    name:  'Training & Placement Officer',   // generic, always correct
+    email: c.tpo?.email || c.email,           // keep the TPO email
+    phone: c.tpo?.phone || '',                // keep the TPO phone
+  },
+}));
+
 async function seedColleges() {
   await connectDB();
   console.log('🌱 Seeding colleges...\n');
-  let created = 0, skipped = 0;
+  let created = 0, updated = 0;
 
-  for (const data of colleges) {
+  for (const data of normalisedColleges) {
     const existing = await College.findOne({ slug: data.slug });
     if (existing) {
-      // Update disciplines if changed
-      await College.findByIdAndUpdate(existing._id, { disciplines: data.disciplines, type: data.type });
+      // Always refresh disciplines, type AND tpo to keep it current
+      await College.findByIdAndUpdate(existing._id, {
+        disciplines: data.disciplines,
+        type:        data.type,
+        tpo:         data.tpo,
+        website:     data.website,
+        address:     data.address,
+        phone:       data.phone,
+      });
       console.log(`  ♻️  Updated: ${data.name}`);
-      skipped++;
+      updated++;
       continue;
     }
     const college = new College(data);
@@ -607,8 +626,9 @@ async function seedColleges() {
     created++;
   }
 
-  console.log(`\n🎓 Done! Created: ${created}, Updated: ${skipped}`);
+  console.log(`\n🎓 Done! Created: ${created}, Updated: ${updated}`);
   process.exit(0);
 }
 
 seedColleges().catch(err => { console.error(err); process.exit(1); });
+

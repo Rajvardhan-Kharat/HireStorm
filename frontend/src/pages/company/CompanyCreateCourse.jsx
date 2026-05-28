@@ -5,8 +5,9 @@ import api from '../../api/axios';
 import toast from 'react-hot-toast';
 import {
   Plus, X, ArrowLeft, ArrowRight, CheckCircle2,
-  BookOpen, CreditCard, IndianRupee, Lock, Zap, Star
+  BookOpen, CreditCard, Lock,
 } from 'lucide-react';
+import PaymentModal from '../../components/PaymentModal';
 
 const STEPS = ['Course Details', 'Curriculum', 'Pricing & Payment'];
 
@@ -48,6 +49,8 @@ export default function CompanyCreateCourse() {
   const [submitting, setSubmitting] = useState(false);
   const [newSkill, setNewSkill] = useState('');
   const [feePlan, setFeePlan] = useState(FEE_PLANS[0]);
+  const [showPayment, setShowPayment] = useState(false);
+  const [pendingCourseId, setPendingCourseId] = useState(null);
 
   const [form, setForm] = useState({
     title: '',
@@ -126,15 +129,12 @@ export default function CompanyCreateCourse() {
 
       // 2. Record platform fee transaction if paid plan
       if (feePlan.platformFee > 0) {
-        await api.post('/payments/create-order', {
-          type:   'COURSE_PURCHASE',
-          amount: feePlan.platformFee,
-          metadata: { courseId, plan: feePlan.id, courseTitle: form.title, note: 'Platform listing fee' },
-        });
+        setPendingCourseId(courseId);
+        setShowPayment(true);
+      } else {
+        toast.success('🎉 Course submitted! Pending admin review.');
+        navigate('/company/courses');
       }
-
-      toast.success(`🎉 Course submitted! ${feePlan.platformFee > 0 ? '💳 Platform fee paid.' : 'Pending admin review.'}`);
-      navigate('/company/courses');
     } catch (err) {
       toast.error(err.response?.data?.message || 'Failed to create course');
     } finally {
@@ -399,7 +399,7 @@ export default function CompanyCreateCourse() {
                 {submitting
                   ? <span className="spinner"/>
                   : feePlan.platformFee > 0
-                    ? <><CreditCard size={14}/> Pay ₹{feePlan.platformFee.toLocaleString('en-IN')} & Submit</>
+                    ? <><CreditCard size={14}/> Proceed to Pay ₹{feePlan.platformFee.toLocaleString('en-IN')}</>
                     : <><CheckCircle2 size={14}/> Submit Course</>
                 }
               </button>
@@ -407,6 +407,25 @@ export default function CompanyCreateCourse() {
           </div>
         </div>
       </div>
+
+      <PaymentModal
+        open={showPayment}
+        amount={feePlan.platformFee}
+        description={`${feePlan.label} — Course Platform Fee`}
+        itemName={form.title || 'New Course'}
+        type="COURSE_PURCHASE"
+        metadata={{ plan: feePlan.id, courseId: pendingCourseId }}
+        onSuccess={() => {
+          setShowPayment(false);
+          toast.success('🎉 Payment done! Course submitted for review.');
+          navigate('/company/courses');
+        }}
+        onClose={() => {
+          setShowPayment(false);
+          toast('Course submitted (no boost). Admin will review.', { icon: 'ℹ️' });
+          navigate('/company/courses');
+        }}
+      />
     </CompanyLayout>
   );
 }

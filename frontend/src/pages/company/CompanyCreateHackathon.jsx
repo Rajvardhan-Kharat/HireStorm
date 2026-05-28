@@ -4,14 +4,20 @@ import CompanyLayout from '../../layouts/CompanyLayout';
 import api from '../../api/axios';
 import toast from 'react-hot-toast';
 import { Code2, Calendar, IndianRupee, Users, FileText, AlertCircle, CheckCircle2 } from 'lucide-react';
+import PaymentModal from '../../components/PaymentModal';
 
-const STEPS = ['Basic Info', 'Timeline & Prizes', 'Review & Submit'];
+
+const STEPS = ['Basic Info', 'Timeline & Prizes', 'Review & Pay'];
+
+const HOSTING_FEE = 9999;
 
 export default function CompanyCreateHackathon() {
   const navigate = useNavigate();
-  const [step, setStep]         = useState(0);
+  const [step, setStep]             = useState(0);
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted]   = useState(false);
+  const [showPayment, setShowPayment] = useState(false);
+  const [pendingTitle, setPendingTitle] = useState('');
 
   const [form, setForm] = useState({
     title:         '',
@@ -67,11 +73,14 @@ export default function CompanyCreateHackathon() {
         website:      form.website,
       };
       await api.post('/hackathons/company/new', payload);
-      setSubmitted(true);
+      // Show payment modal for hosting fee
+      setPendingTitle(form.title);
+      setShowPayment(true);
     } catch (err) {
       toast.error(err.response?.data?.message || 'Submission failed');
     } finally { setSubmitting(false); }
   };
+
 
   if (submitted) return (
     <CompanyLayout>
@@ -277,12 +286,30 @@ export default function CompanyCreateHackathon() {
               </button>
             ) : (
               <button className="btn btn-primary" onClick={handleSubmit} disabled={submitting} style={{ gap: 8 }}>
-                {submitting ? <span className="spinner" /> : '🚀 Submit for Review'}
+                {submitting ? <span className="spinner" /> : <><IndianRupee size={14}/> Pay ₹{HOSTING_FEE.toLocaleString('en-IN')} & Submit</>}
               </button>
             )}
           </div>
         </div>
       </div>
+
+      <PaymentModal
+        open={showPayment}
+        amount={HOSTING_FEE}
+        description="Hackathon Hosting Fee"
+        itemName={pendingTitle || 'New Hackathon'}
+        type="HACKATHON_SPONSOR"
+        metadata={{ hackathonTitle: pendingTitle }}
+        onSuccess={() => {
+          setShowPayment(false);
+          setSubmitted(true);
+        }}
+        onClose={() => {
+          setShowPayment(false);
+          toast('Hackathon submitted. Pay hosting fee later to go live.', { icon: 'ℹ️' });
+          setSubmitted(true);
+        }}
+      />
     </CompanyLayout>
   );
 }

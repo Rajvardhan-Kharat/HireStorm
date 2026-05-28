@@ -3,8 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import CompanyLayout from '../../layouts/CompanyLayout';
 import api from '../../api/axios';
 import toast from 'react-hot-toast';
-import { Plus, X, ArrowRight, ArrowLeft, CheckCircle2, CreditCard, Zap, Star, Lock } from 'lucide-react';
+import { Plus, X, ArrowRight, ArrowLeft, CheckCircle2, CreditCard, Lock } from 'lucide-react';
 import useAuthStore from '../../store/authStore';
+import PaymentModal from '../../components/PaymentModal';
 
 const STEPS = ['Basic Info', 'Requirements', 'Perks & Deadline', 'Payment'];
 const DOMAINS = ['Web Dev','Data Science','UI/UX','Mobile','AI/ML','DevOps','Blockchain','Cybersecurity','Marketing','Finance'];
@@ -50,6 +51,8 @@ export default function CreateListing() {
   const [newSkill, setNewSkill] = useState('');
   const [newPerk, setNewPerk] = useState('');
   const [selectedPlan, setSelectedPlan] = useState(PLANS[0]);
+  const [showPayment, setShowPayment] = useState(false);
+  const [pendingListingId, setPendingListingId] = useState(null);
   const [form, setForm] = useState({
     title:'', type:'INTERNSHIP', domain:'', location:'', isRemote:false,
     description:'', duration:'', openings:1,
@@ -80,22 +83,19 @@ export default function CreateListing() {
         isPinned:   selectedPlan.id !== 'basic',
         visibility: selectedPlan.id === 'pro' ? 'PRO_ONLY' : 'PUBLIC',
       };
-
-      // 1. Create listing
+      // 1. Create listing first (always)
       const res = await api.post('/listings', payload);
       const listingId = res.data?.data?._id;
 
-      // 2. Record payment transaction if paid plan
-      if (selectedPlan.price > 0 && selectedPlan.type) {
-        await api.post('/payments/create-order', {
-          type: selectedPlan.type,
-          amount: selectedPlan.price,
-          metadata: { listingId, plan: selectedPlan.id, listingTitle: form.title },
-        });
+      if (selectedPlan.price > 0) {
+        // 2. Show payment modal for paid plans
+        setPendingListingId(listingId);
+        setShowPayment(true);
+      } else {
+        // Free plan — done
+        toast.success('Listing published! 🎉');
+        navigate('/company/listings');
       }
-
-      toast.success(`Listing published! ${selectedPlan.price > 0 ? '💳 Payment recorded.' : '🎉'}`);
-      navigate('/company/listings');
     } catch (err) {
       toast.error(err.response?.data?.message || 'Could not create listing');
     } finally {
@@ -359,7 +359,7 @@ export default function CreateListing() {
                 {submitting
                   ? <span className="spinner"/>
                   : selectedPlan.price > 0
-                    ? <><CreditCard size={14}/> Pay ₹{selectedPlan.price} & Publish</>
+                    ? <><CreditCard size={14}/> Proceed to Pay ₹{selectedPlan.price}</>
                     : <><CheckCircle2 size={14}/> Publish Listing</>
                 }
               </button>
@@ -367,6 +367,26 @@ export default function CreateListing() {
           </div>
         </div>
       </div>
+
+      {/* Payment modal — appears after listing is created, for paid plans */}
+      <PaymentModal
+        open={showPayment}
+        amount={selectedPlan.price}
+        description={`${selectedPlan.label} — Listing Fee`}
+        itemName={form.title || 'New Listing'}
+        type="LISTING_PIN"
+        metadata={{ plan: selectedPlan.id, listingId: pendingListingId }}
+        onSuccess={() => {
+          setShowPayment(false);
+          toast.success('🎉 Payment successful! Listing is now boosted.');
+          navigate('/company/listings');
+        }}
+        onClose={() => {
+          setShowPayment(false);
+          toast('Listing created (unpaid). You can boost it later.', { icon: 'ℹ️' });
+          navigate('/company/listings');
+        }}
+      />
     </CompanyLayout>
   );
 }

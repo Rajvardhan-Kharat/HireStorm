@@ -31,7 +31,7 @@ const colleges = [
     email:'tpo@pict.edu', password:'PICT@Drive2025',
     address:'Survey No. 27, Dhankawadi, Pune - 411043',
     phone:'+91 20 2437 1101', website:'https://pict.edu',
-    tpo:{ name:'Dr. Satish Chikane', email:'tpo@pict.edu', phone:'+91 9876543210' },
+    tpo:{ name:'Training & Placement Officer', email:'tpo@pict.edu', phone:'+91 9876543210' },
     disciplines:['Computer Science','Information Technology','Electronics & Telecommunication','AIDS (AI & Data Science)'],
   },
   {
@@ -40,7 +40,7 @@ const colleges = [
     email:'tpo@coep.org.in', password:'COEP@Drive2025',
     address:'Wellesley Rd, Shivajinagar, Pune - 411005',
     phone:'+91 20 2550 7000', website:'https://coep.org.in',
-    tpo:{ name:'Prof. R.K. Patil', email:'tpo@coep.org.in', phone:'+91 9876543211' },
+    tpo:{ name:'Training & Placement Officer', email:'tpo@coep.org.in', phone:'+91 9876543211' },
     disciplines:[...ENG],
   },
   {
@@ -49,7 +49,7 @@ const colleges = [
     email:'tpo@vit.edu', password:'VIT@Drive2025',
     address:'666, Upper Indiranagar, Bibwewadi, Pune - 411037',
     phone:'+91 20 2440 2800', website:'https://vit.edu',
-    tpo:{ name:'Dr. Prashant Kumar', email:'tpo@vit.edu', phone:'+91 9876543212' },
+    tpo:{ name:'Training & Placement Officer', email:'tpo@vit.edu', phone:'+91 9876543212' },
     disciplines:[...ENG],
   },
   {
@@ -58,7 +58,7 @@ const colleges = [
     email:'tpo@mitwpu.edu.in', password:'MITWPU@Drive2025',
     address:'Survey No. 124, Paud Road, Kothrud, Pune - 411038',
     phone:'+91 20 7117 7104', website:'https://mitwpu.edu.in',
-    tpo:{ name:'Prof. Samir Joshi', email:'tpo@mitwpu.edu.in', phone:'+91 9876543213' },
+    tpo:{ name:'Training & Placement Officer', email:'tpo@mitwpu.edu.in', phone:'+91 9876543213' },
     disciplines:[...ENG, ...MGMT],
   },
   {
@@ -67,7 +67,7 @@ const colleges = [
     email:'tpo@mitcoe.edu.in', password:'MITALANDI@Drive2025',
     address:'Alandi (D), Pune - 412105',
     phone:'+91 20 2700 0000', website:'https://mitcoe.edu.in',
-    tpo:{ name:'Prof. Suresh Patil', email:'tpo@mitcoe.edu.in', phone:'+91 9876543214' },
+    tpo:{ name:'Training & Placement Officer', email:'tpo@mitcoe.edu.in', phone:'+91 9876543214' },
     disciplines:[...ENG],
   },
   {
@@ -76,7 +76,7 @@ const colleges = [
     email:'tpo@dypatilpune.ac.in', password:'DYPATIL@Drive2025',
     address:'Ambi, Talegaon-Dabhade, Pune - 410506',
     phone:'+91 2114 669 100', website:'https://dypatilpune.ac.in',
-    tpo:{ name:'Dr. Ashok More', email:'tpo@dypatilpune.ac.in', phone:'+91 9876543216' },
+    tpo:{ name:'Training & Placement Officer', email:'tpo@dypatilpune.ac.in', phone:'+91 9876543216' },
     disciplines:[...ENG],
   },
   {
@@ -85,7 +85,7 @@ const colleges = [
     email:'tpo@sitpune.edu.in', password:'SIT@Drive2025',
     address:'Gram: Lavale, Tal: Mulshi, Pune - 412115',
     phone:'+91 20 3911 6200', website:'https://sitpune.edu.in',
-    tpo:{ name:'Prof. Anita Desai', email:'tpo@sitpune.edu.in', phone:'+91 9876543217' },
+    tpo:{ name:'Training & Placement Officer', email:'tpo@sitpune.edu.in', phone:'+91 9876543217' },
     disciplines:['Computer Science','Electronics & Telecommunication','Mechanical Engineering','AIDS (AI & Data Science)','Civil Engineering'],
   },
   // ── PUNE — Management ────────────────────────────────────────────────────
@@ -95,7 +95,7 @@ const colleges = [
     email:'tpo@sibmpune.edu.in', password:'SIBM@Drive2025',
     address:'Symbiosis Infotech Campus, Plot No. 15, Rajiv Gandhi IT Park, Hinjewadi, Pune - 411057',
     phone:'+91 20 3911 6200', website:'https://sibmpune.edu.in',
-    tpo:{ name:'Prof. Meena Shah', email:'tpo@sibmpune.edu.in', phone:'+91 9876543218' },
+    tpo:{ name:'Training & Placement Officer', email:'tpo@sibmpune.edu.in', phone:'+91 9876543218' },
     disciplines:[...MGMT],
   },
   // ── PUNE — Arts/Commerce ─────────────────────────────────────────────────
@@ -105,7 +105,7 @@ const colleges = [
     email:'tpo@fergusson.edu', password:'FERG@Drive2025',
     address:'Fergusson College Road, Shivajinagar, Pune - 411004',
     phone:'+91 20 2565 3988', website:'https://fergusson.edu',
-    tpo:{ name:'Prof. Rekha More', email:'tpo@fergusson.edu', phone:'+91 9876543219' },
+    tpo:{ name:'Training & Placement Officer', email:'tpo@fergusson.edu', phone:'+91 9876543219' },
     disciplines:[...ARTS, ...SCIENCE, ...COMMERCE],
   },
   {
@@ -114,7 +114,7 @@ const colleges = [
     email:'tpo@bmcc.ac.in', password:'BMCC@Drive2025',
     address:'Shivajinagar, Pune - 411005',
     phone:'+91 20 2553 4427', website:'https://bmcc.ac.in',
-    tpo:{ name:'Prof. Vijay Kulkarni', email:'tpo@bmcc.ac.in', phone:'+91 9876543220' },
+    tpo:{ name:'Training & Placement Officer', email:'tpo@bmcc.ac.in', phone:'+91 9876543220' },
     disciplines:[...COMMERCE, 'Business Administration (BBA)', 'Computer Applications (BCA)'],
   },
   // ── PUNE — Law ───────────────────────────────────────────────────────────
@@ -124,7 +124,7 @@ const colleges = [
     email:'tpo@ilslaw.edu', password:'ILS@Drive2025',
     address:'Law College Road, Pune - 411004',
     phone:'+91 20 2565 6775', website:'https://ilslaw.edu',
-    tpo:{ name:'Prof. Priya Joshi', email:'tpo@ilslaw.edu', phone:'+91 9876543221' },
+    tpo:{ name:'Training & Placement Officer', email:'tpo@ilslaw.edu', phone:'+91 9876543221' },
     disciplines:[...LAW],
   },
   // ── MUMBAI — Engineering ─────────────────────────────────────────────────
@@ -134,7 +134,7 @@ const colleges = [
     email:'tpo@spit.ac.in', password:'SPIT@Drive2025',
     address:"Bhavans Campus, Munshi Nagar, Andheri (W), Mumbai - 400058",
     phone:'+91 22 2670 3541', website:'https://spit.ac.in',
-    tpo:{ name:'Prof. Geeta Mehta', email:'tpo@spit.ac.in', phone:'+91 9876543222' },
+    tpo:{ name:'Training & Placement Officer', email:'tpo@spit.ac.in', phone:'+91 9876543222' },
     disciplines:['Computer Engineering','Electronics & Telecommunication','Information Technology','Mechanical Engineering'],
   },
   {
@@ -143,7 +143,7 @@ const colleges = [
     email:'tpo@vesit.ves.ac.in', password:'VESIT@Drive2025',
     address:'Chembur, Mumbai - 400074',
     phone:'+91 22 2522 0838', website:'https://vesit.ves.ac.in',
-    tpo:{ name:'Dr. Nilesh Shah', email:'tpo@vesit.ves.ac.in', phone:'+91 9876543223' },
+    tpo:{ name:'Training & Placement Officer', email:'tpo@vesit.ves.ac.in', phone:'+91 9876543223' },
     disciplines:[...ENG],
   },
   {
@@ -152,7 +152,7 @@ const colleges = [
     email:'tpo@djsanghvi.ac.in', password:'DJSANGHVI@Drive2025',
     address:'Bhaktivedanta Swami Marg, Vile Parle (W), Mumbai - 400056',
     phone:'+91 22 2614 1949', website:'https://djsanghvi.ac.in',
-    tpo:{ name:'Prof. Kavita Shah', email:'tpo@djsanghvi.ac.in', phone:'+91 9876543224' },
+    tpo:{ name:'Training & Placement Officer', email:'tpo@djsanghvi.ac.in', phone:'+91 9876543224' },
     disciplines:['Computer Engineering','Electronics & Telecommunication','Information Technology','Mechanical Engineering','AIDS (AI & Data Science)'],
   },
   {
@@ -161,7 +161,7 @@ const colleges = [
     email:'tpo@vjti.ac.in', password:'VJTI@Drive2025',
     address:'H R Mahajani Marg, Matunga, Mumbai - 400019',
     phone:'+91 22 2419 8101', website:'https://vjti.ac.in',
-    tpo:{ name:'Dr. Rekha Thakur', email:'tpo@vjti.ac.in', phone:'+91 9876543225' },
+    tpo:{ name:'Training & Placement Officer', email:'tpo@vjti.ac.in', phone:'+91 9876543225' },
     disciplines:[...ENG, 'Production Engineering','Textile Technology'],
   },
   {
@@ -170,7 +170,7 @@ const colleges = [
     email:'tpo@kjsieit.somaiya.edu', password:'KJSIEIT@Drive2025',
     address:'Sion (E), Mumbai - 400022',
     phone:'+91 22 6728 3100', website:'https://kjsieit.somaiya.edu',
-    tpo:{ name:'Prof. Rekha Kulkarni', email:'tpo@kjsieit.somaiya.edu', phone:'+91 9876543226' },
+    tpo:{ name:'Training & Placement Officer', email:'tpo@kjsieit.somaiya.edu', phone:'+91 9876543226' },
     disciplines:[...ENG],
   },
   // ── MUMBAI — Management ──────────────────────────────────────────────────
@@ -180,7 +180,7 @@ const colleges = [
     email:'tpo@jbims.edu', password:'JBIMS@Drive2025',
     address:'164, Backbay Reclamation, Churchgate, Mumbai - 400020',
     phone:'+91 22 2202 1313', website:'https://jbims.edu',
-    tpo:{ name:'Prof. Arun Mehta', email:'tpo@jbims.edu', phone:'+91 9876543227' },
+    tpo:{ name:'Training & Placement Officer', email:'tpo@jbims.edu', phone:'+91 9876543227' },
     disciplines:[...MGMT],
   },
   {
@@ -189,7 +189,7 @@ const colleges = [
     email:'tpo@spjimr.org', password:'SPJIMR@Drive2025',
     address:'Munshi Nagar, Dadabhai Road, Andheri (W), Mumbai - 400058',
     phone:'+91 22 6629 1515', website:'https://spjimr.org',
-    tpo:{ name:'Prof. Sneha Gupta', email:'tpo@spjimr.org', phone:'+91 9876543228' },
+    tpo:{ name:'Training & Placement Officer', email:'tpo@spjimr.org', phone:'+91 9876543228' },
     disciplines:[...MGMT, 'PGDM - Global Management','Family Managed Business'],
   },
   // ── MUMBAI — Arts/Commerce ───────────────────────────────────────────────
@@ -199,7 +199,7 @@ const colleges = [
     email:'tpo@xaviers.edu', password:'XAVIER@Drive2025',
     address:'5, Mahapalika Marg, Mumbai - 400001',
     phone:'+91 22 2262 0661', website:'https://xaviers.edu',
-    tpo:{ name:'Prof. Maria Fernandes', email:'tpo@xaviers.edu', phone:'+91 9876543229' },
+    tpo:{ name:'Training & Placement Officer', email:'tpo@xaviers.edu', phone:'+91 9876543229' },
     disciplines:[...ARTS, ...SCIENCE, ...COMMERCE],
   },
   {
@@ -208,7 +208,7 @@ const colleges = [
     email:'tpo@hrcollege.edu', password:'HRCOLLEGE@Drive2025',
     address:'Vidyanagari, Churchgate, Mumbai - 400020',
     phone:'+91 22 2203 5765', website:'https://hrcollege.edu',
-    tpo:{ name:'Prof. Sanjay Jain', email:'tpo@hrcollege.edu', phone:'+91 9876543230' },
+    tpo:{ name:'Training & Placement Officer', email:'tpo@hrcollege.edu', phone:'+91 9876543230' },
     disciplines:[...COMMERCE],
   },
   // ── DELHI ────────────────────────────────────────────────────────────────
@@ -218,7 +218,7 @@ const colleges = [
     email:'tpo@iitd.ac.in', password:'IITD@Drive2025',
     address:'Hauz Khas, New Delhi - 110016',
     phone:'+91 11 2659 1000', website:'https://iitd.ac.in',
-    tpo:{ name:'Prof. Ramesh Kumar', email:'tpo@iitd.ac.in', phone:'+91 9876543231' },
+    tpo:{ name:'Training & Placement Officer', email:'tpo@iitd.ac.in', phone:'+91 9876543231' },
     disciplines:['Computer Science','Electrical Engineering','Mechanical Engineering','Civil Engineering','Chemical Engineering','Mathematics & Computing','Engineering Physics','Biotechnology'],
   },
   {
@@ -227,7 +227,7 @@ const colleges = [
     email:'tpo@dtu.ac.in', password:'DTU@Drive2025',
     address:'Shahbad Daulatpur, Main Bawana Road, Delhi - 110042',
     phone:'+91 11 2787 1018', website:'https://dtu.ac.in',
-    tpo:{ name:'Prof. Anil Sharma', email:'tpo@dtu.ac.in', phone:'+91 9876543232' },
+    tpo:{ name:'Training & Placement Officer', email:'tpo@dtu.ac.in', phone:'+91 9876543232' },
     disciplines:['Computer Science','Electronics & Communication','Electrical Engineering','Mechanical Engineering','Civil Engineering','Biotechnology','Information Technology','Environmental Engineering'],
   },
   {
@@ -236,7 +236,7 @@ const colleges = [
     email:'tpo@srcc.du.ac.in', password:'SRCC@Drive2025',
     address:'Maurice Nagar, Delhi - 110007',
     phone:'+91 11 2766 7905', website:'https://srcc.du.ac.in',
-    tpo:{ name:'Prof. Kavya Bhatia', email:'tpo@srcc.du.ac.in', phone:'+91 9876543233' },
+    tpo:{ name:'Training & Placement Officer', email:'tpo@srcc.du.ac.in', phone:'+91 9876543233' },
     disciplines:['B.Com (Hons.)','B.A. (Hons.) Economics','M.Com','MBA - Global Business Operations'],
   },
   {
@@ -245,7 +245,7 @@ const colleges = [
     email:'tpo@fms.edu', password:'FMSD@Drive2025',
     address:'University Enclave, Delhi - 110007',
     phone:'+91 11 2766 6382', website:'https://fms.edu',
-    tpo:{ name:'Prof. Deepak Mehta', email:'tpo@fms.edu', phone:'+91 9876543234' },
+    tpo:{ name:'Training & Placement Officer', email:'tpo@fms.edu', phone:'+91 9876543234' },
     disciplines:[...MGMT],
   },
   // ── BENGALURU ────────────────────────────────────────────────────────────
@@ -255,7 +255,7 @@ const colleges = [
     email:'tpo@rvce.edu.in', password:'RVCE@Drive2025',
     address:'RV Vidyaniketan Post, Mysore Road, Bengaluru - 560059',
     phone:'+91 80 6717 8000', website:'https://rvce.edu.in',
-    tpo:{ name:'Prof. Suresh Babu', email:'tpo@rvce.edu.in', phone:'+91 9876543235' },
+    tpo:{ name:'Training & Placement Officer', email:'tpo@rvce.edu.in', phone:'+91 9876543235' },
     disciplines:[...ENG, 'Industrial Engineering & Management'],
   },
   {
@@ -264,7 +264,7 @@ const colleges = [
     email:'tpo@iimb.ac.in', password:'IIMB@Drive2025',
     address:'Bannerghatta Road, Bengaluru - 560076',
     phone:'+91 80 2699 3000', website:'https://iimb.ac.in',
-    tpo:{ name:'Prof. Lakshmi Rao', email:'tpo@iimb.ac.in', phone:'+91 9876543236' },
+    tpo:{ name:'Training & Placement Officer', email:'tpo@iimb.ac.in', phone:'+91 9876543236' },
     disciplines:[...MGMT, 'PGPBA - Business Analytics','MBA - Public Policy'],
   },
   {
@@ -273,7 +273,7 @@ const colleges = [
     email:'tpo@nls.ac.in', password:'NLSIU@Drive2025',
     address:"Nagarbhavi, Bengaluru - 560072",
     phone:'+91 80 2316 0532', website:'https://nls.ac.in',
-    tpo:{ name:'Prof. Arjun Nair', email:'tpo@nls.ac.in', phone:'+91 9876543237' },
+    tpo:{ name:'Training & Placement Officer', email:'tpo@nls.ac.in', phone:'+91 9876543237' },
     disciplines:[...LAW],
   },
   // ── HYDERABAD ────────────────────────────────────────────────────────────
@@ -283,7 +283,7 @@ const colleges = [
     email:'tpo@iiit.ac.in', password:'IIITH@Drive2025',
     address:'Gachibowli, Hyderabad - 500032',
     phone:'+91 40 6653 1000', website:'https://iiit.ac.in',
-    tpo:{ name:'Prof. Ravi Kishore', email:'tpo@iiit.ac.in', phone:'+91 9876543238' },
+    tpo:{ name:'Training & Placement Officer', email:'tpo@iiit.ac.in', phone:'+91 9876543238' },
     disciplines:['Computer Science','Electronics & Communication','Computational Linguistics','Cognitive Science','AIDS (AI & Data Science)'],
   },
   {
@@ -292,7 +292,7 @@ const colleges = [
     email:'tpo@isb.edu', password:'ISB@Drive2025',
     address:'Gachibowli, Hyderabad - 500111',
     phone:'+91 40 2318 7000', website:'https://isb.edu',
-    tpo:{ name:'Prof. Neha Sharma', email:'tpo@isb.edu', phone:'+91 9876543239' },
+    tpo:{ name:'Training & Placement Officer', email:'tpo@isb.edu', phone:'+91 9876543239' },
     disciplines:['Post Graduate Programme (PGP - MBA)','Executive Education','MBA - Finance','MBA - Strategy & Leadership','MBA - Entrepreneurship','MBA - Marketing'],
   },
   {
@@ -301,7 +301,7 @@ const colleges = [
     email:'tpo@nalsar.ac.in', password:'NALSAR@Drive2025',
     address:'Justice City, Shameerpet, Hyderabad - 500101',
     phone:'+91 40 2349 8100', website:'https://nalsar.ac.in',
-    tpo:{ name:'Prof. Sunita Reddy', email:'tpo@nalsar.ac.in', phone:'+91 9876543240' },
+    tpo:{ name:'Training & Placement Officer', email:'tpo@nalsar.ac.in', phone:'+91 9876543240' },
     disciplines:[...LAW],
   },
   // ── CHENNAI ──────────────────────────────────────────────────────────────
@@ -311,7 +311,7 @@ const colleges = [
     email:'tpo@iitm.ac.in', password:'IITM@Drive2025',
     address:'IIT Post Office, Chennai - 600036',
     phone:'+91 44 2257 8000', website:'https://iitm.ac.in',
-    tpo:{ name:'Prof. Venkat Subramanian', email:'tpo@iitm.ac.in', phone:'+91 9876543241' },
+    tpo:{ name:'Training & Placement Officer', email:'tpo@iitm.ac.in', phone:'+91 9876543241' },
     disciplines:['Computer Science','Electrical Engineering','Mechanical Engineering','Civil Engineering','Chemical Engineering','Aerospace Engineering','Ocean Engineering','Biotechnology','Engineering Design','Mathematics'],
   },
   {
@@ -320,7 +320,7 @@ const colleges = [
     email:'tpo@loyolacollege.edu', password:'LOYOLA@Drive2025',
     address:'Nungambakkam, Chennai - 600034',
     phone:'+91 44 2817 8200', website:'https://loyolacollege.edu',
-    tpo:{ name:'Fr. Thomas Antony', email:'tpo@loyolacollege.edu', phone:'+91 9876543242' },
+    tpo:{ name:'Training & Placement Officer', email:'tpo@loyolacollege.edu', phone:'+91 9876543242' },
     disciplines:[...ARTS, ...SCIENCE, ...COMMERCE, 'BCA','BBA'],
   },
   // ── AHMEDABAD ────────────────────────────────────────────────────────────
@@ -330,7 +330,7 @@ const colleges = [
     email:'tpo@iima.ac.in', password:'IIMA@Drive2025',
     address:'Vastrapur, Ahmedabad - 380015',
     phone:'+91 79 6632 4000', website:'https://iima.ac.in',
-    tpo:{ name:'Prof. Harsh Patel', email:'tpo@iima.ac.in', phone:'+91 9876543243' },
+    tpo:{ name:'Training & Placement Officer', email:'tpo@iima.ac.in', phone:'+91 9876543243' },
     disciplines:[...MGMT,'PGPX - Executive MBA','MBA - Food & Agribusiness','MBA - Public Policy'],
   },
   {
@@ -339,7 +339,7 @@ const colleges = [
     email:'tpo@nid.edu', password:'NID@Drive2025',
     address:'Paldi, Ahmedabad - 380007',
     phone:'+91 79 2662 9500', website:'https://nid.edu',
-    tpo:{ name:'Prof. Meera Desai', email:'tpo@nid.edu', phone:'+91 9876543244' },
+    tpo:{ name:'Training & Placement Officer', email:'tpo@nid.edu', phone:'+91 9876543244' },
     disciplines:[...DESIGN],
   },
   {
@@ -348,7 +348,7 @@ const colleges = [
     email:'tpo@ldce.ac.in', password:'LDCE@Drive2025',
     address:'Navrangpura, Ahmedabad - 380015',
     phone:'+91 79 2630 1428', website:'https://ldce.ac.in',
-    tpo:{ name:'Prof. Rajesh Shah', email:'tpo@ldce.ac.in', phone:'+91 9876543245' },
+    tpo:{ name:'Training & Placement Officer', email:'tpo@ldce.ac.in', phone:'+91 9876543245' },
     disciplines:[...ENG],
   },
 
@@ -359,7 +359,7 @@ const colleges = [
     email:'tpo@mitadt.edu.in', password:'MITADT@Drive2025',
     address:'Rajbaug, Loni Kalbhor, Pune - 412201',
     phone:'+91 20 3071 7000', website:'https://mitadt.edu.in',
-    tpo:{ name:'Prof. Swati Kulkarni', email:'tpo@mitadt.edu.in', phone:'+91 9876543250' },
+    tpo:{ name:'Training & Placement Officer', email:'tpo@mitadt.edu.in', phone:'+91 9876543250' },
     disciplines:[
       'Product Design','Communication Design','Graphic Design','Animation & VFX',
       'Interior Design','Industrial Design','UI/UX Design','Fashion Design',
@@ -373,7 +373,7 @@ const colleges = [
     email:'tpo@ssd.edu.in', password:'SSD@Drive2025',
     address:'Gram Lavale, Tal Mulshi, Pune - 412115',
     phone:'+91 20 3911 6300', website:'https://ssd.edu.in',
-    tpo:{ name:'Prof. Nisha Verma', email:'tpo@ssd.edu.in', phone:'+91 9876543251' },
+    tpo:{ name:'Training & Placement Officer', email:'tpo@ssd.edu.in', phone:'+91 9876543251' },
     disciplines:['Communication Design','Product Design','Graphic Design','Interior Design','UI/UX Design','Fashion Design'],
   },
 
@@ -384,7 +384,7 @@ const colleges = [
     email:'tpo@mitpune.edu.in', password:'MITPUNE@Drive2025',
     address:'S. No. 124, Paud Road, Kothrud, Pune - 411038',
     phone:'+91 20 2540 3100', website:'https://mitpune.edu.in',
-    tpo:{ name:'Prof. Asha Deshpande', email:'tpo@mitpune.edu.in', phone:'+91 9876543252' },
+    tpo:{ name:'Training & Placement Officer', email:'tpo@mitpune.edu.in', phone:'+91 9876543252' },
     disciplines:[...ENG],
   },
   {
@@ -393,7 +393,7 @@ const colleges = [
     email:'tpo@icem.edu.in', password:'ICEM@Drive2025',
     address:'Parandwadi, Pune - 410506',
     phone:'+91 2114 661 800', website:'https://icem.edu.in',
-    tpo:{ name:'Prof. Ramesh Kadam', email:'tpo@icem.edu.in', phone:'+91 9876543253' },
+    tpo:{ name:'Training & Placement Officer', email:'tpo@icem.edu.in', phone:'+91 9876543253' },
     disciplines:['Computer Science','Information Technology','Mechanical Engineering','Civil Engineering','EXTC'],
   },
   {
@@ -402,7 +402,7 @@ const colleges = [
     email:'tpo@scoe.ac.in', password:'SCOE@Drive2025',
     address:'Vadgaon (Bk), Off Sinhgad Road, Pune - 411041',
     phone:'+91 20 2435 0226', website:'https://www.sinhgad.edu',
-    tpo:{ name:'Prof. Pradeep Kore', email:'tpo@scoe.ac.in', phone:'+91 9876543254' },
+    tpo:{ name:'Training & Placement Officer', email:'tpo@scoe.ac.in', phone:'+91 9876543254' },
     disciplines:[...ENG],
   },
 
@@ -413,7 +413,7 @@ const colleges = [
     email:'tpo@pearlacademy.com', password:'PEARL@Drive2025',
     address:'Andheri West, Mumbai - 400058',
     phone:'+91 22 6158 2525', website:'https://pearlacademy.com',
-    tpo:{ name:'Prof. Malvika Nair', email:'tpo@pearlacademy.com', phone:'+91 9876543255' },
+    tpo:{ name:'Training & Placement Officer', email:'tpo@pearlacademy.com', phone:'+91 9876543255' },
     disciplines:['Fashion Design','Textile & Fashion Design','Communication Design','Graphic Design','Interior Design','Jewellery Design','Leather Design'],
   },
   {
@@ -422,7 +422,7 @@ const colleges = [
     email:'tpo@rssd.edu', password:'RSSD@Drive2025',
     address:'Sir J.J. Road, Byculla, Mumbai - 400008',
     phone:'+91 22 2373 6282', website:'https://rssd.edu',
-    tpo:{ name:'Prof. Anjali Patil', email:'tpo@rssd.edu', phone:'+91 9876543256' },
+    tpo:{ name:'Training & Placement Officer', email:'tpo@rssd.edu', phone:'+91 9876543256' },
     disciplines:['Product Design','Graphic Design','Communication Design','Animation & VFX','Interior Design','Industrial Design'],
   },
   {
@@ -431,7 +431,7 @@ const colleges = [
     email:'tpo@whistlingwoods.net', password:'WWI@Drive2025',
     address:'Film City Complex, Goregaon East, Mumbai - 400065',
     phone:'+91 22 2840 1232', website:'https://whistlingwoods.net',
-    tpo:{ name:'Prof. Rishi Kapoor', email:'tpo@whistlingwoods.net', phone:'+91 9876543257' },
+    tpo:{ name:'Training & Placement Officer', email:'tpo@whistlingwoods.net', phone:'+91 9876543257' },
     disciplines:['Film & Video Production','Motion Graphics','Photography','Communication Design','Game Design'],
   },
 
@@ -442,7 +442,7 @@ const colleges = [
     email:'tpo@srishti.ac.in', password:'SRISHTI@Drive2025',
     address:'Yelahanka, Bengaluru - 560064',
     phone:'+91 80 4624 0000', website:'https://srishti.ac.in',
-    tpo:{ name:'Prof. Kavya Rao', email:'tpo@srishti.ac.in', phone:'+91 9876543258' },
+    tpo:{ name:'Training & Placement Officer', email:'tpo@srishti.ac.in', phone:'+91 9876543258' },
     disciplines:['Product Design','Communication Design','Graphic Design','Animation & VFX','UX Design & Interaction Design','Game Design','New Media Design','Photography','Film & Video Production','Textile & Fashion Design','Design Thinking & Innovation'],
   },
   {
@@ -451,7 +451,7 @@ const colleges = [
     email:'tpo@msrit.edu', password:'MSRIT@Drive2025',
     address:'MSR Nagar, MSRIT Post, Bengaluru - 560054',
     phone:'+91 80 2360 0822', website:'https://msrit.edu',
-    tpo:{ name:'Prof. Deepa Murthy', email:'tpo@msrit.edu', phone:'+91 9876543259' },
+    tpo:{ name:'Training & Placement Officer', email:'tpo@msrit.edu', phone:'+91 9876543259' },
     disciplines:[...ENG, 'Industrial Engineering & Management','Medical Electronics'],
   },
   {
@@ -460,7 +460,7 @@ const colleges = [
     email:'tpo@pes.edu', password:'PESU@Drive2025',
     address:'100 Feet Ring Road, BSK III Stage, Bengaluru - 560085',
     phone:'+91 80 2672 0886', website:'https://pes.edu',
-    tpo:{ name:'Prof. Rajan Hegde', email:'tpo@pes.edu', phone:'+91 9876543260' },
+    tpo:{ name:'Training & Placement Officer', email:'tpo@pes.edu', phone:'+91 9876543260' },
     disciplines:[...ENG, 'Robotics & AI','Mechatronics'],
   },
 
@@ -471,7 +471,7 @@ const colleges = [
     email:'tpo@nift.ac.in', password:'NIFTD@Drive2025',
     address:'Hauz Khas, New Delhi - 110016',
     phone:'+91 11 2654 9100', website:'https://nift.ac.in',
-    tpo:{ name:'Prof. Ritu Sharma', email:'tpo@nift.ac.in', phone:'+91 9876543261' },
+    tpo:{ name:'Training & Placement Officer', email:'tpo@nift.ac.in', phone:'+91 9876543261' },
     disciplines:['Fashion Design','Textile & Fashion Design','Leather Design','Jewellery Design','Knitwear Design','Accessory Design','Fashion Management','Fashion Communication'],
   },
   {
@@ -480,7 +480,7 @@ const colleges = [
     email:'tpo@pearl-delhi.edu', password:'PEARLDEL@Drive2025',
     address:'Naraina, New Delhi - 110028',
     phone:'+91 11 4512 4100', website:'https://pearlacademy.com',
-    tpo:{ name:'Prof. Shikha Malhotra', email:'tpo@pearl-delhi.edu', phone:'+91 9876543262' },
+    tpo:{ name:'Training & Placement Officer', email:'tpo@pearl-delhi.edu', phone:'+91 9876543262' },
     disciplines:['Fashion Design','Interior Design','Graphic Design','Communication Design','Textile & Fashion Design'],
   },
   {
@@ -489,7 +489,7 @@ const colleges = [
     email:'tpo@nsut.ac.in', password:'NSUT@Drive2025',
     address:'Sector 3, Dwarka, New Delhi - 110078',
     phone:'+91 11 2530 6100', website:'https://nsut.ac.in',
-    tpo:{ name:'Prof. Mohan Lal', email:'tpo@nsut.ac.in', phone:'+91 9876543263' },
+    tpo:{ name:'Training & Placement Officer', email:'tpo@nsut.ac.in', phone:'+91 9876543263' },
     disciplines:['Computer Science','Electronics & Communication','Information Technology','Mechanical Engineering','Electrical Engineering','AIDS (AI & Data Science)'],
   },
 
@@ -500,7 +500,7 @@ const colleges = [
     email:'tpo@nidap.ac.in', password:'NIDAP@Drive2025',
     address:'Amaravati, Andhra Pradesh - 522503',
     phone:'+91 863 222 5100', website:'https://nidap.ac.in',
-    tpo:{ name:'Prof. Sunita Reddy', email:'tpo@nidap.ac.in', phone:'+91 9876543264' },
+    tpo:{ name:'Training & Placement Officer', email:'tpo@nidap.ac.in', phone:'+91 9876543264' },
     disciplines:[...DESIGN],
   },
 
@@ -511,7 +511,7 @@ const colleges = [
     email:'tpo@annauniv.edu', password:'ANNAU@Drive2025',
     address:'Sardar Patel Road, Guindy, Chennai - 600025',
     phone:'+91 44 2235 8500', website:'https://annauniv.edu',
-    tpo:{ name:'Prof. Selvaraj Kumar', email:'tpo@annauniv.edu', phone:'+91 9876543265' },
+    tpo:{ name:'Training & Placement Officer', email:'tpo@annauniv.edu', phone:'+91 9876543265' },
     disciplines:[...ENG, 'Geo-Informatics','Marine Engineering','Aerospace Engineering'],
   },
   {
@@ -520,7 +520,7 @@ const colleges = [
     email:'tpo@nift-chennai.ac.in', password:'NIFTCH@Drive2025',
     address:'Taramani, Chennai - 600113',
     phone:'+91 44 2245 6100', website:'https://nift.ac.in',
-    tpo:{ name:'Prof. Meena Krishnan', email:'tpo@nift-chennai.ac.in', phone:'+91 9876543266' },
+    tpo:{ name:'Training & Placement Officer', email:'tpo@nift-chennai.ac.in', phone:'+91 9876543266' },
     disciplines:['Fashion Design','Textile & Fashion Design','Knitwear Design','Fashion Management','Fashion Communication','Accessory Design'],
   },
   {
@@ -529,7 +529,7 @@ const colleges = [
     email:'tpo@vit.ac.in', password:'VITVEL@Drive2025',
     address:'Vellore - 632014',
     phone:'+91 416 220 2020', website:'https://vit.ac.in',
-    tpo:{ name:'Prof. Arun Kumar', email:'tpo@vit.ac.in', phone:'+91 9876543267' },
+    tpo:{ name:'Training & Placement Officer', email:'tpo@vit.ac.in', phone:'+91 9876543267' },
     disciplines:[...ENG, 'Robotics & Automation','Mechatronics','Aerospace Engineering','AIDS (AI & Data Science)'],
   },
 
@@ -540,7 +540,7 @@ const colleges = [
     email:'tpo@ouce.ac.in', password:'OUCE@Drive2025',
     address:'University Campus, Hyderabad - 500007',
     phone:'+91 40 2768 2363', website:'https://osmania.ac.in',
-    tpo:{ name:'Prof. Venkatesh Rao', email:'tpo@ouce.ac.in', phone:'+91 9876543268' },
+    tpo:{ name:'Training & Placement Officer', email:'tpo@ouce.ac.in', phone:'+91 9876543268' },
     disciplines:[...ENG],
   },
 
@@ -551,7 +551,7 @@ const colleges = [
     email:'tpo@jadavpur.ac.in', password:'JADU@Drive2025',
     address:'188, Raja S.C. Mallick Road, Kolkata - 700032',
     phone:'+91 33 2414 6666', website:'https://jadavpur.ac.in',
-    tpo:{ name:'Prof. Sourav Ghosh', email:'tpo@jadavpur.ac.in', phone:'+91 9876543269' },
+    tpo:{ name:'Training & Placement Officer', email:'tpo@jadavpur.ac.in', phone:'+91 9876543269' },
     disciplines:[...ENG, 'Printing Engineering','Food Technology','Pharmaceutical Technology'],
   },
   {
@@ -560,7 +560,7 @@ const colleges = [
     email:'tpo@nift-kolkata.ac.in', password:'NIFTKO@Drive2025',
     address:'Plot No. IIF/7, New Town, Kolkata - 700156',
     phone:'+91 33 6609 5100', website:'https://nift.ac.in',
-    tpo:{ name:'Prof. Debashri Sen', email:'tpo@nift-kolkata.ac.in', phone:'+91 9876543270' },
+    tpo:{ name:'Training & Placement Officer', email:'tpo@nift-kolkata.ac.in', phone:'+91 9876543270' },
     disciplines:['Fashion Design','Textile & Fashion Design','Leather Design','Fashion Management','Fashion Communication'],
   },
 
@@ -571,7 +571,7 @@ const colleges = [
     email:'tpo@mnit.ac.in', password:'MNIT@Drive2025',
     address:'JLN Marg, Jaipur - 302017',
     phone:'+91 141 252 9087', website:'https://mnit.ac.in',
-    tpo:{ name:'Prof. Kapil Sharma', email:'tpo@mnit.ac.in', phone:'+91 9876543271' },
+    tpo:{ name:'Training & Placement Officer', email:'tpo@mnit.ac.in', phone:'+91 9876543271' },
     disciplines:[...ENG, 'Metallurgical & Materials Engineering'],
   },
 
@@ -582,7 +582,7 @@ const colleges = [
     email:'tpo@psgct.ac.in', password:'PSGCT@Drive2025',
     address:'Peelamedu, Coimbatore - 641004',
     phone:'+91 422 434 3400', website:'https://psgct.ac.in',
-    tpo:{ name:'Prof. Krishnamurthy V', email:'tpo@psgct.ac.in', phone:'+91 9876543272' },
+    tpo:{ name:'Training & Placement Officer', email:'tpo@psgct.ac.in', phone:'+91 9876543272' },
     disciplines:[...ENG, 'Production Engineering','Robotics & Automation'],
   },
 ];

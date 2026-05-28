@@ -110,7 +110,7 @@ async function generateOfferLetterPDF({ firstName, lastName, startDate, endDate,
     const startFmt = fmtDate(startDate);
     const endFmt   = fmtDate(endDate);
     const isPaid   = stipend && Number(stipend) > 0;
-    const stipText = isPaid ? `₹${Number(stipend).toLocaleString('en-IN')}/month` : 'unpaid';
+    const stipText = isPaid ? `Rs. ${Number(stipend).toLocaleString('en-IN')}/month` : 'unpaid';
     const today    = fmtDate(new Date());
 
     // ── Letterhead ──────────────────────────────────────────────────────────

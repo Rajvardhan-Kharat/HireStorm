@@ -9,10 +9,12 @@ const {
   shareLinkedIn, verifyCertificate, generateDevCertificate,
   getInternshipLogs, getAllInternships, scoreDailyLog,
   assignMentor, attemptExam, updateWBSTask,
+  downloadOfferLetter,
 } = require('../controllers/ilm.controller');
 
 const { submitDailyLog } = require('../controllers/dailyLog.controller');
 const { generateExam, submitQuiz: submitExam } = require('../controllers/finalExam.controller');
+const { downloadCertificate } = require('../controllers/examAndCert.controller');
 
 const ADMIN = ['PLATFORM_ADMIN', 'SUPER_ADMIN'];
 
@@ -39,6 +41,14 @@ router.post('/exam/attempt',            protect, allowRoles('INTERN'), attemptEx
 router.post('/certificate/share-linkedin', protect, allowRoles('INTERN'), shareLinkedIn);
 // DEV OVERRIDE — restrict to INTERN only in production to prevent fake certificates
 router.post('/certificate/dev-generate', protect, allowRoles('INTERN'), generateDevCertificate);
+
+// ── Certificate PDF Download (PUBLIC — works directly from email links) ───────
+router.get('/certificate/download/:certId', downloadCertificate);
+
+// ── Offer Letter PDF Download (PUBLIC — works directly from email links) ──────
+router.get('/offer-letter/download/:internshipId', downloadOfferLetter);
+
 router.get('/verify/:certId', verifyCertificate); // public
 
 module.exports = router;
+

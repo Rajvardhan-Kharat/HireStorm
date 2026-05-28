@@ -2,7 +2,6 @@ const Team        = require('../models/Team');
 const User        = require('../models/User');
 const Internship  = require('../models/Internship');
 const crypto      = require('crypto');
-const { generateAndUploadOfferLetter } = require('../utils/pdfGenerator');
 const { sendInternshipOffer, sendOfferAcceptedConfirmation } = require('../services/emailService');
 const { notify }  = require('../services/notificationService');
 
@@ -33,15 +32,6 @@ exports.selectWinningTeam = async (req, res) => {
 
       const studentName = `${member.profile?.firstName || ''} ${member.profile?.lastName || ''}`.trim() || 'Student';
 
-      // Generate offer letter PDF
-      let pdfUrl = null;
-      try {
-        pdfUrl = await generateAndUploadOfferLetter(studentName, member._id.toString());
-      } catch (pdfErr) {
-        console.error('[offerPipeline] PDF generation failed:', pdfErr.message);
-        pdfUrl = null;
-      }
-
       const acceptToken = crypto.randomBytes(32).toString('hex');
       const rejectToken = crypto.randomBytes(32).toString('hex');
 
@@ -53,9 +43,14 @@ exports.selectWinningTeam = async (req, res) => {
         status:       'OFFER_SENT',
         acceptToken,
         rejectToken,
-        offerPdfUrl:  pdfUrl,
         offerStatus:  'PENDING',
       });
+
+      // Build backend download URL (no Cloudinary)
+      const apiBase = process.env.API_URL || 'http://localhost:5000';
+      const pdfUrl  = `${apiBase}/api/v1/ilm/offer-letter/download/${internship._id}`;
+      internship.offerPdfUrl = pdfUrl;
+      await internship.save();
 
       // Update user role
       await User.findByIdAndUpdate(member._id, { role: 'INTERN' });
@@ -64,8 +59,9 @@ exports.selectWinningTeam = async (req, res) => {
       const rejectUrl = `${process.env.API_URL || 'http://localhost:5000'}/api/v1/internship/reject?token=${rejectToken}`;
 
       if (member.email) {
-        await sendInternshipOffer(member.email, studentName, team.name, pdfUrl || '', acceptUrl, rejectUrl);
+        await sendInternshipOffer(member.email, studentName, team.name, pdfUrl, acceptUrl, rejectUrl);
       }
+
 
       await notify({
         recipientId: member._id,

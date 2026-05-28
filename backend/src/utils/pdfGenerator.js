@@ -93,7 +93,7 @@ function buildCampusOfferLetterDoc(doc, { studentName, role, collegeName, startD
     ['College', collegeName || '—'],
     ['Start Date', startDate ? new Date(startDate).toLocaleDateString('en-IN', { year: 'numeric', month: 'long', day: 'numeric' }) : 'As communicated'],
     ['End Date', endDate ? new Date(endDate).toLocaleDateString('en-IN', { year: 'numeric', month: 'long', day: 'numeric' }) : 'As communicated'],
-    ['Stipend', stipend ? `₹${Number(stipend).toLocaleString('en-IN')}/month` : 'As discussed'],
+    ['Stipend', stipend ? `Rs. ${Number(stipend).toLocaleString('en-IN')}/month` : 'As discussed'],
     ['Type', 'Internship (Full-Time)'],
   ];
 

@@ -1,6 +1,5 @@
 const Internship = require('../models/Internship');
 const { generateMCQs } = require('../services/aiAssessmentService');
-const { generateAndUploadCertificate } = require('../utils/pdfGenerator');
 
 // Utilizing precise backend memory structure mappings explicitly bypassing DB overhead
 const sessionExams = new Map();
@@ -49,9 +48,8 @@ exports.submitQuiz = async (req, res) => {
 
     // Executing native >= 40 metric logically bound
     if (score >= 40) {
-      const student = sessionData.internship.intern;
-      const studentName = `${student?.profile?.firstName || 'Student'} ${student?.profile?.lastName || ''}`.trim();
-      const certificateUrl = await generateAndUploadCertificate(studentName, sessionData.internship._id.toString());
+      const apiBase = process.env.API_URL || 'http://localhost:5000';
+      const certificateUrl = `${apiBase}/api/v1/ilm/certificate/download/${sessionData.internship._id}`;
       
       // Cleanup string 
       sessionExams.delete(sessionId);

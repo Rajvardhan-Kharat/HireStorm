@@ -6,8 +6,6 @@ const { shareCertificateOnLinkedIn } = require('../services/linkedinService');
 const { sendOfferLetter, sendCertificateEmail } = require('../services/emailService');
 const { notify } = require('../services/notificationService');
 const { generateOfferLetterPDF } = require('../services/letterGenerator');
-const { cloudinary } = require('../config/cloudinary');
-const { Readable } = require('stream');
 
 // POST /api/v1/ilm/offer/:userId — admin sends offer
 exports.sendOffer = async (req, res) => {
@@ -22,10 +20,11 @@ exports.sendOffer = async (req, res) => {
     // Generate WBS — stored under 'wbs' field (not wbsTasks)
     const wbs = generateWBS(start, intern.profile?.skills || []);
 
-    // Generate official Erfinden / InnoByes branded offer letter PDF
+    // Generate official Erfinden / InnoByes branded offer letter PDF (validate only)
+    // The actual PDF is served on-the-fly via the download endpoint below.
     let offerLetterUrl = null;
     try {
-      const pdfBuffer = await generateOfferLetterPDF({
+      await generateOfferLetterPDF({
         firstName:  intern.profile?.firstName || 'Intern',
         lastName:   intern.profile?.lastName  || '',
         startDate:  start,
@@ -33,17 +32,9 @@ exports.sendOffer = async (req, res) => {
         role:       domain || 'Developer – Intern',
         stipend:    stipendAmount || 0,
       });
-
-      const uploadResult = await new Promise((resolve, reject) => {
-        const stream = cloudinary.uploader.upload_stream(
-          { folder: 'hirestorm/offer-letters', resource_type: 'raw', format: 'pdf' },
-          (err, result) => { if (err) reject(err); else resolve(result); }
-        );
-        Readable.from(pdfBuffer).pipe(stream);
-      });
-      offerLetterUrl = uploadResult.secure_url;
+      // URL will be set once internship document is created (uses internship._id)
     } catch (pdfErr) {
-      console.error('[sendOffer] PDF error:', pdfErr.message);
+      console.error('[sendOffer] PDF validation error:', pdfErr.message);
     }
 
     const internship = await Internship.create({
@@ -59,6 +50,12 @@ exports.sendOffer = async (req, res) => {
       offerLetterUrl,
       wbs,          // ← correct field name
     });
+
+    // Build backend download URL using the new internship ID
+    const apiBase = process.env.API_URL || 'http://localhost:5000';
+    offerLetterUrl = `${apiBase}/api/v1/ilm/offer-letter/download/${internship._id}`;
+    internship.offerLetterUrl = offerLetterUrl;
+    await internship.save();
 
     if (offerLetterUrl) {
       try { await sendOfferLetter(intern.email, intern.profile.firstName, offerLetterUrl); } catch {}
@@ -380,3 +377,42 @@ exports.attemptExam = async (req, res) => {
     res.status(500).json({ success: false, message: err.message });
   }
 };
+
+// GET /api/v1/ilm/offer-letter/download/:internshipId  (public — works from email links)
+// Streams the branded offer letter PDF on-the-fly without any Cloudinary dependency.
+exports.downloadOfferLetter = async (req, res) => {
+  try {
+    const internship = await Internship.findById(req.params.internshipId)
+      .populate('intern', 'profile email');
+
+    if (!internship) {
+      return res.status(404).json({ success: false, message: 'Internship not found' });
+    }
+
+    const intern = internship.intern;
+    const firstName = intern.profile?.firstName || 'Intern';
+    const lastName  = intern.profile?.lastName  || '';
+
+    const pdfBuffer = await generateOfferLetterPDF({
+      firstName,
+      lastName,
+      startDate: internship.startDate,
+      endDate:   internship.endDate,
+      role:      internship.role || 'Developer – Intern',
+      stipend:   internship.stipend?.amount || 0,
+    });
+
+    const safeFileName = `OfferLetter_${firstName}_${lastName}_${internship._id}.pdf`.replace(/\s+/g, '_');
+
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `inline; filename="${safeFileName}"`);
+    res.setHeader('Content-Length', pdfBuffer.length);
+    res.setHeader('Cache-Control', 'no-store');
+    return res.end(pdfBuffer);
+
+  } catch (err) {
+    console.error('[downloadOfferLetter]', err.message);
+    return res.status(500).json({ success: false, message: err.message });
+  }
+};
+

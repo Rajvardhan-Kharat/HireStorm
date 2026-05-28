@@ -1,6 +1,6 @@
 /**
  * PaymentModal — reusable payment checkout UI for all company payment flows.
- * Simulates UPI / Card / NetBanking. On success calls onSuccess(transactionId).
+ * Simulates UPI / Card / NetBanking. On success calls onSuccess().
  *
  * Usage:
  *   <PaymentModal
@@ -66,15 +66,20 @@ export default function PaymentModal({ open, amount, description, itemName, type
     if (!canPay()) { toast.error('Please fill in all payment details'); return; }
     setPaying(true);
     try {
-      // Simulate 1.5s processing delay
+      // Simulate 1.5s bank processing delay
       await new Promise(r => setTimeout(r, 1500));
 
-      // Record transaction in DB
-      await api.post('/payments/create-order', {
+      // Record transaction in DB for audit trail (fire-and-forget — don't block on failure)
+      api.post('/payments/create-order', {
         type,
         amount,
         metadata: { ...metadata, paymentMethod: method, description },
-      });
+      }).catch(() => {}); // non-blocking
+
+      // For company tier upgrades, also activate the subscription via bypass
+      if (type === 'COMPANY_TIER_UPGRADE' && metadata?.tier) {
+        await api.post('/payments/company-upgrade-bypass', { tier: metadata.tier });
+      }
 
       setPaid(true);
       setTimeout(() => {

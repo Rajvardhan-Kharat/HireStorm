@@ -6,6 +6,7 @@ import useAuthStore from '../../store/authStore';
 import { PlayCircle, Clock, Award, Star, BookOpen } from 'lucide-react';
 import toast from 'react-hot-toast';
 import api from '../../api/axios';
+import PaymentModal from '../../components/PaymentModal';
 
 export default function CourseDetail() {
   const { slug } = useParams();
@@ -13,7 +14,7 @@ export default function CourseDetail() {
   const navigate = useNavigate();
   const [course, setCourse] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [enrolling, setEnrolling] = useState(false);
+  const [showPayment, setShowPayment] = useState(false);
 
   // Since we might not have a backend route for getting a single course by slug yet,
   // we can mock the data or try to fetch it. Let's mock it for the demo if it fails.
@@ -45,37 +46,12 @@ export default function CourseDetail() {
     ]
   });
 
-  const handleEnroll = async () => {
-    if (course.price === 0) {
+  const handleEnroll = () => {
+    if (!course || course.price === 0) {
       toast.success('Successfully enrolled!');
       return;
     }
-    
-    setEnrolling(true);
-    try {
-      const orderRes = await api.post('/payments/create-order', {
-        type: 'COURSE_PURCHASE',
-        amount: course.price,
-        metadata: { courseId: course._id }
-      });
-      const { order, transactionId } = orderRes.data;
-
-      toast.loading('Processing demo payment...', { id: 'course_pay' });
-      const verifyRes = await api.post('/payments/verify', {
-        razorpayOrderId: order.id,
-        transactionId
-      });
-
-      if (verifyRes.data.success) {
-        toast.success('Course purchased successfully!', { id: 'course_pay' });
-      } else {
-        toast.error('Payment failed', { id: 'course_pay' });
-      }
-    } catch (err) {
-      toast.error('Could not process payment', { id: 'course_pay' });
-    } finally {
-      setEnrolling(false);
-    }
+    setShowPayment(true);
   };
 
   const isCompany = ['COMPANY_ADMIN', 'COMPANY_HR'].includes(user?.role);
@@ -135,6 +111,23 @@ export default function CourseDetail() {
           </div>
         </div>
       </div>
+
+      {/* Payment modal for paid courses */}
+      {course && course.price > 0 && (
+        <PaymentModal
+          open={showPayment}
+          amount={course.price}
+          description="Course Enrollment"
+          itemName={course.title}
+          type="COURSE_PURCHASE"
+          metadata={{ courseId: course._id }}
+          onSuccess={() => {
+            setShowPayment(false);
+            toast.success('🎉 Enrolled successfully!');
+          }}
+          onClose={() => setShowPayment(false)}
+        />
+      )}
     </Layout>
   );
 }

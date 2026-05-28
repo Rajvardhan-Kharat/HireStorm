@@ -2,12 +2,13 @@ import React, { useState } from 'react';
 import CompanyLayout from '../../layouts/CompanyLayout';
 import { Check, Star, Zap } from 'lucide-react';
 import toast from 'react-hot-toast';
-import api from '../../api/axios';
 import useAuthStore from '../../store/authStore';
+import PaymentModal from '../../components/PaymentModal';
 
 export default function CompanyPricing() {
   const { user } = useAuthStore();
-  const [loading, setLoading] = useState(false);
+  const [showPayment, setShowPayment] = useState(false);
+  const [activePlan, setActivePlan] = useState(null);
 
   const plans = [
     {
@@ -17,7 +18,7 @@ export default function CompanyPricing() {
       icon: <Star size={24} color="#6b7280" />,
       features: ['3 Job Postings/month', 'Standard Support', 'Up to 50 Applicants/Job', 'Basic Dashboard'],
       buttonText: 'Current Plan',
-      isCurrent: user?.company?.subscription?.tier === 'FREE' || !user?.company?.subscription?.tier
+      isCurrent: user?.company?.subscription?.tier === 'FREE' || !user?.company?.subscription?.tier,
     },
     {
       name: 'Starter',
@@ -36,7 +37,7 @@ export default function CompanyPricing() {
       features: ['10 Top Listing Slots', 'Bulk Hiring Tools', 'Premium ATS', 'Candidate DB Access', 'Hackathon Co-hosting'],
       buttonText: 'Upgrade to Growth',
       isCurrent: user?.company?.subscription?.tier === 'GROWTH',
-      popular: true
+      popular: true,
     },
     {
       name: 'Enterprise',
@@ -45,47 +46,14 @@ export default function CompanyPricing() {
       icon: <Star size={24} color="var(--clr-accent)" />,
       features: ['Unlimited Listing Slots', 'Everything in Growth', 'Dedicated Account Manager', 'Custom API Integrations', 'White-label Reports'],
       buttonText: 'Upgrade to Enterprise',
-      isCurrent: user?.company?.subscription?.tier === 'ENTERPRISE'
-    }
+      isCurrent: user?.company?.subscription?.tier === 'ENTERPRISE',
+    },
   ];
 
-  const handleUpgrade = async (tier, price) => {
-    if (price === 0) return;
-    setLoading(true);
-    try {
-      // Demo bypass mode — directly upgrades without Razorpay
-      // Replace with real Razorpay flow before going live
-      const res = await api.post('/payments/company-upgrade-bypass', { tier });
-      if (res.data.success) {
-        toast.success(`✅ Upgraded to ${tier} plan! Reloading...`);
-        setTimeout(() => window.location.reload(), 1500);
-      }
-    } catch {
-      // Fallback: try create-order flow
-      try {
-        const orderRes = await api.post('/payments/create-order', {
-          type: 'COMPANY_TIER_UPGRADE',
-          amount: price,
-          metadata: { tier }
-        });
-        const { order, transactionId } = orderRes.data;
-        toast.loading('Processing demo payment...', { id: 'payment' });
-        const verifyRes = await api.post('/payments/verify', {
-          razorpayOrderId: order.id,
-          transactionId
-        });
-        if (verifyRes.data.success) {
-          toast.success('Successfully upgraded plan!', { id: 'payment' });
-          setTimeout(() => window.location.reload(), 1500);
-        } else {
-          toast.error('Payment failed', { id: 'payment' });
-        }
-      } catch {
-        toast.error('Could not process payment — check backend connection');
-      }
-    } finally {
-      setLoading(false);
-    }
+  const handleUpgrade = (plan) => {
+    if (plan.price === 0 || plan.isCurrent) return;
+    setActivePlan(plan);
+    setShowPayment(true);
   };
 
   return (
@@ -100,20 +68,20 @@ export default function CompanyPricing() {
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 24 }}>
           {plans.map((plan) => (
-            <div key={plan.name} className="card" style={{ 
-              padding: 30, 
-              display: 'flex', 
+            <div key={plan.name} className="card" style={{
+              padding: 30,
+              display: 'flex',
               flexDirection: 'column',
               position: 'relative',
               border: plan.popular ? '2px solid var(--clr-primary)' : '1px solid var(--clr-border)',
-              transform: plan.popular ? 'scale(1.02)' : 'none'
+              transform: plan.popular ? 'scale(1.02)' : 'none',
             }}>
               {plan.popular && (
                 <div style={{ position: 'absolute', top: -12, left: '50%', transform: 'translateX(-50%)', background: 'var(--clr-primary)', color: '#fff', padding: '4px 12px', borderRadius: 20, fontSize: '0.8rem', fontWeight: 700 }}>
                   MOST POPULAR
                 </div>
               )}
-              
+
               <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20 }}>
                 <div style={{ width: 48, height: 48, borderRadius: 12, background: 'var(--clr-surface-2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   {plan.icon}
@@ -135,17 +103,38 @@ export default function CompanyPricing() {
                 ))}
               </ul>
 
-              <button 
+              <button
                 className={`btn w-full ${plan.isCurrent ? 'btn-outline' : plan.popular ? 'btn-primary' : 'btn-outline'}`}
-                disabled={plan.isCurrent || loading}
-                onClick={() => handleUpgrade(plan.tier, plan.price)}
+                disabled={plan.isCurrent || plan.price === 0}
+                onClick={() => handleUpgrade(plan)}
               >
-                {plan.isCurrent ? 'Current Plan' : loading ? 'Processing...' : plan.buttonText}
+                {plan.isCurrent ? 'Current Plan' : plan.buttonText}
               </button>
             </div>
           ))}
         </div>
       </div>
+
+      {/* Payment modal — opens when a paid plan is selected */}
+      {activePlan && (
+        <PaymentModal
+          open={showPayment}
+          amount={activePlan.price}
+          description={`HireStorm ${activePlan.name} Plan — Monthly`}
+          itemName={`${activePlan.name} Subscription`}
+          type="COMPANY_TIER_UPGRADE"
+          metadata={{ tier: activePlan.tier }}
+          onSuccess={() => {
+            setShowPayment(false);
+            toast.success(`✅ Upgraded to ${activePlan.name}! Refreshing...`);
+            setTimeout(() => window.location.reload(), 1500);
+          }}
+          onClose={() => {
+            setShowPayment(false);
+            setActivePlan(null);
+          }}
+        />
+      )}
     </CompanyLayout>
   );
 }

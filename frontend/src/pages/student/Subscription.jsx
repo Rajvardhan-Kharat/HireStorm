@@ -4,6 +4,7 @@ import api from '../../api/axios';
 import useAuthStore from '../../store/authStore';
 import toast from 'react-hot-toast';
 import { Zap, Check, Star, Shield, ArrowRight } from 'lucide-react';
+import PaymentModal from '../../components/PaymentModal';
 
 const PLANS = [
   {
@@ -54,31 +55,11 @@ export default function Subscription() {
   const [loading, setLoading] = useState(false);
   const isPro = ['PRO_STUDENT', 'INTERN'].includes(user?.role);
 
-  // ─────────────────────────────────────────────────────────────────────────────
-  // ─── Payment confirmation modal state ────────────────────────────────────────
   const [showPayModal, setShowPayModal] = useState(false);
 
-  const handleUpgrade = async () => {
-    setLoading(true);
-    try {
-      // 1. Record transaction so admin revenue dashboard reflects it
-      await api.post('/payments/create-order', {
-        type: 'PRO_SUBSCRIPTION',
-        amount: 299,
-        metadata: { plan: 'PRO_MONTHLY', description: 'HireStorm PRO — Monthly Subscription' },
-      }).catch(() => {}); // non-blocking if endpoint fails
-      // 2. Activate PRO role
-      await api.post('/payments/activate-pro-bypass');
-      // 3. Refresh user in store
-      const { data } = await api.get('/auth/me');
-      setAuth(data.user, accessToken);
-      setShowPayModal(false);
-      toast.success('🎉 You\'re now PRO! Enjoy all premium features.');
-    } catch (err) {
-      toast.error(err.response?.data?.message || 'Upgrade failed. Try again.');
-    } finally {
-      setLoading(false);
-    }
+  const handleUpgrade = () => {
+    if (isPro) return;
+    setShowPayModal(true);
   };
 
   // ─────────────────────────────────────────────────────────────────────────────
@@ -208,9 +189,32 @@ export default function Subscription() {
         </div>
 
         <div style={{ textAlign:'center', marginTop:32 }}>
-          <p className="text-sm text-dimmed">🔒 Secure payment via Razorpay · Cancel anytime · No hidden fees</p>
+          <p className="text-sm text-dimmed">🔒 Simulated payment — no real money charged · Cancel anytime</p>
         </div>
       </div>
+
+      {/* Payment modal — shows full UPI/Card/Net Banking UI */}
+      <PaymentModal
+        open={showPayModal}
+        amount={299}
+        description="HireStorm PRO — Monthly Subscription"
+        itemName="PRO Plan"
+        type="PRO_SUBSCRIPTION"
+        metadata={{ plan: 'PRO_MONTHLY' }}
+        onSuccess={async () => {
+          setShowPayModal(false);
+          try {
+            // Activate PRO role via bypass after simulated payment
+            await api.post('/payments/activate-pro-bypass');
+            const { data } = await api.get('/auth/me');
+            setAuth(data.user, accessToken);
+            toast.success('🎉 You\'re now PRO! Enjoy all premium features.');
+          } catch {
+            toast.error('Could not activate PRO. Please contact support.');
+          }
+        }}
+        onClose={() => setShowPayModal(false)}
+      />
     </StudentLayout>
   );
 }

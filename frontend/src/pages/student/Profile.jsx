@@ -1,9 +1,9 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import StudentLayout from '../../layouts/StudentLayout';
 import api from '../../api/axios';
 import useAuthStore from '../../store/authStore';
 import toast from 'react-hot-toast';
-import { User, Mail, Link2, GitFork, Globe, Save, Edit3, Code2 } from 'lucide-react';
+import { User, Mail, Link2, GitFork, Globe, Save, Edit3, Code2, Camera } from 'lucide-react';
 import { StudentSkillPicker } from '../../components/SkillPicker';
 
 export default function Profile() {
@@ -13,12 +13,16 @@ export default function Profile() {
   const [saving, setSaving] = useState(false);
   const [editSection, setEditSection] = useState(null);
   const [form, setForm] = useState({});
+  const [avatarUrl, setAvatarUrl] = useState(null);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const fileInputRef = useRef(null);
 
   useEffect(() => {
     api.get('/auth/me')
       .then(r => {
         const u = r.data.user;
         setProfile(u);
+        setAvatarUrl(u.profile?.avatar || null);
         setForm({
           firstName:   u.profile?.firstName || '',
           lastName:    u.profile?.lastName  || '',
@@ -40,13 +44,13 @@ export default function Profile() {
     setSaving(true);
     try {
       const { data } = await api.put('/auth/profile', {
-        profile: {
-          firstName: form.firstName, lastName: form.lastName,
-          bio: form.bio, phone: form.phone,
-          linkedin: form.linkedin, github: form.github,
-          portfolio: form.portfolio, institution: form.institution, degree: form.degree,
-        },
-        skills: form.skills,
+        firstName: form.firstName,
+        lastName:  form.lastName,
+        bio:       form.bio,
+        phone:     form.phone,
+        skills:    form.skills,
+        links: { linkedin: form.linkedin, github: form.github, portfolio: form.portfolio },
+        education: { institution: form.institution, degree: form.degree },
       });
       setProfile(data.user);
       setAuth(data.user, accessToken);
@@ -55,6 +59,21 @@ export default function Profile() {
     } catch (err) {
       toast.error(err.response?.data?.message || 'Could not save');
     } finally { setSaving(false); }
+  };
+
+  const handleAvatarUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    setUploadingAvatar(true);
+    const fd = new FormData();
+    fd.append('avatar', file);
+    try {
+      const { data } = await api.post('/auth/avatar', fd, { headers: { 'Content-Type': 'multipart/form-data' } });
+      setAvatarUrl(data.avatarUrl);
+      setAuth(data.user, accessToken);
+      toast.success('Photo updated! 🎨');
+    } catch { toast.error('Upload failed. Must be an image under 5MB.'); }
+    finally { setUploadingAvatar(false); e.target.value = ''; }
   };
 
   const removeSkill = (s) => setForm(p => ({ ...p, skills: p.skills.filter(x => x !== s) }));
@@ -105,14 +124,41 @@ export default function Profile() {
           <div style={{ display:'flex', flexDirection:'column', gap:16 }}>
             {/* Avatar Card */}
             <div className="card" style={{ textAlign:'center' }}>
+            {/* Avatar with upload button */}
+            <div style={{ position: 'relative', width: 80, height: 80, margin: '0 auto 14px' }}>
               <div style={{
-                width:80, height:80, borderRadius:'50%',
-                background:'linear-gradient(135deg, var(--clr-primary-dim), var(--clr-accent-dim))',
-                border:'3px solid var(--clr-primary)',
-                display:'flex', alignItems:'center', justifyContent:'center',
-                margin:'0 auto 14px',
-                fontSize:'1.6rem', fontWeight:800, color:'var(--clr-primary)'
-              }}>{initials || <User size={32}/>}</div>
+                width: 80, height: 80, borderRadius: '50%',
+                background: 'linear-gradient(135deg, var(--clr-primary-dim), var(--clr-accent-dim))',
+                border: '3px solid var(--clr-primary)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontSize: '1.6rem', fontWeight: 800, color: 'var(--clr-primary)',
+                overflow: 'hidden',
+              }}>
+                {avatarUrl
+                  ? <img src={avatarUrl} alt="avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  : (initials || <User size={32} />)
+                }
+              </div>
+              <button
+                type="button"
+                title="Change photo"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={uploadingAvatar}
+                style={{
+                  position: 'absolute', bottom: 0, right: 0,
+                  width: 26, height: 26, borderRadius: '50%',
+                  background: 'var(--clr-primary)', border: '2px solid var(--clr-bg)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  cursor: 'pointer', padding: 0,
+                }}
+              >
+                {uploadingAvatar
+                  ? <span className="spinner" style={{ width: 10, height: 10, borderTopColor: '#fff' }} />
+                  : <Camera size={12} color="#fff" />
+                }
+              </button>
+              <input ref={fileInputRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handleAvatarUpload} />
+            </div>
               <div style={{ fontWeight:800, fontSize:'1.05rem' }}>{form.firstName} {form.lastName}</div>
               <div className="text-sm text-muted" style={{ marginBottom:12 }}>{profile?.email}</div>
               <span className="badge badge-blue">{profile?.role?.replace(/_/g, ' ')}</span>

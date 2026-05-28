@@ -8,7 +8,7 @@ const {
   getMentoringInternships, submitMonthlyReview,
   shareLinkedIn, verifyCertificate, generateDevCertificate,
   getInternshipLogs, getAllInternships, scoreDailyLog,
-  assignMentor, attemptExam,
+  assignMentor, attemptExam, updateWBSTask,
 } = require('../controllers/ilm.controller');
 
 const { submitDailyLog } = require('../controllers/dailyLog.controller');
@@ -26,6 +26,7 @@ router.post('/offer/:userId',           protect, allowRoles(...ADMIN), sendOffer
 // Allow STUDENT + PRO_STUDENT so Dashboard can check for pending offers without 403
 router.get('/my',                       protect, allowRoles('INTERN', 'STUDENT', 'PRO_STUDENT'), getMyInternship);
 router.post('/my/daily-log',            protect, allowRoles('INTERN'), submitDailyLog);
+router.patch('/wbs/:weekIndex/:taskIndex', protect, allowRoles('INTERN'), updateWBSTask);
 
 // Daily log route used by DailyLog.jsx (/ilm/daily-log POST)
 router.post('/daily-log',               protect, allowRoles('INTERN'), submitDailyLog);

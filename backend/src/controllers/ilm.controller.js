@@ -268,6 +268,31 @@ exports.submitMonthlyReview = async (req, res) => {
   }
 };
 
+// PATCH /api/v1/ilm/wbs/:weekIndex/:taskIndex — mark a WBS task as DONE or PENDING
+exports.updateWBSTask = async (req, res) => {
+  try {
+    const { weekIndex, taskIndex } = req.params;
+    const { status } = req.body; // 'DONE' or 'PENDING'
+    if (!['DONE', 'PENDING'].includes(status)) {
+      return res.status(400).json({ success: false, message: 'status must be DONE or PENDING' });
+    }
+    const internship = await Internship.findOne({ intern: req.user._id, status: 'ACTIVE' });
+    if (!internship) return res.status(404).json({ success: false, message: 'No active internship' });
+
+    const wk = internship.wbs[Number(weekIndex)];
+    if (!wk) return res.status(404).json({ success: false, message: 'Week not found' });
+    const task = wk.tasks[Number(taskIndex)];
+    if (!task) return res.status(404).json({ success: false, message: 'Task not found' });
+
+    task.status = status;
+    internship.markModified('wbs');
+    await internship.save();
+    res.json({ success: true, data: internship.wbs });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
+
 // GET /api/v1/ilm/internship-logs (unused, kept for compat)
 exports.getInternshipLogs = async (req, res) => {
   try {

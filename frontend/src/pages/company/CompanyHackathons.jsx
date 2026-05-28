@@ -21,10 +21,9 @@ export default function CompanyHackathons() {
     api.get('/hackathons/company/mine')
       .then(r => { setHackathons(r.data.data || []); setLoading(false); })
       .catch(() => {
-        // Fallback: show all hackathons if company endpoint not found
-        api.get('/hackathons')
-          .then(r => { setHackathons(r.data.data || []); setLoading(false); })
-          .catch(() => setLoading(false));
+        // Do NOT fall back to all hackathons — that would be a data leak
+        setHackathons([]);
+        setLoading(false);
       });
   }, []);
 

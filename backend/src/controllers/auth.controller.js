@@ -256,10 +256,20 @@ exports.updateProfile = async (req, res) => {
     if (firstName  !== undefined) updateData['profile.firstName']  = firstName;
     if (lastName   !== undefined) updateData['profile.lastName']   = lastName;
     if (bio        !== undefined) updateData['profile.bio']        = bio;
-    if (skills     !== undefined) updateData['profile.skills']     = skills;
     if (phone      !== undefined) updateData['profile.phone']      = phone;
-    if (links      !== undefined) updateData['profile.links']      = links;
-    if (education  !== undefined) updateData['profile.education']  = education;
+    // Skills can be at top-level or inside profile — store at profile.skills
+    if (skills     !== undefined) updateData['profile.skills']     = skills;
+    // Links object (sent as { linkedin, github, portfolio })
+    if (links      !== undefined) {
+      if (links.linkedin  !== undefined) updateData['profile.links.linkedin']  = links.linkedin;
+      if (links.github    !== undefined) updateData['profile.links.github']    = links.github;
+      if (links.portfolio !== undefined) updateData['profile.links.portfolio'] = links.portfolio;
+    }
+    // Education object
+    if (education  !== undefined) {
+      if (education.institution !== undefined) updateData['profile.institution'] = education.institution;
+      if (education.degree      !== undefined) updateData['profile.degree']      = education.degree;
+    }
     if (experience !== undefined) updateData['profile.experience'] = experience;
     if (location   !== undefined) updateData['profile.location']   = location;
 
@@ -270,6 +280,31 @@ exports.updateProfile = async (req, res) => {
     ).populate('companyRef');
 
     res.json({ success: true, user: { ...user.toPublicProfile(), company: user.companyRef } });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
+
+// POST /api/v1/auth/avatar
+exports.uploadAvatar = async (req, res) => {
+  try {
+    if (!req.file) return res.status(400).json({ success: false, message: 'No image uploaded' });
+    const { uploadToCloudinary } = require('../middleware/upload');
+    const result = await uploadToCloudinary(
+      req.file.buffer,
+      'hirestorm/avatars',
+      `user_${req.user._id}`
+    );
+    const user = await User.findByIdAndUpdate(
+      req.user._id,
+      { 'profile.avatar': result.secure_url },
+      { new: true }
+    ).populate('companyRef');
+    res.json({
+      success: true,
+      avatarUrl: result.secure_url,
+      user: { ...user.toPublicProfile(), company: user.companyRef },
+    });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
   }

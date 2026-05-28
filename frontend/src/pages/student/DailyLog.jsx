@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import StudentLayout from '../../layouts/StudentLayout';
 import api from '../../api/axios';
 import toast from 'react-hot-toast';
 import { FileText, Clock, CheckCircle2, AlertCircle, Calendar } from 'lucide-react';
 
 export default function DailyLog() {
+  const navigate = useNavigate();
   const [logs, setLogs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -61,7 +63,7 @@ export default function DailyLog() {
             <Clock size={48} style={{ color: 'var(--clr-text-3)', marginBottom: 16 }} />
             <h3>No Active Internship</h3>
             <p className="text-muted">You do not have an active internship to submit logs for. Accept an offer first!</p>
-            <button className="btn btn-primary" onClick={() => window.location.href = '/dashboard'} style={{ marginTop: 16 }}>Go to Dashboard</button>
+            <button className="btn btn-primary" onClick={() => navigate('/dashboard')} style={{ marginTop: 16 }}>Go to Dashboard</button>
           </div>
         </div>
       ) : (

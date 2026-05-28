@@ -1,15 +1,30 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import StudentLayout from '../../layouts/StudentLayout';
 import api from '../../api/axios';
 import toast from 'react-hot-toast';
 
 export default function ILMDashboard() {
+  const navigate = useNavigate();
   const [internship, setInternship] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [accepting, setAccepting] = useState(false);
 
-  useEffect(() => {
+  const load = () => {
     api.get('/ilm/my').then(r => { setInternship(r.data.data); setLoading(false); }).catch(() => setLoading(false));
-  }, []);
+  };
+  useEffect(load, []);
+
+  const acceptOffer = async () => {
+    setAccepting(true);
+    try {
+      await api.post('/ilm/offer/accept');
+      toast.success('Offer accepted! Welcome to the internship 🎉');
+      load();
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to accept offer');
+    } finally { setAccepting(false); }
+  };
 
   if (loading) return <StudentLayout><div className="loading-screen"><div className="spinner" style={{width:36,height:36}}/></div></StudentLayout>;
   if (!internship) return (
@@ -18,7 +33,47 @@ export default function ILMDashboard() {
         <div className="empty-state">
           <h3>No Active Internship</h3>
           <p className="text-muted">You do not have an active internship. Accept an offer from your dashboard to unlock the ILM portal!</p>
-          <button className="btn btn-primary" onClick={() => window.location.href = '/dashboard'} style={{ marginTop: 16 }}>Go to Dashboard</button>
+          <button className="btn btn-primary" onClick={() => navigate('/dashboard')} style={{ marginTop: 16 }}>Go to Dashboard</button>
+        </div>
+      </div>
+    </StudentLayout>
+  );
+
+  // OFFER_SENT state — student needs to accept before internship becomes ACTIVE
+  if (internship.status === 'OFFER_SENT' || internship.offerStatus === 'PENDING') return (
+    <StudentLayout>
+      <div className="page" style={{ maxWidth: 640, margin: '40px auto' }}>
+        <div className="card animate-fade-up" style={{ textAlign: 'center', padding: '48px 40px', border: '1px solid rgba(79,126,248,0.4)' }}>
+          <div style={{ fontSize: '3rem', marginBottom: 16 }}>📋</div>
+          <h2 style={{ fontWeight: 900, fontSize: '1.5rem', marginBottom: 8 }}>Internship Offer Waiting!</h2>
+          <p className="text-muted" style={{ marginBottom: 28, lineHeight: 1.7, maxWidth: 440, margin: '0 auto 28px' }}>
+            You have a pending internship offer. Review the details and accept to begin your 90-day program.
+          </p>
+          <div className="card" style={{ textAlign: 'left', marginBottom: 28, background: 'var(--clr-surface-2)' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              {[
+                ['Company', internship.company?.name || 'HireStorm Platform'],
+                ['Stipend', `₹${internship.stipend?.amount?.toLocaleString()}/month`],
+                ['Duration', '90 Days'],
+                ['Start Date', new Date(internship.startDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })],
+                ['End Date',   new Date(internship.endDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })],
+              ].map(([k, v]) => (
+                <div key={k} style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid var(--clr-border)' }}>
+                  <span className="text-sm text-muted" style={{ fontWeight: 600 }}>{k}</span>
+                  <span style={{ fontWeight: 700 }}>{v}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+          {internship.offerLetterUrl && (
+            <a href={internship.offerLetterUrl} target="_blank" rel="noreferrer" className="btn btn-outline" style={{ marginBottom: 20, width: '100%', justifyContent: 'center' }}>
+              📄 Download Offer Letter PDF
+            </a>
+          )}
+          <button className="btn btn-primary btn-lg w-full" onClick={acceptOffer} disabled={accepting}>
+            {accepting ? <span className="spinner" style={{ borderTopColor: '#fff' }} /> : '✅ Accept Offer & Begin Internship'}
+          </button>
+          <p className="text-xs text-muted" style={{ marginTop: 14 }}>By accepting, you agree to the terms in the offer letter and commit to the 90-day program.</p>
         </div>
       </div>
     </StudentLayout>
@@ -62,7 +117,7 @@ export default function ILMDashboard() {
           {[
             { label: 'Daily Logs', value: dailyLogs?.filter(l => l.status === 'SUBMITTED').length || 0, total: progressDays, clr: 'var(--clr-primary)' },
             { label: 'WBS Weeks Done', value: completedWeeks, total: 13, clr: 'var(--clr-success)' },
-            { label: 'CA Score', value: `${Math.round(continuousAssessmentScore || 0)}%`, total: `${assessmentThreshold}% min`, clr: 'var(--clr-warning)' },
+            { label: 'CA Score', value: `${Math.round(continuousAssessmentScore || 0)}/100`, total: `Min ${assessmentThreshold} to pass`, clr: 'var(--clr-warning)' },
             { label: 'Stipend', value: `₹${stipend?.amount?.toLocaleString()}`, total: '/month', clr: 'var(--clr-accent)' },
           ].map(({ label, value, total, clr }) => (
             <div key={label} className="card stat-card">

@@ -195,6 +195,121 @@ export default function ILMDashboard() {
             ) : null}
           </div>
         )}
+
+        {/* ── Documents Section ────────────────────────────────────────────── */}
+        {(internship.offerLetterUrl || certificate?.isGenerated) && (
+          <div style={{ marginTop: 28 }}>
+            <h3 style={{ fontWeight: 700, marginBottom: 16, display: 'flex', alignItems: 'center', gap: 8 }}>
+              📁 My Documents
+            </h3>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 16 }}>
+
+              {/* Offer Letter */}
+              {internship.offerLetterUrl && (
+                <div className="card" style={{
+                  display: 'flex', flexDirection: 'column', gap: 14,
+                  border: '1px solid rgba(79,126,248,0.25)',
+                  background: 'linear-gradient(135deg, rgba(79,126,248,0.05), transparent)'
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                    <div style={{
+                      width: 44, height: 44, borderRadius: 10,
+                      background: 'rgba(79,126,248,0.12)',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      fontSize: '1.4rem', flexShrink: 0
+                    }}>📄</div>
+                    <div>
+                      <div style={{ fontWeight: 700, fontSize: '0.95rem' }}>Offer Letter</div>
+                      <div className="text-xs text-muted">Internship Offer — Erfinden Technologies</div>
+                    </div>
+                  </div>
+                  <div style={{ display: 'flex', gap: 8 }}>
+                    <a
+                      href={internship.offerLetterUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="btn btn-primary"
+                      style={{ flex: 1, justifyContent: 'center', fontSize: '0.85rem', gap: 6 }}
+                    >
+                      ⬇ Download PDF
+                    </a>
+                    <a
+                      href={internship.offerLetterUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="btn btn-outline"
+                      style={{ fontSize: '0.85rem', padding: '8px 12px' }}
+                      title="View in browser"
+                    >
+                      👁
+                    </a>
+                  </div>
+                </div>
+              )}
+
+              {/* Completion Certificate */}
+              {certificate?.isGenerated && (
+                <div className="card" style={{
+                  display: 'flex', flexDirection: 'column', gap: 14,
+                  border: '1px solid rgba(34,197,94,0.3)',
+                  background: 'linear-gradient(135deg, rgba(34,197,94,0.05), transparent)'
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                    <div style={{
+                      width: 44, height: 44, borderRadius: 10,
+                      background: 'rgba(34,197,94,0.12)',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      fontSize: '1.4rem', flexShrink: 0
+                    }}>🏆</div>
+                    <div>
+                      <div style={{ fontWeight: 700, fontSize: '0.95rem' }}>Completion Certificate</div>
+                      <div className="text-xs text-muted">Ref: {certificate.certificateId}</div>
+                    </div>
+                  </div>
+                  <div style={{ display: 'flex', gap: 8 }}>
+                    <a
+                      href={certificate.certificateUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="btn btn-primary"
+                      style={{ flex: 1, justifyContent: 'center', fontSize: '0.85rem', gap: 6,
+                        background: 'linear-gradient(135deg, #10b981, #059669)' }}
+                    >
+                      ⬇ Download PDF
+                    </a>
+                    <a
+                      href={certificate.certificateUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="btn btn-outline"
+                      style={{ fontSize: '0.85rem', padding: '8px 12px', borderColor: 'rgba(34,197,94,0.4)' }}
+                      title="View in browser"
+                    >
+                      👁
+                    </a>
+                  </div>
+                  {!certificate.linkedinShared && (
+                    <button
+                      className="btn btn-ghost"
+                      style={{ fontSize: '0.82rem', gap: 6 }}
+                      onClick={async () => {
+                        try { await api.post('/ilm/certificate/share-linkedin'); toast.success('Shared on LinkedIn! 🎉'); }
+                        catch { toast.error('LinkedIn sharing unavailable'); }
+                      }}
+                    >
+                      🔗 Share on LinkedIn
+                    </button>
+                  )}
+                  {certificate.linkedinShared && (
+                    <span className="badge badge-blue" style={{ textAlign:'center' }}>✓ Shared on LinkedIn</span>
+                  )}
+                </div>
+              )}
+
+            </div>
+          </div>
+        )}
+
       </div>
     </StudentLayout>
   );

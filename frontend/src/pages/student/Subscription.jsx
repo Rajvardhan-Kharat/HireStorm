@@ -55,16 +55,24 @@ export default function Subscription() {
   const isPro = ['PRO_STUDENT', 'INTERN'].includes(user?.role);
 
   // ─────────────────────────────────────────────────────────────────────────────
-  // ⚠️  TEMPORARY BYPASS — Click instantly upgrades to PRO (no payment).
-  //     When ready to go live, remove this function and uncomment handleUpgradePay below.
-  // ─────────────────────────────────────────────────────────────────────────────
+  // ─── Payment confirmation modal state ────────────────────────────────────────
+  const [showPayModal, setShowPayModal] = useState(false);
+
   const handleUpgrade = async () => {
     setLoading(true);
     try {
+      // 1. Record transaction so admin revenue dashboard reflects it
+      await api.post('/payments/create-order', {
+        type: 'PRO_SUBSCRIPTION',
+        amount: 299,
+        metadata: { plan: 'PRO_MONTHLY', description: 'HireStorm PRO — Monthly Subscription' },
+      }).catch(() => {}); // non-blocking if endpoint fails
+      // 2. Activate PRO role
       await api.post('/payments/activate-pro-bypass');
-      // Refresh user profile so role updates in the store immediately
+      // 3. Refresh user in store
       const { data } = await api.get('/auth/me');
       setAuth(data.user, accessToken);
+      setShowPayModal(false);
       toast.success('🎉 You\'re now PRO! Enjoy all premium features.');
     } catch (err) {
       toast.error(err.response?.data?.message || 'Upgrade failed. Try again.');

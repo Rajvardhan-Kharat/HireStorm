@@ -25,6 +25,7 @@ const campusRoutes = require('./routes/campus.routes');
 // Jobs & Workers
 require('./jobs/reviewCycleJob');          // node-cron: daily log reminders, monthly reviews
 require('./jobs/workers/hackathonWorker'); // BullMQ: hackathon deadline pipeline
+require('./jobs/hackathonStatusJob');      // node-cron: auto-start/complete hackathons by timeline
 
 const app = express();
 const server = http.createServer(app);

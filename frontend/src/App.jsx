@@ -7,8 +7,10 @@ import useAuthStore from './store/authStore';
 import useThemeStore from './store/themeStore';
 
 // ── Auth ─────────────────────────────────────────────────────────────
-import Login    from './pages/auth/Login';
-import Register from './pages/auth/Register';
+import Login          from './pages/auth/Login';
+import Register       from './pages/auth/Register';
+import ForgotPassword from './pages/auth/ForgotPassword';
+import ResetPassword  from './pages/auth/ResetPassword';
 
 // ── Student ───────────────────────────────────────────────────────────
 import StudentDashboard from './pages/student/Dashboard';
@@ -31,22 +33,22 @@ import TeamManagement   from './pages/student/TeamManagement';
 import Subscription     from './pages/student/Subscription';
 
 // ── Company ───────────────────────────────────────────────────────────
-import CompanyDashboard from './pages/company/CompanyDashboard';
-import CompanyListings  from './pages/company/CompanyListings';
-import CreateListing    from './pages/company/CreateListing';
-import Applicants       from './pages/company/Applicants';
-import Candidates       from './pages/company/Candidates';
-import CompanySettings  from './pages/company/CompanySettings';
-import CompanyPricing   from './pages/company/CompanyPricing';
-import CompanyHackathons from './pages/company/CompanyHackathons';
+import CompanyDashboard       from './pages/company/CompanyDashboard';
+import CompanyListings        from './pages/company/CompanyListings';
+import CreateListing          from './pages/company/CreateListing';
+import Applicants             from './pages/company/Applicants';
+import Candidates             from './pages/company/Candidates';
+import CompanySettings        from './pages/company/CompanySettings';
+import CompanyPricing         from './pages/company/CompanyPricing';
+import CompanyHackathons      from './pages/company/CompanyHackathons';
 import CompanyCreateHackathon from './pages/company/CompanyCreateHackathon';
-import CompanyAnalytics from './pages/company/CompanyAnalytics';
+import CompanyAnalytics       from './pages/company/CompanyAnalytics';
 
 // ── Admin ─────────────────────────────────────────────────────────────
-import AdminDashboard       from './pages/admin/AdminDashboard';
-import AdminUsers           from './pages/admin/AdminUsers';
-import AdminCompanies       from './pages/admin/AdminCompanies';
-import AdminILM             from './pages/admin/AdminILM';
+import AdminDashboard        from './pages/admin/AdminDashboard';
+import AdminUsers            from './pages/admin/AdminUsers';
+import AdminCompanies        from './pages/admin/AdminCompanies';
+import AdminILM              from './pages/admin/AdminILM';
 import AdminHackathons       from './pages/admin/AdminHackathons';
 import AdminHackathonReview  from './pages/admin/AdminHackathonReview';
 import AdminCreateHackathon  from './pages/admin/AdminCreateHackathon';
@@ -62,21 +64,31 @@ import CollegePortal        from './pages/college/CollegePortal';
 import DriveApplicationForm from './pages/college/DriveApplicationForm';
 import AITestPage           from './pages/AITestPage';
 
+// ── Role Groups ────────────────────────────────────────────────────────
+const STUDENT_ROLES  = ['STUDENT', 'PRO_STUDENT', 'INTERN'];
+const COMPANY_ROLES  = ['COMPANY_ADMIN', 'COMPANY_HR'];
+const ADMIN_ROLES    = ['PLATFORM_ADMIN', 'SUPER_ADMIN'];
+const ALL_ROLES      = [...STUDENT_ROLES, ...COMPANY_ROLES, ...ADMIN_ROLES];
+
 // ── Route Guards ──────────────────────────────────────────────────────
+const getDefaultPath = (role) => {
+  if (ADMIN_ROLES.includes(role))   return '/admin/dashboard';
+  if (COMPANY_ROLES.includes(role)) return '/company/dashboard';
+  return '/dashboard';
+};
+
 const ProtectedRoute = ({ children, allowedRoles }) => {
   const { user } = useAuthStore();
   if (!user) return <Navigate to="/login" replace />;
-  if (allowedRoles && !allowedRoles.includes(user.role)) return <Navigate to="/dashboard" replace />;
+  if (allowedRoles && !allowedRoles.includes(user.role)) {
+    return <Navigate to={getDefaultPath(user.role)} replace />;
+  }
   return children;
 };
 
 const RedirectIfAuth = ({ children }) => {
   const { user } = useAuthStore();
-  if (user) {
-    if (['PLATFORM_ADMIN','SUPER_ADMIN'].includes(user.role)) return <Navigate to="/admin/dashboard" replace />;
-    if (['COMPANY_ADMIN','COMPANY_HR'].includes(user.role))   return <Navigate to="/company/dashboard" replace />;
-    return <Navigate to="/dashboard" replace />;
-  }
+  if (user) return <Navigate to={getDefaultPath(user.role)} replace />;
   return children;
 };
 
@@ -117,67 +129,71 @@ export default function App() {
         />
         <Routes>
           {/* ── Public ────────────────────────────────────────── */}
-          <Route path="/" element={<Navigate to="/login" replace />} />
-          <Route path="/login"    element={<RedirectIfAuth><Login    /></RedirectIfAuth>} />
-          <Route path="/register" element={<RedirectIfAuth><Register /></RedirectIfAuth>} />
-          <Route path="/verify/:certId" element={<ComingSoon title="Certificate Verification" />} />
+          <Route path="/"                      element={<Navigate to="/login" replace />} />
+          <Route path="/login"                 element={<RedirectIfAuth><Login           /></RedirectIfAuth>} />
+          <Route path="/register"              element={<RedirectIfAuth><Register        /></RedirectIfAuth>} />
+          <Route path="/forgot-password"       element={<RedirectIfAuth><ForgotPassword  /></RedirectIfAuth>} />
+          <Route path="/reset-password/:token" element={<RedirectIfAuth><ResetPassword   /></RedirectIfAuth>} />
+          <Route path="/verify/:certId"        element={<ComingSoon title="Certificate Verification" />} />
 
           {/* ── College & Public Forms ──────────────────────── */}
-          <Route path="/college/login" element={<CollegeLogin />} />
-          <Route path="/college/:slug" element={<CollegePortal />} />
-          <Route path="/apply/:token" element={<DriveApplicationForm />} />
+          <Route path="/college/login"  element={<CollegeLogin />} />
+          <Route path="/college/:slug"  element={<CollegePortal />} />
+          <Route path="/apply/:token"   element={<DriveApplicationForm />} />
           <Route path="/ai-test/:token" element={<AITestPage />} />
 
-          {/* ── Student ───────────────────────────────────────── */}
-          <Route path="/dashboard"          element={<ProtectedRoute><StudentDashboard /></ProtectedRoute>} />
-          <Route path="/listings"           element={<ProtectedRoute><Listings         /></ProtectedRoute>} />
-          <Route path="/listings/:id"       element={<ProtectedRoute><ListingDetail    /></ProtectedRoute>} />
-          <Route path="/my-applications"    element={<ProtectedRoute><MyApplications   /></ProtectedRoute>} />
-          <Route path="/profile"            element={<ProtectedRoute><Profile          /></ProtectedRoute>} />
-          <Route path="/profile/analytics"  element={<ProtectedRoute><Profile          /></ProtectedRoute>} />
-          <Route path="/hackathons"         element={<ProtectedRoute><Hackathons       /></ProtectedRoute>} />
-          <Route path="/hackathons/:slug"   element={<ProtectedRoute><HackathonDetail  /></ProtectedRoute>} />
-          <Route path="/hackathons/:slug/team"   element={<ProtectedRoute><TeamManagement /></ProtectedRoute>} />
-          <Route path="/hackathons/:slug/submit" element={<ProtectedRoute><HackathonSubmit /></ProtectedRoute>} />
-          <Route path="/hackathons/:slug/accept-invite/:token" element={<ProtectedRoute><AcceptInvite /></ProtectedRoute>} />
-          <Route path="/courses"            element={<ProtectedRoute><Courses          /></ProtectedRoute>} />
-          <Route path="/courses/my"         element={<ProtectedRoute><Courses          /></ProtectedRoute>} />
-          <Route path="/courses/:slug"      element={<ProtectedRoute><CourseDetail     /></ProtectedRoute>} />
-          <Route path="/notifications"      element={<ProtectedRoute><Notifications    /></ProtectedRoute>} />
-          <Route path="/settings/subscription" element={<ProtectedRoute><Subscription /></ProtectedRoute>} />
+          {/* ── Student-only ───────────────────────────────────── */}
+          <Route path="/dashboard"             element={<ProtectedRoute allowedRoles={STUDENT_ROLES}><StudentDashboard /></ProtectedRoute>} />
+          <Route path="/my-applications"       element={<ProtectedRoute allowedRoles={STUDENT_ROLES}><MyApplications  /></ProtectedRoute>} />
+          <Route path="/profile"               element={<ProtectedRoute allowedRoles={STUDENT_ROLES}><Profile         /></ProtectedRoute>} />
+          <Route path="/profile/analytics"     element={<ProtectedRoute allowedRoles={STUDENT_ROLES}><Profile         /></ProtectedRoute>} />
+          <Route path="/settings/subscription" element={<ProtectedRoute allowedRoles={['STUDENT','PRO_STUDENT']}><Subscription /></ProtectedRoute>} />
 
-          {/* ── ILM — accessible to STUDENT (offer pending) + INTERN (active) ── */}
-          <Route path="/ilm"             element={<ProtectedRoute allowedRoles={['INTERN','STUDENT','PRO_STUDENT']}><ILMDashboard /></ProtectedRoute>} />
-          <Route path="/ilm/daily-log"   element={<ProtectedRoute allowedRoles={['INTERN','STUDENT','PRO_STUDENT']}><DailyLog     /></ProtectedRoute>} />
-          <Route path="/ilm/wbs"         element={<ProtectedRoute allowedRoles={['INTERN','STUDENT','PRO_STUDENT']}><WorkBreakdown /></ProtectedRoute>} />
-          <Route path="/ilm/exam"        element={<ProtectedRoute allowedRoles={['INTERN','STUDENT','PRO_STUDENT']}><FinalExam     /></ProtectedRoute>} />
-          <Route path="/ilm/certificate" element={<ProtectedRoute allowedRoles={['INTERN','STUDENT','PRO_STUDENT']}><Certificate   /></ProtectedRoute>} />
+          {/* ── Shared (all logged-in users can browse) ─────────── */}
+          <Route path="/listings"         element={<ProtectedRoute allowedRoles={ALL_ROLES}><Listings        /></ProtectedRoute>} />
+          <Route path="/listings/:id"     element={<ProtectedRoute allowedRoles={ALL_ROLES}><ListingDetail   /></ProtectedRoute>} />
+          <Route path="/hackathons"       element={<ProtectedRoute allowedRoles={ALL_ROLES}><Hackathons      /></ProtectedRoute>} />
+          <Route path="/hackathons/:slug" element={<ProtectedRoute allowedRoles={ALL_ROLES}><HackathonDetail /></ProtectedRoute>} />
+          <Route path="/hackathons/:slug/team"                 element={<ProtectedRoute allowedRoles={STUDENT_ROLES}><TeamManagement  /></ProtectedRoute>} />
+          <Route path="/hackathons/:slug/submit"               element={<ProtectedRoute allowedRoles={STUDENT_ROLES}><HackathonSubmit /></ProtectedRoute>} />
+          <Route path="/hackathons/:slug/accept-invite/:token" element={<ProtectedRoute allowedRoles={STUDENT_ROLES}><AcceptInvite    /></ProtectedRoute>} />
+          <Route path="/courses"          element={<ProtectedRoute allowedRoles={ALL_ROLES}><Courses         /></ProtectedRoute>} />
+          <Route path="/courses/my"       element={<ProtectedRoute allowedRoles={STUDENT_ROLES}><Courses     /></ProtectedRoute>} />
+          <Route path="/courses/:slug"    element={<ProtectedRoute allowedRoles={ALL_ROLES}><CourseDetail    /></ProtectedRoute>} />
+          <Route path="/notifications"    element={<ProtectedRoute allowedRoles={ALL_ROLES}><Notifications   /></ProtectedRoute>} />
+
+          {/* ── ILM — STUDENT + PRO_STUDENT + INTERN ──────────── */}
+          <Route path="/ilm"             element={<ProtectedRoute allowedRoles={STUDENT_ROLES}><ILMDashboard  /></ProtectedRoute>} />
+          <Route path="/ilm/daily-log"   element={<ProtectedRoute allowedRoles={STUDENT_ROLES}><DailyLog      /></ProtectedRoute>} />
+          <Route path="/ilm/wbs"         element={<ProtectedRoute allowedRoles={STUDENT_ROLES}><WorkBreakdown /></ProtectedRoute>} />
+          <Route path="/ilm/exam"        element={<ProtectedRoute allowedRoles={STUDENT_ROLES}><FinalExam     /></ProtectedRoute>} />
+          <Route path="/ilm/certificate" element={<ProtectedRoute allowedRoles={STUDENT_ROLES}><Certificate   /></ProtectedRoute>} />
 
           {/* ── Company ───────────────────────────────────────── */}
-          <Route path="/company/dashboard"               element={<ProtectedRoute allowedRoles={['COMPANY_ADMIN','COMPANY_HR']}><CompanyDashboard /></ProtectedRoute>} />
-          <Route path="/company/listings"                element={<ProtectedRoute allowedRoles={['COMPANY_ADMIN','COMPANY_HR']}><CompanyListings  /></ProtectedRoute>} />
-          <Route path="/company/listings/new"            element={<ProtectedRoute allowedRoles={['COMPANY_ADMIN','COMPANY_HR']}><CreateListing    /></ProtectedRoute>} />
-          <Route path="/company/listings/:id/applicants" element={<ProtectedRoute allowedRoles={['COMPANY_ADMIN','COMPANY_HR']}><Applicants       /></ProtectedRoute>} />
-          <Route path="/company/candidates"              element={<ProtectedRoute allowedRoles={['COMPANY_ADMIN','COMPANY_HR']}><Candidates       /></ProtectedRoute>} />
-          <Route path="/company/hackathons"              element={<ProtectedRoute allowedRoles={['COMPANY_ADMIN','COMPANY_HR']}><CompanyHackathons /></ProtectedRoute>} />
+          <Route path="/company/dashboard"               element={<ProtectedRoute allowedRoles={COMPANY_ROLES}><CompanyDashboard       /></ProtectedRoute>} />
+          <Route path="/company/listings"                element={<ProtectedRoute allowedRoles={COMPANY_ROLES}><CompanyListings         /></ProtectedRoute>} />
+          <Route path="/company/listings/new"            element={<ProtectedRoute allowedRoles={COMPANY_ROLES}><CreateListing           /></ProtectedRoute>} />
+          <Route path="/company/listings/:id/applicants" element={<ProtectedRoute allowedRoles={COMPANY_ROLES}><Applicants              /></ProtectedRoute>} />
+          <Route path="/company/candidates"              element={<ProtectedRoute allowedRoles={COMPANY_ROLES}><Candidates              /></ProtectedRoute>} />
+          <Route path="/company/hackathons"              element={<ProtectedRoute allowedRoles={COMPANY_ROLES}><CompanyHackathons        /></ProtectedRoute>} />
           <Route path="/company/hackathons/new"          element={<ProtectedRoute allowedRoles={['COMPANY_ADMIN']}><CompanyCreateHackathon /></ProtectedRoute>} />
-          <Route path="/company/analytics"               element={<ProtectedRoute allowedRoles={['COMPANY_ADMIN','COMPANY_HR']}><CompanyAnalytics /></ProtectedRoute>} />
-          <Route path="/company/courses"                 element={<ProtectedRoute allowedRoles={['COMPANY_ADMIN','COMPANY_HR']}><Courses /></ProtectedRoute>} />
-          <Route path="/company/pricing"                 element={<ProtectedRoute allowedRoles={['COMPANY_ADMIN']}><CompanyPricing /></ProtectedRoute>} />
-          <Route path="/company/settings"                element={<ProtectedRoute allowedRoles={['COMPANY_ADMIN','COMPANY_HR']}><CompanySettings  /></ProtectedRoute>} />
+          <Route path="/company/analytics"               element={<ProtectedRoute allowedRoles={COMPANY_ROLES}><CompanyAnalytics         /></ProtectedRoute>} />
+          <Route path="/company/courses"                 element={<ProtectedRoute allowedRoles={COMPANY_ROLES}><Courses                  /></ProtectedRoute>} />
+          <Route path="/company/pricing"                 element={<ProtectedRoute allowedRoles={['COMPANY_ADMIN']}><CompanyPricing       /></ProtectedRoute>} />
+          <Route path="/company/settings"                element={<ProtectedRoute allowedRoles={COMPANY_ROLES}><CompanySettings           /></ProtectedRoute>} />
 
           {/* ── Admin ─────────────────────────────────────────── */}
-          <Route path="/admin/dashboard"    element={<ProtectedRoute allowedRoles={['PLATFORM_ADMIN','SUPER_ADMIN']}><AdminDashboard  /></ProtectedRoute>} />
-          <Route path="/admin/users"        element={<ProtectedRoute allowedRoles={['PLATFORM_ADMIN','SUPER_ADMIN']}><AdminUsers      /></ProtectedRoute>} />
-          <Route path="/admin/companies"    element={<ProtectedRoute allowedRoles={['PLATFORM_ADMIN','SUPER_ADMIN']}><AdminCompanies  /></ProtectedRoute>} />
-          <Route path="/admin/hackathons"          element={<ProtectedRoute allowedRoles={['PLATFORM_ADMIN','SUPER_ADMIN']}><AdminHackathons /></ProtectedRoute>} />
-          <Route path="/admin/hackathons/create"    element={<ProtectedRoute allowedRoles={['PLATFORM_ADMIN','SUPER_ADMIN']}><AdminCreateHackathon /></ProtectedRoute>} />
-          <Route path="/admin/hackathons/:id/review" element={<ProtectedRoute allowedRoles={['PLATFORM_ADMIN','SUPER_ADMIN']}><AdminHackathonReview /></ProtectedRoute>} />
-          <Route path="/admin/ilm"          element={<ProtectedRoute allowedRoles={['PLATFORM_ADMIN','SUPER_ADMIN']}><AdminILM        /></ProtectedRoute>} />
-          <Route path="/admin/transactions" element={<ProtectedRoute allowedRoles={['PLATFORM_ADMIN','SUPER_ADMIN']}><AdminTransactions /></ProtectedRoute>} />
-          <Route path="/admin/revenue"      element={<ProtectedRoute allowedRoles={['PLATFORM_ADMIN','SUPER_ADMIN']}><AdminRevenue /></ProtectedRoute>} />
-          <Route path="/admin/courses"      element={<ProtectedRoute allowedRoles={['PLATFORM_ADMIN','SUPER_ADMIN']}><AdminCourseCMS /></ProtectedRoute>} />
-          <Route path="/admin/drives"       element={<ProtectedRoute allowedRoles={['PLATFORM_ADMIN','SUPER_ADMIN']}><AdminCampusDrives /></ProtectedRoute>} />
+          <Route path="/admin/dashboard"             element={<ProtectedRoute allowedRoles={ADMIN_ROLES}><AdminDashboard       /></ProtectedRoute>} />
+          <Route path="/admin/users"                 element={<ProtectedRoute allowedRoles={ADMIN_ROLES}><AdminUsers           /></ProtectedRoute>} />
+          <Route path="/admin/companies"             element={<ProtectedRoute allowedRoles={ADMIN_ROLES}><AdminCompanies       /></ProtectedRoute>} />
+          <Route path="/admin/hackathons"            element={<ProtectedRoute allowedRoles={ADMIN_ROLES}><AdminHackathons      /></ProtectedRoute>} />
+          <Route path="/admin/hackathons/create"     element={<ProtectedRoute allowedRoles={ADMIN_ROLES}><AdminCreateHackathon /></ProtectedRoute>} />
+          <Route path="/admin/hackathons/:id/review" element={<ProtectedRoute allowedRoles={ADMIN_ROLES}><AdminHackathonReview /></ProtectedRoute>} />
+          <Route path="/admin/ilm"                   element={<ProtectedRoute allowedRoles={ADMIN_ROLES}><AdminILM             /></ProtectedRoute>} />
+          <Route path="/admin/transactions"          element={<ProtectedRoute allowedRoles={ADMIN_ROLES}><AdminTransactions    /></ProtectedRoute>} />
+          <Route path="/admin/revenue"               element={<ProtectedRoute allowedRoles={ADMIN_ROLES}><AdminRevenue         /></ProtectedRoute>} />
+          <Route path="/admin/courses"               element={<ProtectedRoute allowedRoles={ADMIN_ROLES}><AdminCourseCMS       /></ProtectedRoute>} />
+          <Route path="/admin/drives"                element={<ProtectedRoute allowedRoles={ADMIN_ROLES}><AdminCampusDrives    /></ProtectedRoute>} />
 
           {/* ── 404 ───────────────────────────────────────────── */}
           <Route path="*" element={

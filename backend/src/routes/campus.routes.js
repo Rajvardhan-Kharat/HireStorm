@@ -29,8 +29,14 @@ const {
   adminCreateDrive, adminListDrives, adminUpdateDrive,
   adminListApplications, adminShortlistStudents,
   adminUpdateApplication, adminSelectStudentAsIntern,
-  // Admin — pipeline
-  adminSendAITest, adminScheduleInterview, adminSendCampusOffer,
+  adminSaveOfferTemplate,
+  // Admin — AI Test pipeline
+  adminGenerateDriveQuestions,
+  adminGenerateAIQuestionsForApp,
+  adminUpdateAITestQuestions,
+  adminSendAITest,
+  adminScheduleInterview,
+  adminSendCampusOffer,
   // Public test
   getAITest, submitAITest,
   // Offer accept/reject
@@ -64,11 +70,15 @@ router.post(  '/admin/drives',                         protect, allowRoles('SUPE
 router.put(   '/admin/drives/:id',                     protect, allowRoles('SUPER_ADMIN','PLATFORM_ADMIN'), adminUpdateDrive);
 router.get(   '/admin/drives/:id/applications',        protect, allowRoles('SUPER_ADMIN','PLATFORM_ADMIN'), adminListApplications);
 router.post(  '/admin/drives/:id/shortlist',           protect, allowRoles('SUPER_ADMIN','PLATFORM_ADMIN'), adminShortlistStudents);
+router.post(  '/admin/drives/:id/generate-questions',  protect, allowRoles('SUPER_ADMIN','PLATFORM_ADMIN'), adminGenerateDriveQuestions);
+router.put(   '/admin/drives/:id/offer-template',      protect, allowRoles('SUPER_ADMIN','PLATFORM_ADMIN'), adminSaveOfferTemplate);
 
 // ── AI Test + Interview + Offer Pipeline ─────────────────────────────────────
-router.post(  '/admin/applications/:appId/send-ai-test',       protect, allowRoles('SUPER_ADMIN','PLATFORM_ADMIN'), adminSendAITest);
-router.post(  '/admin/applications/:appId/schedule-interview',  protect, allowRoles('SUPER_ADMIN','PLATFORM_ADMIN'), adminScheduleInterview);
-router.post(  '/admin/applications/:appId/send-offer',          protect, allowRoles('SUPER_ADMIN','PLATFORM_ADMIN'), adminSendCampusOffer);
+router.post(  '/admin/applications/:appId/generate-test',        protect, allowRoles('SUPER_ADMIN','PLATFORM_ADMIN'), adminGenerateAIQuestionsForApp);
+router.put(   '/admin/applications/:appId/update-test-questions', protect, allowRoles('SUPER_ADMIN','PLATFORM_ADMIN'), adminUpdateAITestQuestions);
+router.post(  '/admin/applications/:appId/send-ai-test',         protect, allowRoles('SUPER_ADMIN','PLATFORM_ADMIN'), adminSendAITest);
+router.post(  '/admin/applications/:appId/schedule-interview',   protect, allowRoles('SUPER_ADMIN','PLATFORM_ADMIN'), adminScheduleInterview);
+router.post(  '/admin/applications/:appId/send-offer',           protect, allowRoles('SUPER_ADMIN','PLATFORM_ADMIN'), adminSendCampusOffer);
 
 router.patch( '/admin/applications/:appId',            protect, allowRoles('SUPER_ADMIN','PLATFORM_ADMIN'), adminUpdateApplication);
 router.post(  '/admin/applications/:appId/select',     protect, allowRoles('SUPER_ADMIN','PLATFORM_ADMIN'), adminSelectStudentAsIntern);

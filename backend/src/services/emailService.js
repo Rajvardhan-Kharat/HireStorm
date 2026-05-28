@@ -277,8 +277,8 @@ exports.sendCampusInterviewInvite = async (toEmail, studentName, role, meetLink,
   );
 };
 
-/** Campus Drive offer letter — HTML-embedded (works without Cloudinary in email) */
-exports.sendCampusOfferLetter = async (toEmail, studentName, role, collegeName, startDate, endDate, stipend, acceptUrl, rejectUrl, driveTitle) => {
+/** Campus Drive offer letter — HTML email with optional PDF attachment */
+exports.sendCampusOfferLetter = async (toEmail, studentName, role, collegeName, startDate, endDate, stipend, acceptUrl, rejectUrl, driveTitle, pdfBuffer) => {
   const start = startDate ? new Date(startDate).toLocaleDateString('en-IN', { year: 'numeric', month: 'long', day: 'numeric' }) : 'As communicated';
   const end   = endDate   ? new Date(endDate).toLocaleDateString('en-IN', { year: 'numeric', month: 'long', day: 'numeric' }) : 'As communicated';
   const stip  = stipend   ? `&#8377;${Number(stipend).toLocaleString('en-IN')}/month` : 'As discussed';
@@ -293,11 +293,13 @@ exports.sendCampusOfferLetter = async (toEmail, studentName, role, collegeName, 
     ['Type', 'Internship (Full-Time)'],
   ];
 
-  return sendEmail(
-    toEmail,
-    `🎊 Internship Offer Letter — ${role} | ${driveTitle}`,
-    `Congratulations ${studentName}! You have been selected for ${role}. Please accept or decline within 72 hours.`,
-    `<div style="font-family:'Segoe UI',Arial,sans-serif;max-width:640px;margin:auto;background:#fff;border-radius:14px;overflow:hidden;box-shadow:0 8px 40px rgba(0,0,0,.12)">
+  // Build nodemailer options (with optional PDF attachment)
+  const mailOpts = {
+    from: `"Innobytes" <${process.env.SMTP_USER || 'noreply@innobytes.io'}>`,
+    to: toEmail,
+    subject: `🎊 Internship Offer Letter — ${role} | ${driveTitle}`,
+    text: `Congratulations ${studentName}! You have been selected for ${role}. Please accept or decline within 72 hours.`,
+    html: `<div style="font-family:'Segoe UI',Arial,sans-serif;max-width:640px;margin:auto;background:#fff;border-radius:14px;overflow:hidden;box-shadow:0 8px 40px rgba(0,0,0,.12)">
       <div style="background:linear-gradient(135deg,#4f46e5 0%,#7c3aed 100%);padding:36px 48px 28px">
         <div style="font-size:22px;font-weight:800;color:#fff;letter-spacing:-.5px">&#9889; HireStorm</div>
         <div style="color:rgba(255,255,255,.7);font-size:12px;margin-top:2px">Campus Placement Division</div>
@@ -308,7 +310,7 @@ exports.sendCampusOfferLetter = async (toEmail, studentName, role, collegeName, 
       </div>
       <div style="padding:40px 48px">
         <p style="color:#1e293b;font-size:16px;margin:0 0 16px">Dear <strong>${studentName}</strong>,</p>
-        <p style="color:#475569;font-size:14px;line-height:1.8;margin:0 0 28px">We are delighted to offer you the position of <strong style="color:#4f46e5">${role}</strong> through the campus placement drive at <strong>${collegeName}</strong>. After evaluating your profile, AI assessment results, and interview performance, we are confident you will be a great addition to our team.</p>
+        <p style="color:#475569;font-size:14px;line-height:1.8;margin:0 0 28px">We are delighted to offer you the position of <strong style="color:#4f46e5">${role}</strong> through the campus placement drive at <strong>${collegeName}</strong>. After evaluating your profile, AI assessment results, and review, we are confident you will be a great addition to our team.</p>
         <div style="background:#f8faff;border:1px solid #e0e7ff;border-radius:10px;overflow:hidden;margin-bottom:28px">
           <div style="background:#4f46e5;padding:12px 20px">
             <span style="color:#fff;font-weight:700;font-size:13px;letter-spacing:.5px">📋 OFFER DETAILS</span>
@@ -327,6 +329,9 @@ exports.sendCampusOfferLetter = async (toEmail, studentName, role, collegeName, 
             <li>Either party may terminate with 7 days' written notice.</li>
           </ol>
         </div>
+        ${pdfBuffer ? `<div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:14px 18px;margin-bottom:24px;font-size:13px;color:#166534">
+          📎 <strong>Your Offer Letter PDF</strong> is attached to this email. Please download and save it for your records.
+        </div>` : ''}
         <p style="color:#475569;font-size:13px;margin:0 0 20px">This offer is valid for <strong>72 hours</strong>. Please respond:</p>
         <div style="text-align:center;margin:28px 0">
           <a href="${acceptUrl}" style="display:inline-block;background:linear-gradient(135deg,#10b981,#059669);color:#fff;text-decoration:none;padding:14px 32px;border-radius:8px;font-weight:700;font-size:14px;margin-right:12px">&#10003; Accept Offer</a>
@@ -337,8 +342,27 @@ exports.sendCampusOfferLetter = async (toEmail, studentName, role, collegeName, 
       <div style="background:#1e1b4b;padding:20px 48px;text-align:center">
         <p style="color:rgba(255,255,255,.6);font-size:12px;margin:0">&#9889; HireStorm — Connecting Campuses with Opportunity</p>
       </div>
-    </div>`
-  );
+    </div>`,
+  };
+
+  // Attach PDF if buffer provided
+  if (pdfBuffer) {
+    mailOpts.attachments = [{
+      filename: `Offer_Letter_${studentName.replace(/\s+/g, '_')}.pdf`,
+      content: pdfBuffer,
+      contentType: 'application/pdf',
+    }];
+  }
+
+  // In dev without credentials: just log
+  if (!process.env.SMTP_USER && process.env.NODE_ENV !== 'production') {
+    console.log(`\n[EmailService Mock — Offer Letter]\n  To: ${toEmail}\n  Subject: ${mailOpts.subject}\n  PDF attached: ${!!pdfBuffer}\n`);
+    return { messageId: 'mock-dev' };
+  }
+
+  const info = await transporter.sendMail(mailOpts);
+  console.log(`[EmailService] Offer letter sent → ${toEmail} | PDF: ${!!pdfBuffer}`);
+  return info;
 };
 
 /** AI test failed notification */

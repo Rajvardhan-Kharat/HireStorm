@@ -81,7 +81,10 @@ exports.login = async (req, res) => {
   try {
     const { email, password } = req.body;
     const user = await User.findOne({ email });
-    if (!user || !user.isActive) {
+    if (!user || !user.isActive || !user.isVerified) {
+      if (user && !user.isVerified) {
+        return res.status(401).json({ success: false, message: 'Please verify your email before logging in. Check your inbox.' });
+      }
       return res.status(401).json({ success: false, message: 'Invalid credentials' });
     }
     const isMatch = await user.comparePassword(password);
@@ -174,7 +177,32 @@ exports.forgotPassword = async (req, res) => {
       `Click the link to reset your password.`,
       `<p>Click below to reset your password (expires in 30 minutes):</p><a href="${process.env.CLIENT_URL}/reset-password/${resetToken}">Reset Password</a>`
     );
-    res.json({ success: true, message: 'Reset email sent' });
+    res.json({ success: true, message: 'If that email exists, a reset link has been sent.' });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
+
+// POST /api/v1/auth/reset-password/:token
+exports.resetPassword = async (req, res) => {
+  try {
+    const { password } = req.body;
+    if (!password || password.length < 6) {
+      return res.status(400).json({ success: false, message: 'Password must be at least 6 characters' });
+    }
+    const user = await User.findOne({
+      passwordResetToken: req.params.token,
+      passwordResetExpiry: { $gt: Date.now() },
+    });
+    if (!user) {
+      return res.status(400).json({ success: false, message: 'Reset link is invalid or has expired. Please request a new one.' });
+    }
+    user.password = password; // pre-save hook will hash it
+    user.passwordResetToken  = undefined;
+    user.passwordResetExpiry = undefined;
+    user.refreshToken        = null; // invalidate all sessions
+    await user.save();
+    res.json({ success: true, message: 'Password reset successfully. Please log in.' });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
   }
@@ -220,3 +248,29 @@ exports.updateCompany = async (req, res) => {
   }
 };
 
+// PUT /api/v1/auth/profile
+exports.updateProfile = async (req, res) => {
+  try {
+    const { firstName, lastName, bio, skills, phone, links, education, experience, location } = req.body;
+    const updateData = {};
+    if (firstName  !== undefined) updateData['profile.firstName']  = firstName;
+    if (lastName   !== undefined) updateData['profile.lastName']   = lastName;
+    if (bio        !== undefined) updateData['profile.bio']        = bio;
+    if (skills     !== undefined) updateData['profile.skills']     = skills;
+    if (phone      !== undefined) updateData['profile.phone']      = phone;
+    if (links      !== undefined) updateData['profile.links']      = links;
+    if (education  !== undefined) updateData['profile.education']  = education;
+    if (experience !== undefined) updateData['profile.experience'] = experience;
+    if (location   !== undefined) updateData['profile.location']   = location;
+
+    const user = await User.findByIdAndUpdate(
+      req.user._id,
+      { $set: updateData },
+      { new: true, runValidators: false }
+    ).populate('companyRef');
+
+    res.json({ success: true, user: { ...user.toPublicProfile(), company: user.companyRef } });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+};

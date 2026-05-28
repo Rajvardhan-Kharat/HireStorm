@@ -15,26 +15,35 @@ export default function CompanyPricing() {
       price: 0,
       tier: 'FREE',
       icon: <Star size={24} color="#6b7280" />,
-      features: ['Basic Job Postings', 'Standard Support', 'Up to 50 Applicants/Job'],
+      features: ['3 Job Postings/month', 'Standard Support', 'Up to 50 Applicants/Job', 'Basic Dashboard'],
       buttonText: 'Current Plan',
       isCurrent: user?.company?.subscription?.tier === 'FREE' || !user?.company?.subscription?.tier
     },
     {
-      name: 'Growth',
+      name: 'Starter',
       price: 4999,
+      tier: 'STARTER',
+      icon: <Zap size={24} color="#22c55e" />,
+      features: ['5 Top Listing Slots', 'Premium ATS', 'Up to 500 Applicants/Job', 'Analytics Dashboard'],
+      buttonText: 'Upgrade to Starter',
+      isCurrent: user?.company?.subscription?.tier === 'STARTER',
+    },
+    {
+      name: 'Growth',
+      price: 9999,
       tier: 'GROWTH',
       icon: <Zap size={24} color="var(--clr-primary)" />,
-      features: ['3 Top Listing Slots', 'Bulk Hiring Tools', 'Premium ATS', 'Candidate DB Access', 'Hackathon Hosting'],
+      features: ['10 Top Listing Slots', 'Bulk Hiring Tools', 'Premium ATS', 'Candidate DB Access', 'Hackathon Co-hosting'],
       buttonText: 'Upgrade to Growth',
       isCurrent: user?.company?.subscription?.tier === 'GROWTH',
       popular: true
     },
     {
       name: 'Enterprise',
-      price: 14999,
+      price: 24999,
       tier: 'ENTERPRISE',
       icon: <Star size={24} color="var(--clr-accent)" />,
-      features: ['10 Top Listing Slots', 'Everything in Growth', 'Dedicated Account Manager', 'Custom API Integrations'],
+      features: ['Unlimited Listing Slots', 'Everything in Growth', 'Dedicated Account Manager', 'Custom API Integrations', 'White-label Reports'],
       buttonText: 'Upgrade to Enterprise',
       isCurrent: user?.company?.subscription?.tier === 'ENTERPRISE'
     }
@@ -44,27 +53,36 @@ export default function CompanyPricing() {
     if (price === 0) return;
     setLoading(true);
     try {
-      const orderRes = await api.post('/payments/create-order', {
-        type: 'COMPANY_TIER_UPGRADE',
-        amount: price,
-        metadata: { tier }
-      });
-      const { order, transactionId } = orderRes.data;
-
-      toast.loading('Processing demo payment...', { id: 'payment' });
-      const verifyRes = await api.post('/payments/verify', {
-        razorpayOrderId: order.id,
-        transactionId
-      });
-
-      if (verifyRes.data.success) {
-        toast.success('Successfully upgraded plan!', { id: 'payment' });
+      // Demo bypass mode — directly upgrades without Razorpay
+      // Replace with real Razorpay flow before going live
+      const res = await api.post('/payments/company-upgrade-bypass', { tier });
+      if (res.data.success) {
+        toast.success(`✅ Upgraded to ${tier} plan! Reloading...`);
         setTimeout(() => window.location.reload(), 1500);
-      } else {
-        toast.error('Payment failed', { id: 'payment' });
       }
-    } catch (err) {
-      toast.error('Could not process payment', { id: 'payment' });
+    } catch {
+      // Fallback: try create-order flow
+      try {
+        const orderRes = await api.post('/payments/create-order', {
+          type: 'COMPANY_TIER_UPGRADE',
+          amount: price,
+          metadata: { tier }
+        });
+        const { order, transactionId } = orderRes.data;
+        toast.loading('Processing demo payment...', { id: 'payment' });
+        const verifyRes = await api.post('/payments/verify', {
+          razorpayOrderId: order.id,
+          transactionId
+        });
+        if (verifyRes.data.success) {
+          toast.success('Successfully upgraded plan!', { id: 'payment' });
+          setTimeout(() => window.location.reload(), 1500);
+        } else {
+          toast.error('Payment failed', { id: 'payment' });
+        }
+      } catch {
+        toast.error('Could not process payment — check backend connection');
+      }
     } finally {
       setLoading(false);
     }

@@ -89,3 +89,41 @@ exports.activateProBypass = async (req, res) => {
     res.status(500).json({ success: false, message: err.message });
   }
 };
+
+// POST /api/v1/payments/company-upgrade-bypass
+// ⚠️  TEMPORARY: Bypasses Razorpay and directly upgrades company tier.
+//     Records a PENDING transaction for audit trail.
+exports.activateCompanyUpgradeBypass = async (req, res) => {
+  try {
+    const { tier } = req.body;
+    const VALID_TIERS = ['STARTER', 'GROWTH', 'ENTERPRISE'];
+    if (!VALID_TIERS.includes(tier)) {
+      return res.status(400).json({ success: false, message: 'Invalid tier' });
+    }
+    const TIER_PRICES  = { STARTER: 4999, GROWTH: 9999, ENTERPRISE: 24999 };
+    const tierFeatures = {
+      STARTER:    { topListingSlots: 5,  bulkHiringTools: false, premiumATS: true,  candidateDBAccess: false, hackathonHosting: false },
+      GROWTH:     { topListingSlots: 10, bulkHiringTools: true,  premiumATS: true,  candidateDBAccess: true,  hackathonHosting: true  },
+      ENTERPRISE: { topListingSlots: 99, bulkHiringTools: true,  premiumATS: true,  candidateDBAccess: true,  hackathonHosting: true  },
+    };
+    if (!req.user.companyRef) {
+      return res.status(400).json({ success: false, message: 'No company linked to this account' });
+    }
+    await Company.findByIdAndUpdate(req.user.companyRef, {
+      'subscription.tier':     tier,
+      'subscription.features': tierFeatures[tier],
+      'subscription.startDate': new Date(),
+      'subscription.endDate':   new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+    });
+    // Record for audit trail
+    await Transaction.create({
+      user: req.user._id, company: req.user.companyRef,
+      type: 'COMPANY_TIER_UPGRADE', amount: TIER_PRICES[tier],
+      currency: 'INR', status: 'SUCCESS',
+      metadata: { tier, bypass: true },
+    });
+    res.json({ success: true, message: `Company upgraded to ${tier}` });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+};

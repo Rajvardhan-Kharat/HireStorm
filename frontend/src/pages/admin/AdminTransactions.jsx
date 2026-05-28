@@ -7,65 +7,65 @@ import {
   ArrowUpRight, Info,
 } from 'lucide-react';
 
+// Transaction types as they exist in the DB enum
 const REVENUE_STREAMS = [
   {
     icon: <Building size={20} />,
     name: 'Company Subscriptions',
-    desc: 'Free → Growth (₹4,999/mo) → Enterprise (₹14,999/mo)',
-    model: 'Recurring monthly SaaS — companies pay to post more jobs, access candidate DB, and host hackathons.',
+    desc: 'STARTER ₹4,999 · GROWTH ₹9,999 · ENTERPRISE ₹24,999 /mo',
+    model: 'Recurring monthly SaaS — companies pay to unlock hiring tools, ATS, and hackathon co-hosting.',
     color: 'var(--clr-primary)',
     type: 'COMPANY_TIER_UPGRADE',
   },
   {
     icon: <Briefcase size={20} />,
-    name: 'Listing Boosts',
-    desc: '₹499/listing · Sponsored for 7 days',
-    model: 'Companies boost a job listing to appear at the top of search results with a "Sponsored" badge.',
+    name: 'Listing Pin / Boost',
+    desc: '₹499/listing · Pinned to top for 7 days',
+    model: 'Companies pay to pin a listing to the top of search results with a "Sponsored" badge.',
     color: 'var(--clr-accent)',
-    type: 'LISTING_BOOST',
+    type: 'LISTING_PIN',
   },
   {
     icon: <Code2 size={20} />,
-    name: 'Hackathon Hosting Fee',
-    desc: '₹9,999/event · Company co-hosts a hackathon',
-    model: 'Companies pay to co-host a hackathon through HireStorm. Platform manages logistics, registrations, and prizes.',
+    name: 'Hackathon Sponsor',
+    desc: '₹9,999–₹49,999 · Company co-hosts a HireStorm hackathon',
+    model: 'Companies pay to sponsor/co-host a hackathon. HireStorm manages logistics, registrations, and prizes.',
     color: '#f59e0b',
-    type: 'HACKATHON_HOSTING',
+    type: 'HACKATHON_SPONSOR',
   },
   {
     icon: <BookOpen size={20} />,
     name: 'Course Purchases',
-    desc: 'Per-course or subscription · Revenue shared',
-    model: '70% revenue to course instructor/company, 30% retained by HireStorm platform. Free courses drive traffic.',
+    desc: 'Per-course purchase · Revenue shared 70/30',
+    model: '70% revenue to course creator/company, 30% retained by HireStorm. Free courses drive student traffic.',
     color: 'var(--clr-success)',
     type: 'COURSE_PURCHASE',
   },
   {
     icon: <Users size={20} />,
     name: 'Student PRO Subscription',
-    desc: '₹299/month · Profile boost + analytics',
+    desc: '₹299/month · Profile boost + analytics + early access',
     model: 'Students upgrade to PRO for profile highlighting, analytics, early access to listings, and priority support.',
     color: '#a78bfa',
-    type: 'STUDENT_PRO',
+    type: 'PRO_SUBSCRIPTION',
   },
   {
     icon: <TrendingUp size={20} />,
-    name: 'Campus Connect Badge',
-    desc: '₹2,499/month · Verified campus partner',
-    model: 'Companies pay for a verified campus placement partnership badge, giving access to campus talent pools.',
+    name: 'Hackathon Entry Fee',
+    desc: 'Per-event · Collected from student teams',
+    model: 'Student teams pay an entry fee to participate in paid hackathons.',
     color: '#ec4899',
-    type: 'CAMPUS_CONNECT',
+    type: 'HACKATHON_ENTRY',
   },
 ];
 
 const TYPE_COLORS = {
   COMPANY_TIER_UPGRADE: 'badge-blue',
-  LISTING_BOOST:        'badge-yellow',
-  HACKATHON_HOSTING:    'badge-orange',
+  LISTING_PIN:          'badge-yellow',
+  HACKATHON_SPONSOR:    'badge-orange',
   COURSE_PURCHASE:      'badge-green',
-  STUDENT_PRO:          'badge-blue',
-  CAMPUS_CONNECT:       'badge-blue',
-  HACKATHON_REGISTRATION: 'badge-gray',
+  PRO_SUBSCRIPTION:     'badge-purple',
+  HACKATHON_ENTRY:      'badge-teal',
 };
 
 export default function AdminTransactions() {

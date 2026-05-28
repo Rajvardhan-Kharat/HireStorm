@@ -10,7 +10,7 @@ const {
   sendAITestInvite, sendAITestFailed,
   sendCampusInterviewInvite, sendCampusOfferLetter,
 } = require('../services/emailService');
-const { generateCampusOfferLetterPDF } = require('../utils/pdfGenerator');
+const { generateCampusOfferLetterPDF, generateCampusOfferLetterBuffer } = require('../utils/pdfGenerator');
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
@@ -22,6 +22,17 @@ const calcOverallScore = (app) => {
   const cl10 = (app.student.class10 || 0) * 0.15;
   const cl12 = (app.student.class12 || 0) * 0.15;
   return Math.round(ats + cgpa + cl10 + cl12);
+};
+
+// Helper: get the effective JD for an application (supports multi-JD drives)
+const getApplicationJD = (drive, app) => {
+  // If drive has jds[] array, use the student's jdIndex
+  if (drive.jds && drive.jds.length > 0) {
+    const idx = app.jdIndex ?? 0;
+    return drive.jds[idx] || drive.jds[0];
+  }
+  // Fall back to legacy single jd
+  return drive.jd || {};
 };
 
 // ─── ADMIN: Manage colleges ──────────────────────────────────────────────────
@@ -76,7 +87,10 @@ const adminDeleteCollege = async (req, res) => {
 // POST /api/v1/college/admin/drives  — create a drive + send JD to college
 const adminCreateDrive = async (req, res) => {
   try {
-    const { collegeId, title, description, driveDate, venue, mode, jd, shortlistingCriteria } = req.body;
+    const {
+      collegeId, title, description, driveDate, venue, mode,
+      jd, jds, shortlistingCriteria, enableInterviewRound, mcqConfig,
+    } = req.body;
 
     const college = await College.findById(collegeId);
     if (!college) return res.status(404).json({ success: false, message: 'College not found' });
@@ -85,15 +99,31 @@ const adminCreateDrive = async (req, res) => {
     const applicationFormToken = crypto.randomBytes(24).toString('hex');
     const applicationFormUrl = `${process.env.CLIENT_URL}/apply/${applicationFormToken}`;
 
-    const drive = await CampusDrive.create({
+    // Build the drive object
+    const driveData = {
       college: collegeId,
       createdBy: req.user._id,
       title, description, driveDate, venue, mode,
-      jd, shortlistingCriteria,
+      shortlistingCriteria,
       applicationFormToken,
       applicationFormUrl,
       status: 'JD_SENT',
-    });
+      enableInterviewRound: enableInterviewRound === true,
+    };
+
+    // Support both single JD and multiple JDs
+    if (jds && Array.isArray(jds) && jds.length > 0) {
+      driveData.jds = jds;
+      // Also set legacy jd to first entry for backward compat
+      driveData.jd = jds[0];
+    } else if (jd) {
+      driveData.jd = jd;
+      driveData.jds = [jd]; // wrap single JD into array
+    }
+
+    if (mcqConfig) driveData.mcqConfig = mcqConfig;
+
+    const drive = await CampusDrive.create(driveData);
 
     // Increment college drive count
     await College.findByIdAndUpdate(collegeId, { $inc: { totalDrives: 1 } });
@@ -134,6 +164,22 @@ const adminUpdateDrive = async (req, res) => {
   }
 };
 
+// PUT /api/v1/college/admin/drives/:id/offer-template — save offer letter template
+const adminSaveOfferTemplate = async (req, res) => {
+  try {
+    const { companyName, signatoryName, signatoryTitle, customTerms, footerText, logoUrl } = req.body;
+    const drive = await CampusDrive.findByIdAndUpdate(
+      req.params.id,
+      { offerLetterTemplate: { companyName, signatoryName, signatoryTitle, customTerms, footerText, logoUrl } },
+      { new: true }
+    );
+    if (!drive) return res.status(404).json({ success: false, message: 'Drive not found' });
+    res.json({ success: true, drive, message: 'Offer letter template saved' });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
+
 // GET /api/v1/college/admin/drives/:id/applications — list all applications for a drive
 const adminListApplications = async (req, res) => {
   try {
@@ -156,10 +202,9 @@ const adminShortlistStudents = async (req, res) => {
     const drive = await CampusDrive.findById(req.params.id);
     if (!drive) return res.status(404).json({ success: false, message: 'Drive not found' });
 
-    const { criteria } = req.body; // optional override
+    const { criteria } = req.body;
     const sc = criteria || drive.shortlistingCriteria;
 
-    // Find eligible applicants
     const candidates = await DriveApplication.find({
       drive: drive._id,
       status: { $in: ['APPLIED', 'UNDER_REVIEW'] },
@@ -172,7 +217,6 @@ const adminShortlistStudents = async (req, res) => {
     const ids = candidates.map(c => c._id);
     await DriveApplication.updateMany({ _id: { $in: ids } }, { status: 'SHORTLISTED', shortlistedAt: new Date() });
 
-    // Update drive stats
     await CampusDrive.findByIdAndUpdate(drive._id, {
       totalShortlisted: ids.length,
       status: 'SHORTLISTED',
@@ -201,7 +245,6 @@ const adminSelectStudentAsIntern = async (req, res) => {
     const app = await DriveApplication.findById(req.params.appId).populate('drive');
     if (!app) return res.status(404).json({ success: false, message: 'Application not found' });
 
-    // Try to link to platform user
     let platformUser = app.platformUser;
     if (!platformUser) {
       platformUser = await User.findOne({ email: app.student.email });
@@ -218,7 +261,6 @@ const adminSelectStudentAsIntern = async (req, res) => {
       });
     }
 
-    // Create internship
     const { startDate, endDate, stipend, mentor } = req.body;
     const internship = await Internship.create({
       intern: platformUser._id,
@@ -232,19 +274,16 @@ const adminSelectStudentAsIntern = async (req, res) => {
       status: 'OFFER_SENT',
     });
 
-    // Update application
     app.status = 'OFFER_SENT';
     app.selectedAt = new Date();
     app.internship = internship._id;
     await app.save();
 
-    // Update user's activeInternship
     await User.findByIdAndUpdate(platformUser._id, {
       activeInternship: internship._id,
       role: 'INTERN',
     });
 
-    // Update drive stats
     await CampusDrive.findByIdAndUpdate(app.drive._id, { $inc: { totalSelected: 1 } });
     await College.findByIdAndUpdate(app.college, { $inc: { totalSelected: 1 } });
 
@@ -281,13 +320,18 @@ const submitDriveApplication = async (req, res) => {
       return res.status(400).json({ success: false, message: 'Applications are closed' });
     }
 
-    const { student } = req.body;
+    const { student, jdIndex = 0 } = req.body;
 
     // Check for duplicate
     const existing = await DriveApplication.findOne({ drive: drive._id, 'student.email': student.email.toLowerCase() });
     if (existing) {
       return res.status(400).json({ success: false, message: 'You have already applied to this drive' });
     }
+
+    // Get the relevant JD for ATS scoring
+    const effectiveJD = (drive.jds && drive.jds.length > 0)
+      ? (drive.jds[jdIndex] || drive.jds[0])
+      : (drive.jd || {});
 
     // Run ATS scoring via Gemini AI
     let atsScore = null;
@@ -297,9 +341,9 @@ const submitDriveApplication = async (req, res) => {
       const prompt = `
 You are an ATS (Applicant Tracking System) evaluator for an internship role.
 
-Job Role: ${drive.jd?.role || 'Software Developer Intern'}
-Required Skills: ${(drive.jd?.skills || []).join(', ') || 'Programming, Problem Solving'}
-Minimum CGPA: ${drive.jd?.minCGPA || 6.0}
+Job Role: ${effectiveJD.role || 'Software Developer Intern'}
+Required Skills: ${(effectiveJD.skills || []).join(', ') || 'Programming, Problem Solving'}
+Minimum CGPA: ${effectiveJD.minCGPA || 6.0}
 
 Candidate Profile:
 - Name: ${student.name}
@@ -321,22 +365,21 @@ Return ONLY a JSON object: {"score": <number 0-100>, "analysis": "<2-3 sentence 
         atsAnalysis = parsed.analysis;
       }
     } catch (_) {
-      atsScore = 50; // fallback
+      atsScore = 50;
     }
 
     const app = await DriveApplication.create({
       drive: drive._id,
       college: drive.college,
       student: { ...student, email: student.email.toLowerCase() },
+      jdIndex,
       atsScore,
       atsAnalysis,
     });
 
-    // Compute overallScore and save
     app.overallScore = calcOverallScore(app);
     await app.save();
 
-    // Update drive applicant count
     await CampusDrive.findByIdAndUpdate(drive._id, { $inc: { totalApplicants: 1 }, status: 'APPLICATIONS_OPEN' });
 
     res.status(201).json({
@@ -356,7 +399,6 @@ Return ONLY a JSON object: {"score": <number 0-100>, "analysis": "<2-3 sentence 
 
 // ─── COLLEGE PORTAL: Auth & Drive Views ──────────────────────────────────────
 
-// GET /api/v1/college/portal/profile
 const collegeGetProfile = async (req, res) => {
   try {
     res.json({ success: true, college: req.college.toPublicProfile() });
@@ -365,7 +407,6 @@ const collegeGetProfile = async (req, res) => {
   }
 };
 
-// GET /api/v1/college/portal/drives — drives for this college
 const collegeGetDrives = async (req, res) => {
   try {
     const drives = await CampusDrive.find({ college: req.college._id }).sort({ createdAt: -1 });
@@ -375,7 +416,6 @@ const collegeGetDrives = async (req, res) => {
   }
 };
 
-// GET /api/v1/college/portal/drives/:id/applications — applications visible to college
 const collegeGetDriveApplications = async (req, res) => {
   try {
     const drive = await CampusDrive.findOne({ _id: req.params.id, college: req.college._id });
@@ -390,7 +430,6 @@ const collegeGetDriveApplications = async (req, res) => {
   }
 };
 
-// GET /api/v1/college/portal/drives/:id/shortlisted — shortlisted students for college
 const collegeGetShortlisted = async (req, res) => {
   try {
     const drive = await CampusDrive.findOne({ _id: req.params.id, college: req.college._id });
@@ -405,7 +444,6 @@ const collegeGetShortlisted = async (req, res) => {
   }
 };
 
-// GET /api/v1/college/public/:slug — public college info
 const getCollegePublicInfo = async (req, res) => {
   try {
     const college = await College.findOne({ slug: req.params.slug, isActive: true }).select('-password -refreshToken -email');
@@ -419,48 +457,149 @@ const getCollegePublicInfo = async (req, res) => {
 
 // ─── AI Test Pipeline ─────────────────────────────────────────────────────────
 
+// POST /api/v1/college/admin/drives/:id/generate-questions
+// Admin previews AI-generated questions for a drive (before sending to any student)
+const adminGenerateDriveQuestions = async (req, res) => {
+  try {
+    const drive = await CampusDrive.findById(req.params.id);
+    if (!drive) return res.status(404).json({ success: false, message: 'Drive not found' });
+
+    const { jdIndex = 0 } = req.body;
+    const effectiveJD = (drive.jds && drive.jds.length > 0)
+      ? (drive.jds[jdIndex] || drive.jds[0])
+      : (drive.jd || {});
+
+    const role = effectiveJD.role || 'Software Developer Intern';
+    const skills = (effectiveJD.skills || []).join(', ') || 'Programming';
+    const questionCount = drive.mcqConfig?.questionCount || 10;
+
+    let questions = [];
+    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+    const prompt = `Generate exactly ${questionCount} multiple-choice questions to test a candidate for the role: "${role}".
+Skills to test: ${skills}.
+Each question must have 4 options (A, B, C, D) and one correct answer.
+Vary difficulty: mix easy, medium, and hard questions.
+Return ONLY a valid JSON array like:
+[{"q":"Question text?","options":["A. opt1","B. opt2","C. opt3","D. opt4"],"correct":"A"}]
+No markdown, no extra text.`;
+    const result = await model.generateContent(prompt);
+    const text = result.response.text().trim().replace(/```json|```/g, '');
+    const match = text.match(/\[[\s\S]*\]/);
+    if (match) questions = JSON.parse(match[0]).slice(0, questionCount);
+
+    res.json({ success: true, questions, role, skills, jdIndex });
+  } catch (err) {
+    console.error('[Generate Drive Questions]', err.message);
+    res.status(500).json({ success: false, message: 'Failed to generate questions. Try again.' });
+  }
+};
+
+// POST /api/v1/college/admin/applications/:appId/generate-test
+// Admin generates (and stores) AI questions for a specific application for review
+const adminGenerateAIQuestionsForApp = async (req, res) => {
+  try {
+    const app = await DriveApplication.findById(req.params.appId).populate('drive');
+    if (!app) return res.status(404).json({ success: false, message: 'Application not found' });
+    if (app.status !== 'SHORTLISTED') return res.status(400).json({ success: false, message: 'Student must be shortlisted first' });
+
+    const drive = app.drive;
+    const effectiveJD = getApplicationJD(drive, app);
+    const role = effectiveJD.role || 'Software Developer Intern';
+    const skills = (effectiveJD.skills || []).join(', ') || 'Programming';
+    const questionCount = drive.mcqConfig?.questionCount || 10;
+
+    let questions = [];
+    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+    const prompt = `Generate exactly ${questionCount} multiple-choice questions to test a candidate for the role: "${role}".
+Skills to test: ${skills}.
+Each question must have 4 options (A, B, C, D) and one correct answer.
+Vary difficulty: mix easy, medium, and hard questions.
+Return ONLY a valid JSON array like:
+[{"q":"Question text?","options":["A. opt1","B. opt2","C. opt3","D. opt4"],"correct":"A"}]
+No markdown, no extra text.`;
+    const result = await model.generateContent(prompt);
+    const text = result.response.text().trim().replace(/```json|```/g, '');
+    const match = text.match(/\[[\s\S]*\]/);
+    if (match) questions = JSON.parse(match[0]).slice(0, questionCount);
+
+    // Store questions on application for review (not sent yet)
+    app.aiTest = { ...app.aiTest, questions, questionsReviewed: false };
+    await app.save();
+
+    res.json({ success: true, questions, role, skills });
+  } catch (e) {
+    console.error('[AI Test Gen]', e.message);
+    res.status(500).json({ success: false, message: 'Failed to generate questions. Try again.' });
+  }
+};
+
+// PUT /api/v1/college/admin/applications/:appId/update-test-questions
+// Admin edits the generated questions and saves them
+const adminUpdateAITestQuestions = async (req, res) => {
+  try {
+    const { questions } = req.body;
+    if (!questions || !Array.isArray(questions) || questions.length === 0) {
+      return res.status(400).json({ success: false, message: 'Questions array is required' });
+    }
+
+    const app = await DriveApplication.findById(req.params.appId);
+    if (!app) return res.status(404).json({ success: false, message: 'Application not found' });
+
+    app.aiTest = { ...app.aiTest, questions, questionsReviewed: true };
+    await app.save();
+
+    res.json({ success: true, message: 'Questions saved successfully', questions });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
+
 // POST /api/v1/college/admin/applications/:appId/send-ai-test
-// Generates AI questions via Gemini and sends test link to student
+// Sends the (possibly edited) AI test to the student
 const adminSendAITest = async (req, res) => {
   try {
     const app = await DriveApplication.findById(req.params.appId).populate('drive');
     if (!app) return res.status(404).json({ success: false, message: 'Application not found' });
     if (app.status !== 'SHORTLISTED') return res.status(400).json({ success: false, message: 'Student must be shortlisted first' });
 
-    const role = app.drive?.jd?.role || 'Software Developer Intern';
-    const skills = (app.drive?.jd?.skills || []).join(', ') || 'Programming';
+    const drive = app.drive;
+    const effectiveJD = getApplicationJD(drive, app);
+    const role = effectiveJD.role || 'Software Developer Intern';
+    const skills = (effectiveJD.skills || []).join(', ') || 'Programming';
+    const questionCount = drive.mcqConfig?.questionCount || 10;
 
-    // Generate 10 MCQ questions via Gemini
-    let questions = [];
-    try {
-      const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
-      const prompt = `Generate exactly 10 multiple-choice questions to test a candidate for the role: "${role}".
+    // Use existing reviewed questions if available, otherwise generate fresh
+    let questions = app.aiTest?.questions;
+    if (!questions || questions.length === 0) {
+      try {
+        const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+        const prompt = `Generate exactly ${questionCount} multiple-choice questions to test a candidate for the role: "${role}".
 Skills to test: ${skills}.
 Each question must have 4 options (A, B, C, D) and one correct answer.
 Return ONLY a valid JSON array like:
 [{"q":"Question text?","options":["A. opt1","B. opt2","C. opt3","D. opt4"],"correct":"A"}]
 No markdown, no extra text.`;
-      const result = await model.generateContent(prompt);
-      const text = result.response.text().trim().replace(/```json|```/g, '');
-      const match = text.match(/\[[\s\S]*\]/);
-      if (match) questions = JSON.parse(match[0]).slice(0, 10);
-    } catch (e) {
-      console.error('[AI Test Gen]', e.message);
-      return res.status(500).json({ success: false, message: 'Failed to generate questions. Try again.' });
+        const result = await model.generateContent(prompt);
+        const text = result.response.text().trim().replace(/```json|```/g, '');
+        const match = text.match(/\[[\s\S]*\]/);
+        if (match) questions = JSON.parse(match[0]).slice(0, questionCount);
+      } catch (e) {
+        console.error('[AI Test Gen]', e.message);
+        return res.status(500).json({ success: false, message: 'Failed to generate questions. Try again.' });
+      }
     }
 
     const token = crypto.randomBytes(32).toString('hex');
     const testUrl = `${process.env.CLIENT_URL}/ai-test/${token}`;
 
-    app.aiTest = { token, sentAt: new Date(), questions };
+    app.aiTest = { token, sentAt: new Date(), questions, questionsReviewed: app.aiTest?.questionsReviewed || false };
     app.status = 'AI_TEST_SENT';
     await app.save();
 
-    // Send email
     try {
       await sendAITestInvite(
         app.student.email, app.student.name,
-        role, testUrl, app.drive?.title || 'Campus Drive'
+        role, testUrl, drive?.title || 'Campus Drive'
       );
     } catch (emailErr) {
       console.warn('[AI Test Email]', emailErr.message);
@@ -475,19 +614,24 @@ No markdown, no extra text.`;
 // GET /api/v1/college/test/:token  — student fetches their test
 const getAITest = async (req, res) => {
   try {
-    const app = await DriveApplication.findOne({ 'aiTest.token': req.params.token }).populate('drive', 'title jd');
+    const app = await DriveApplication.findOne({ 'aiTest.token': req.params.token }).populate('drive', 'title jd jds mcqConfig');
     if (!app || !app.aiTest?.questions) return res.status(404).json({ success: false, message: 'Test not found or expired' });
     if (app.aiTest.submittedAt) return res.status(400).json({ success: false, message: 'Test already submitted' });
+
+    const drive = app.drive;
+    const effectiveJD = getApplicationJD(drive, app);
 
     // Return questions WITHOUT correct answers
     const safeQuestions = app.aiTest.questions.map(({ q, options }) => ({ q, options }));
     res.json({
       success: true,
       studentName: app.student.name,
-      role: app.drive?.jd?.role || 'Intern',
-      driveTitle: app.drive?.title,
+      role: effectiveJD.role || 'Intern',
+      driveTitle: drive?.title,
       questions: safeQuestions,
       totalQuestions: safeQuestions.length,
+      timeLimit: drive?.mcqConfig?.timeLimit || 20,
+      passingScore: drive?.mcqConfig?.passingScore || 60,
     });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
@@ -497,12 +641,13 @@ const getAITest = async (req, res) => {
 // POST /api/v1/college/test/:token/submit  — student submits answers
 const submitAITest = async (req, res) => {
   try {
-    const app = await DriveApplication.findOne({ 'aiTest.token': req.params.token }).populate('drive', 'title jd');
+    const app = await DriveApplication.findOne({ 'aiTest.token': req.params.token }).populate('drive', 'title jd jds mcqConfig');
     if (!app || !app.aiTest?.questions) return res.status(404).json({ success: false, message: 'Test not found' });
     if (app.aiTest.submittedAt) return res.status(400).json({ success: false, message: 'Test already submitted' });
 
-    const { answers } = req.body; // { "0": "A", "1": "C", ... }
+    const { answers } = req.body;
     const questions = app.aiTest.questions;
+    const passingScore = app.drive?.mcqConfig?.passingScore || 60;
 
     let correct = 0;
     questions.forEach((q, i) => {
@@ -512,17 +657,18 @@ const submitAITest = async (req, res) => {
     });
 
     const score = Math.round((correct / questions.length) * 100);
-    const passed = score >= 60;
+    const passed = score >= passingScore;
 
     app.aiTest.answers = answers;
     app.aiTest.score = score;
     app.aiTest.passed = passed;
     app.aiTest.submittedAt = new Date();
-    app.aiTest.token = undefined; // invalidate
+    app.aiTest.token = undefined;
     app.status = passed ? 'AI_TEST_PASSED' : 'AI_TEST_FAILED';
     await app.save();
 
-    const role = app.drive?.jd?.role || 'Intern';
+    const effectiveJD = getApplicationJD(app.drive, app);
+    const role = effectiveJD.role || 'Intern';
     const driveTitle = app.drive?.title || 'Campus Drive';
 
     if (!passed) {
@@ -537,9 +683,10 @@ const submitAITest = async (req, res) => {
       passed,
       correct,
       total: questions.length,
+      passingScore,
       message: passed
         ? `🎉 Congratulations! You scored ${score}% and passed the assessment.`
-        : `You scored ${score}%. The minimum passing score is 60%. Better luck next time!`,
+        : `You scored ${score}%. The minimum passing score is ${passingScore}%. Better luck next time!`,
     });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
@@ -547,13 +694,12 @@ const submitAITest = async (req, res) => {
 };
 
 // POST /api/v1/college/admin/applications/:appId/schedule-interview
-// Admin schedules interview with Google Meet link
 const adminScheduleInterview = async (req, res) => {
   try {
     const { meetLink, scheduledAt, notes } = req.body;
     if (!meetLink) return res.status(400).json({ success: false, message: 'Meet link is required' });
 
-    const app = await DriveApplication.findById(req.params.appId).populate('drive', 'title jd');
+    const app = await DriveApplication.findById(req.params.appId).populate('drive', 'title jd jds enableInterviewRound');
     if (!app) return res.status(404).json({ success: false, message: 'Application not found' });
     if (app.status !== 'AI_TEST_PASSED') return res.status(400).json({ success: false, message: 'Student must have passed the AI test first' });
 
@@ -561,7 +707,8 @@ const adminScheduleInterview = async (req, res) => {
     app.status = 'INTERVIEW_SCHEDULED';
     await app.save();
 
-    const role = app.drive?.jd?.role || 'Intern';
+    const effectiveJD = getApplicationJD(app.drive, app);
+    const role = effectiveJD.role || 'Intern';
     const driveTitle = app.drive?.title || 'Campus Drive';
 
     try {
@@ -577,38 +724,42 @@ const adminScheduleInterview = async (req, res) => {
 };
 
 // POST /api/v1/college/admin/applications/:appId/send-offer
-// Admin sends internship offer (after interview OR directly after AI test pass)
 const adminSendCampusOffer = async (req, res) => {
   try {
-    const { startDate, endDate, stipend, skipInterview = false } = req.body;
+    const { startDate, endDate, stipend } = req.body;
     const app = await DriveApplication.findById(req.params.appId).populate('drive college');
     if (!app) return res.status(404).json({ success: false, message: 'Application not found' });
 
+    // Allow sending offer after AI test passed, interview done, or selected
     const validStatuses = ['AI_TEST_PASSED', 'INTERVIEW_SCHEDULED', 'INTERVIEW_DONE', 'SELECTED'];
     if (!validStatuses.includes(app.status)) {
       return res.status(400).json({ success: false, message: `Cannot send offer in status: ${app.status}` });
     }
+
+    const drive = app.drive;
+    const effectiveJD = getApplicationJD(drive, app);
+    const role = effectiveJD.role || 'Intern';
+    const collegeName = app.college?.name || '';
+    const driveTitle = drive?.title || 'Campus Drive';
+    const stipendAmount = stipend?.amount || stipend || effectiveJD.stipend || 10000;
 
     const acceptToken = crypto.randomBytes(32).toString('hex');
     const rejectToken = crypto.randomBytes(32).toString('hex');
     const acceptUrl = `${process.env.API_URL}/api/v1/college/offer/accept?token=${acceptToken}`;
     const rejectUrl = `${process.env.API_URL}/api/v1/college/offer/reject?token=${rejectToken}`;
 
-    const role = app.drive?.jd?.role || 'Intern';
-    const collegeName = app.college?.name || '';
-    const driveTitle = app.drive?.title || 'Campus Drive';
-
-    // Generate PDF (upload to Cloudinary) — but email is HTML so no download needed
-    let pdfUrl = null;
+    // Generate PDF buffer for email attachment
+    let pdfBuffer = null;
     try {
-      pdfUrl = await generateCampusOfferLetterPDF({
+      pdfBuffer = await generateCampusOfferLetterBuffer({
         studentName: app.student.name,
         role, collegeName,
-        startDate, endDate, stipend: stipend?.amount || stipend,
-        uniqueId: app._id.toString(),
+        startDate, endDate,
+        stipend: stipendAmount,
+        template: drive.offerLetterTemplate,
       });
     } catch (pdfErr) {
-      console.warn('[Offer PDF]', pdfErr.message);
+      console.warn('[Offer PDF Buffer]', pdfErr.message);
     }
 
     app.status = 'OFFER_SENT';
@@ -616,33 +767,32 @@ const adminSendCampusOffer = async (req, res) => {
     app.offerLetter = { sentAt: new Date(), acceptToken, rejectToken };
     await app.save();
 
-    // Send the beautiful HTML email (no Cloudinary URL needed for display)
+    // Send email with PDF attachment
     try {
       await sendCampusOfferLetter(
         app.student.email, app.student.name,
         role, collegeName,
-        startDate, endDate, stipend?.amount || stipend,
-        acceptUrl, rejectUrl, driveTitle
+        startDate, endDate, stipendAmount,
+        acceptUrl, rejectUrl, driveTitle,
+        pdfBuffer  // ← PDF buffer as attachment
       );
     } catch (emailErr) {
       console.warn('[Offer Email]', emailErr.message);
     }
 
-    // Update drive stats
-    await CampusDrive.findByIdAndUpdate(app.drive._id, { $inc: { totalSelected: 1 } });
+    await CampusDrive.findByIdAndUpdate(drive._id, { $inc: { totalSelected: 1 } });
     await College.findByIdAndUpdate(app.college._id, { $inc: { totalSelected: 1 } });
 
     res.json({
       success: true,
-      message: `Offer letter sent to ${app.student.email}`,
-      pdfUrl,
+      message: `Offer letter sent to ${app.student.email} with PDF attachment`,
     });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
   }
 };
 
-// GET /api/v1/college/offer/accept?token=xxx  — student accepts via email link
+// GET /api/v1/college/offer/accept?token=xxx
 const acceptCampusOffer = async (req, res) => {
   try {
     const app = await DriveApplication.findOne({ 'offerLetter.acceptToken': req.query.token });
@@ -687,8 +837,14 @@ module.exports = {
   adminCreateDrive, adminListDrives, adminUpdateDrive,
   adminListApplications, adminShortlistStudents,
   adminUpdateApplication, adminSelectStudentAsIntern,
-  // Admin — AI Test + Interview + Offer pipeline
-  adminSendAITest, adminScheduleInterview, adminSendCampusOffer,
+  adminSaveOfferTemplate,
+  // Admin — AI Test pipeline
+  adminGenerateDriveQuestions,
+  adminGenerateAIQuestionsForApp,
+  adminUpdateAITestQuestions,
+  adminSendAITest,
+  adminScheduleInterview,
+  adminSendCampusOffer,
   // Public test
   getAITest, submitAITest,
   // Offer accept/reject

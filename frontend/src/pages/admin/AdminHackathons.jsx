@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import AdminLayout from '../../layouts/AdminLayout';
 import api from '../../api/axios';
 import toast from 'react-hot-toast';
-import { Plus, Search, Play, Eye, Calendar, Users, DollarSign, RefreshCw, Trophy } from 'lucide-react';
+import { Plus, Search, Play, Eye, Calendar, Users, RefreshCw, Trophy, CheckCircle2, XCircle, Clock } from 'lucide-react';
 
 const STATUS_BADGE = {
   DRAFT:               'badge-gray',
@@ -70,6 +70,29 @@ export default function AdminHackathons() {
     }
   };
 
+  const approveHackathon = async (id, e) => {
+    e.stopPropagation();
+    try {
+      await api.post(`/hackathons/${id}/publish`);
+      toast.success('Hackathon approved and published!');
+      load();
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to approve');
+    }
+  };
+
+  const rejectHackathon = async (id, title, e) => {
+    e.stopPropagation();
+    if (!window.confirm(`Reject and delete "${title}"? This cannot be undone.`)) return;
+    try {
+      await api.delete(`/hackathons/${id}`);
+      toast.success('Hackathon rejected and removed.');
+      load();
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to reject — make sure DELETE route exists');
+    }
+  };
+
   const filtered = hackathons.filter(h =>
     h.title?.toLowerCase().includes(search.toLowerCase())
   );
@@ -96,10 +119,11 @@ export default function AdminHackathons() {
         {/* Stats */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: 12, marginBottom: 28 }}>
           {[
-            { label: 'Total',      value: hackathons.length,                                         icon: <Trophy size={16} />,   color: 'var(--clr-primary)' },
-            { label: 'Active',     value: hackathons.filter(h => h.status === 'ACTIVE').length,      icon: <Play size={16} />,     color: 'var(--clr-success)' },
-            { label: 'Open Reg',   value: hackathons.filter(h => h.status === 'REGISTRATION_OPEN').length, icon: <Calendar size={16}/>, color: 'var(--clr-accent)' },
-            { label: 'Completed',  value: hackathons.filter(h => h.status === 'COMPLETED').length,   icon: <Trophy size={16} />,   color: 'var(--clr-warning)' },
+            { label: 'Total',      value: hackathons.length,                                                   icon: <Trophy size={16} />,      color: 'var(--clr-primary)' },
+            { label: 'Pending Approval', value: hackathons.filter(h => h.status === 'DRAFT').length,           icon: <Clock size={16} />,       color: '#f59e0b' },
+            { label: 'Active',     value: hackathons.filter(h => h.status === 'ACTIVE').length,                icon: <Play size={16} />,        color: 'var(--clr-success)' },
+            { label: 'Open Reg',   value: hackathons.filter(h => h.status === 'REGISTRATION_OPEN').length,    icon: <Calendar size={16}/>,     color: 'var(--clr-accent)' },
+            { label: 'Completed',  value: hackathons.filter(h => h.status === 'COMPLETED').length,             icon: <Trophy size={16} />,      color: 'var(--clr-warning)' },
           ].map(s => (
             <div key={s.label} className="metric-card" style={{ '--metric-color': s.color }}>
               <div className="metric-icon" style={{ color: s.color }}>{s.icon}</div>
@@ -171,6 +195,19 @@ export default function AdminHackathons() {
 
                   {/* Actions */}
                   <div style={{ display: 'flex', gap: 8, flexShrink: 0 }} onClick={e => e.stopPropagation()}>
+                    {/* DRAFT = company submitted, needs admin approval */}
+                    {hack.status === 'DRAFT' && (
+                      <>
+                        <button className="btn btn-sm" style={{ background: 'rgba(34,197,94,0.15)', color: 'var(--clr-success)', border: '1px solid var(--clr-success)' }}
+                          onClick={(e) => approveHackathon(hack._id, e)}>
+                          <CheckCircle2 size={13} /> Approve
+                        </button>
+                        <button className="btn btn-sm" style={{ background: 'rgba(239,68,68,0.12)', color: '#ef4444', border: '1px solid #ef4444' }}
+                          onClick={(e) => rejectHackathon(hack._id, hack.title, e)}>
+                          <XCircle size={13} /> Reject
+                        </button>
+                      </>
+                    )}
                     {!hack.isStarted && ['REGISTRATION_OPEN','REGISTRATION_CLOSED'].includes(hack.status) && (
                       <button className="btn btn-primary btn-sm" onClick={(e) => startHackathon(hack._id, e)}>
                         <Play size={13} /> Start

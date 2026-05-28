@@ -47,6 +47,9 @@ instance.interceptors.response.use(
         return instance(originalRequest);
       } else {
         processQueue(new Error('Session expired'));
+        // Clear auth state and redirect to login
+        useAuthStore.getState().logout();
+        window.location.href = '/login';
         return Promise.reject(error);
       }
     }

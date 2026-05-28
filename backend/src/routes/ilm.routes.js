@@ -16,18 +16,11 @@ const { generateExam, submitQuiz: submitExam } = require('../controllers/finalEx
 
 const ADMIN = ['PLATFORM_ADMIN', 'SUPER_ADMIN'];
 
+// ── Intern: Accept Offer (MUST be before /offer/:userId to avoid wildcard match) ──
+router.post('/offer/accept',            protect, allowRoles('INTERN', 'STUDENT', 'PRO_STUDENT'), acceptOffer);
+
 // ── Admin: Send Offer & Manage ────────────────────────────────────────────────
 router.post('/offer/:userId',           protect, allowRoles(...ADMIN), sendOffer);
-router.get('/all',                      protect, allowRoles(...ADMIN), getAllInternships);
-router.patch('/:id/assign-mentor',      protect, allowRoles(...ADMIN), assignMentor);
-
-// ── Mentor / Admin: Review ────────────────────────────────────────────────────
-router.get('/mentoring',                protect, allowRoles('MENTOR', ...ADMIN), getMentoringInternships);
-router.put('/mentoring/:ilmId/monthly-review', protect, allowRoles('MENTOR', ...ADMIN), submitMonthlyReview);
-router.put('/:ilmId/logs/:logId/score', protect, allowRoles('MENTOR', ...ADMIN), scoreDailyLog);
-
-// ── Intern: Offer Flow ────────────────────────────────────────────────────────
-router.post('/offer/accept',            protect, allowRoles('INTERN', 'STUDENT', 'PRO_STUDENT'), acceptOffer);
 
 // ── Intern: My Internship ─────────────────────────────────────────────────────
 // Allow STUDENT + PRO_STUDENT so Dashboard can check for pending offers without 403
@@ -43,7 +36,8 @@ router.post('/exam/submit',             protect, allowRoles('INTERN'), submitExa
 router.post('/exam/attempt',            protect, allowRoles('INTERN'), attemptExam);
 
 router.post('/certificate/share-linkedin', protect, allowRoles('INTERN'), shareLinkedIn);
-router.post('/certificate/dev-generate', protect, allowRoles('INTERN', 'STUDENT', 'PRO_STUDENT'), generateDevCertificate); // DEV OVERRIDE
+// DEV OVERRIDE — restrict to INTERN only in production to prevent fake certificates
+router.post('/certificate/dev-generate', protect, allowRoles('INTERN'), generateDevCertificate);
 router.get('/verify/:certId', verifyCertificate); // public
 
 module.exports = router;

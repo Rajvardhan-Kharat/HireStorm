@@ -1,3 +1,5 @@
+if (process.argv[2]) process.env.MONGO_URI = process.argv[2];
+require('dns').setServers(['8.8.8.8', '8.8.4.4']);
 const mongoose = require('mongoose');
 require('dotenv').config();
 const User = require('./src/models/User');

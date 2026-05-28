@@ -12,6 +12,7 @@ router.put('/users/:id/role', protect, isAdmin, updateUserRole);
 router.get('/companies', protect, isAdmin, getCompanies);
 router.put('/companies/:id/verify', protect, isAdmin, verifyCompany);
 router.get('/transactions', protect, isAdmin, getTransactions);
+router.get('/revenue', protect, isAdmin, require('../controllers/admin.controller').getRevenueDashboard);
 
 const Hackathon = require('../models/Hackathon');
 

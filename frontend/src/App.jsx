@@ -51,6 +51,7 @@ import AdminHackathons       from './pages/admin/AdminHackathons';
 import AdminHackathonReview  from './pages/admin/AdminHackathonReview';
 import AdminCreateHackathon  from './pages/admin/AdminCreateHackathon';
 import AdminTransactions     from './pages/admin/AdminTransactions';
+import AdminRevenue          from './pages/admin/AdminRevenue';
 import AdminCourseCMS        from './pages/admin/AdminCourseCMS';
 import AdminCampusDrives     from './pages/admin/AdminCampusDrives';
 import CourseDetail          from './pages/student/CourseDetail';
@@ -174,6 +175,7 @@ export default function App() {
           <Route path="/admin/hackathons/:id/review" element={<ProtectedRoute allowedRoles={['PLATFORM_ADMIN','SUPER_ADMIN']}><AdminHackathonReview /></ProtectedRoute>} />
           <Route path="/admin/ilm"          element={<ProtectedRoute allowedRoles={['PLATFORM_ADMIN','SUPER_ADMIN']}><AdminILM        /></ProtectedRoute>} />
           <Route path="/admin/transactions" element={<ProtectedRoute allowedRoles={['PLATFORM_ADMIN','SUPER_ADMIN']}><AdminTransactions /></ProtectedRoute>} />
+          <Route path="/admin/revenue"      element={<ProtectedRoute allowedRoles={['PLATFORM_ADMIN','SUPER_ADMIN']}><AdminRevenue /></ProtectedRoute>} />
           <Route path="/admin/courses"      element={<ProtectedRoute allowedRoles={['PLATFORM_ADMIN','SUPER_ADMIN']}><AdminCourseCMS /></ProtectedRoute>} />
           <Route path="/admin/drives"       element={<ProtectedRoute allowedRoles={['PLATFORM_ADMIN','SUPER_ADMIN']}><AdminCampusDrives /></ProtectedRoute>} />
 

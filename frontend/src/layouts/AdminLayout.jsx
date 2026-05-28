@@ -1,5 +1,5 @@
 import { NavLink, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, Users, Building, Code2, Star, CreditCard, LogOut, Shield, BookOpen, Sun, Moon, GraduationCap } from 'lucide-react';
+import { LayoutDashboard, Users, Building, Code2, Star, CreditCard, LogOut, Shield, BookOpen, Sun, Moon, GraduationCap, IndianRupee } from 'lucide-react';
 import useAuthStore from '../store/authStore';
 import useThemeStore from '../store/themeStore';
 
@@ -12,6 +12,7 @@ const navItems = [
   { to: '/admin/ilm',          icon: <Star size={16} />,            label: 'Internships' },
   { to: '/admin/courses',      icon: <BookOpen size={16} />,        label: 'Course CMS' },
   { to: '/admin/transactions', icon: <CreditCard size={16} />,      label: 'Transactions' },
+  { to: '/admin/revenue',      icon: <IndianRupee size={16} />,     label: 'Revenue' },
 ];
 
 export default function AdminLayout({ children }) {

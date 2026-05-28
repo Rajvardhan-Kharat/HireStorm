@@ -227,3 +227,34 @@ exports.getCertificate = async (req, res) => {
     return res.status(500).json({ success: false, message: err.message });
   }
 };
+
+// ── 4. Download Certificate PDF (PUBLIC — used in email links) ────────────────
+
+/**
+ * GET /api/v1/ilm/certificate/download/:certId
+ * Public route — no auth required (linked directly from certificate emails).
+ * Finds the internship by certificateId and redirects to the Cloudinary PDF URL.
+ */
+exports.downloadCertificate = async (req, res) => {
+  try {
+    const internship = await Internship.findOne({
+      'certificate.certificateId': req.params.certId,
+      'certificate.isGenerated':   true,
+    });
+
+    if (!internship) {
+      return res.status(404).json({ success: false, message: 'Certificate not found' });
+    }
+
+    const url = internship.certificate?.certificateUrl;
+    if (!url) {
+      return res.status(404).json({ success: false, message: 'Certificate PDF not available' });
+    }
+
+    // Redirect to Cloudinary PDF
+    return res.redirect(url);
+  } catch (err) {
+    console.error('[downloadCertificate]', err.message);
+    return res.status(500).json({ success: false, message: err.message });
+  }
+};

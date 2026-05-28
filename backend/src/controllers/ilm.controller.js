@@ -5,7 +5,7 @@ const { generateCertificate } = require('../services/certificateService');
 const { shareCertificateOnLinkedIn } = require('../services/linkedinService');
 const { sendOfferLetter, sendCertificateEmail } = require('../services/emailService');
 const { notify } = require('../services/notificationService');
-const PDFDocument = require('pdfkit');
+const { generateOfferLetterPDF } = require('../services/letterGenerator');
 const { cloudinary } = require('../config/cloudinary');
 const { Readable } = require('stream');
 
@@ -22,26 +22,16 @@ exports.sendOffer = async (req, res) => {
     // Generate WBS — stored under 'wbs' field (not wbsTasks)
     const wbs = generateWBS(start, intern.profile?.skills || []);
 
-    // Generate offer letter PDF
+    // Generate official Erfinden / InnoByes branded offer letter PDF
     let offerLetterUrl = null;
     try {
-      const pdfBuffer = await new Promise((resolve, reject) => {
-        const doc    = new PDFDocument({ margin: 50 });
-        const chunks = [];
-        doc.on('data', c => chunks.push(c));
-        doc.on('end',  () => resolve(Buffer.concat(chunks)));
-        doc.on('error', reject);
-        doc.fontSize(20).font('Helvetica-Bold').text('INTERNSHIP OFFER LETTER', { align: 'center' });
-        doc.moveDown();
-        doc.fontSize(12).font('Helvetica').text(`Dear ${intern.profile.firstName} ${intern.profile.lastName},`);
-        doc.moveDown();
-        doc.text(`We are pleased to offer you a 90-Day Internship at HireStorm starting ${start.toDateString()}.`);
-        doc.text(`Stipend: ₹${stipendAmount || 10000}/month | End Date: ${end.toDateString()}`);
-        doc.moveDown(2);
-        doc.text('Please accept this offer within 48 hours by visiting your dashboard.');
-        doc.moveDown(3);
-        doc.text('HireStorm Platform Authority', { align: 'right' });
-        doc.end();
+      const pdfBuffer = await generateOfferLetterPDF({
+        firstName:  intern.profile?.firstName || 'Intern',
+        lastName:   intern.profile?.lastName  || '',
+        startDate:  start,
+        endDate:    end,
+        role:       domain || 'Developer – Intern',
+        stipend:    stipendAmount || 0,
       });
 
       const uploadResult = await new Promise((resolve, reject) => {

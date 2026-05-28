@@ -114,7 +114,8 @@ exports.getMyInternship = async (req, res) => {
       .populate('mentor',   'profile email')
       .populate('company',  'name logo')
       .populate('hackathon','title slug');
-    if (!internship) return res.status(404).json({ success: false, message: 'No internship found' });
+    // Return null (not 404) so students with no internship don't trigger axios errors
+    if (!internship) return res.json({ success: true, data: null });
     res.json({ success: true, data: internship });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });

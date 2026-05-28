@@ -30,7 +30,8 @@ router.put('/:ilmId/logs/:logId/score', protect, allowRoles('MENTOR', ...ADMIN),
 router.post('/offer/accept',            protect, allowRoles('INTERN', 'STUDENT', 'PRO_STUDENT'), acceptOffer);
 
 // ── Intern: My Internship ─────────────────────────────────────────────────────
-router.get('/my',                       protect, allowRoles('INTERN'), getMyInternship);
+// Allow STUDENT + PRO_STUDENT so Dashboard can check for pending offers without 403
+router.get('/my',                       protect, allowRoles('INTERN', 'STUDENT', 'PRO_STUDENT'), getMyInternship);
 router.post('/my/daily-log',            protect, allowRoles('INTERN'), submitDailyLog);
 
 // Daily log route used by DailyLog.jsx (/ilm/daily-log POST)

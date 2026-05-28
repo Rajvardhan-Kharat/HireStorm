@@ -67,21 +67,27 @@ exports.enrollCourse = async (req, res) => {
 
 // ── Admin CRUD ─────────────────────────────────────────────────────────────────
 
-// POST /api/v1/courses — create course
+// POST /api/v1/courses — create course (admin or COMPANY_ADMIN)
 exports.createCourse = async (req, res) => {
   try {
     const { title, description, instructor, category, price, isFree, skills, thumbnail, modules, skillBoostWeight } = req.body;
     if (!title) return res.status(400).json({ success: false, message: 'Title is required' });
 
     const slug = slugify(title, { lower: true, strict: true }) + '-' + Date.now();
+
+    // If created by a company admin — store their companyRef for filtering
+    const isCompany = req.user?.role === 'COMPANY_ADMIN';
+    const company   = isCompany ? req.user.companyRef : undefined;
+
     const course = await Course.create({
       title, description, instructor, category, skills, thumbnail,
       price: { amount: price || 0, currency: 'INR' },
-      isFree: isFree || price === 0,
+      isFree: isFree || !price || price === 0,
       modules: modules || [],
       slug,
       skillBoostWeight: skillBoostWeight || 0,
-      isPublished: false,
+      isPublished: false,          // always starts as draft; admin must publish
+      ...(company && { company }), // only set if company admin
     });
     res.status(201).json({ success: true, data: course });
   } catch (err) {

@@ -1,10 +1,9 @@
 import { useEffect, useState } from 'react';
 import CompanyLayout from '../../layouts/CompanyLayout';
 import api from '../../api/axios';
-import { BookOpen, Clock, Star, Users, Plus, Eye } from 'lucide-react';
+import { BookOpen, Star, Users, Plus, Eye } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import useAuthStore from '../../store/authStore';
-import toast from 'react-hot-toast';
 
 export default function CompanyCourses() {
   const { user } = useAuthStore();
@@ -19,7 +18,6 @@ export default function CompanyCourses() {
       .catch(() => setLoading(false));
   }, []);
 
-  // Courses created/owned by this company
   const companyId = user?.companyRef;
   const myCourses  = courses.filter(c => c.company?.toString() === companyId?.toString());
   const allCourses = tab === 'ALL' ? courses : myCourses;
@@ -42,6 +40,13 @@ export default function CompanyCourses() {
               <div style={{ fontWeight: 800, fontSize: '1.2rem', color: 'var(--clr-success)', letterSpacing: '-0.03em' }}>{courses.length}</div>
               <div className="text-xs text-dimmed">Total</div>
             </div>
+            <button
+              className="btn btn-primary"
+              onClick={() => navigate('/company/courses/new')}
+              style={{ gap: 8, whiteSpace: 'nowrap' }}
+            >
+              <Plus size={16}/> Create Course
+            </button>
           </div>
         </div>
 

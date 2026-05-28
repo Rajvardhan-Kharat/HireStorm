@@ -45,6 +45,7 @@ import CompanyCreateHackathon from './pages/company/CompanyCreateHackathon';
 import CompanyAnalytics       from './pages/company/CompanyAnalytics';
 import CompanyNotifications   from './pages/company/CompanyNotifications';
 import CompanyCourses         from './pages/company/CompanyCourses';
+import CompanyCreateCourse    from './pages/company/CompanyCreateCourse';
 
 // ── Admin ─────────────────────────────────────────────────────────────
 import AdminDashboard        from './pages/admin/AdminDashboard';
@@ -180,6 +181,7 @@ export default function App() {
           <Route path="/company/hackathons"              element={<ProtectedRoute allowedRoles={COMPANY_ROLES}><CompanyHackathons        /></ProtectedRoute>} />
           <Route path="/company/hackathons/new"          element={<ProtectedRoute allowedRoles={['COMPANY_ADMIN']}><CompanyCreateHackathon /></ProtectedRoute>} />
           <Route path="/company/analytics"               element={<ProtectedRoute allowedRoles={COMPANY_ROLES}><CompanyAnalytics         /></ProtectedRoute>} />
+          <Route path="/company/courses/new"             element={<ProtectedRoute allowedRoles={['COMPANY_ADMIN']}><CompanyCreateCourse  /></ProtectedRoute>} />
           <Route path="/company/courses"                 element={<ProtectedRoute allowedRoles={COMPANY_ROLES}><CompanyCourses            /></ProtectedRoute>} />
           <Route path="/company/pricing"                 element={<ProtectedRoute allowedRoles={['COMPANY_ADMIN']}><CompanyPricing       /></ProtectedRoute>} />
           <Route path="/company/notifications"           element={<ProtectedRoute allowedRoles={COMPANY_ROLES}><CompanyNotifications     /></ProtectedRoute>} />

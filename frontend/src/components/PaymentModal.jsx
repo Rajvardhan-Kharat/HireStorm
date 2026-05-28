@@ -8,10 +8,10 @@
  *     amount={9999}
  *     description="Hackathon Hosting Fee"
  *     itemName="InnoHack 2025"
- *     type="HACKATHON_SPONSOR"          // transaction type
+ *     type="HACKATHON_SPONSOR"
  *     metadata={{ ... }}
- *     onSuccess={() => { /* proceed */ }}
- *     onClose={() => setShowPayment(false)}
+ *     onSuccess={handleSuccess}
+ *     onClose={handleClose}
  *   />
  */
 import { useState } from 'react';

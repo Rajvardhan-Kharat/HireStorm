@@ -20,8 +20,31 @@ exports.register = async (req, res) => {
     if (!email || !password || !firstName || !lastName) {
       return res.status(400).json({ success: false, message: 'All fields required' });
     }
+
     const existing = await User.findOne({ email });
-    if (existing) return res.status(400).json({ success: false, message: 'Email already in use' });
+
+    // If email exists but not yet verified → resend verification and return success
+    if (existing && !existing.isVerified) {
+      const verToken = crypto.randomBytes(32).toString('hex');
+      existing.emailVerificationToken = verToken;
+      await existing.save({ validateBeforeSave: false });
+
+      // Fire-and-forget: don't block response on email
+      setImmediate(() => {
+        sendEmail(
+          email,
+          'Verify your HireStorm account',
+          `Hi ${existing.profile.firstName}, click the link to verify your email.`,
+          `<p>Hi ${existing.profile.firstName}, click below to verify your email:</p><a href="${process.env.CLIENT_URL}/verify-email/${verToken}">Verify Email</a>`
+        ).catch(e => console.error('[Register] Email resend failed:', e.message));
+      });
+
+      return res.status(201).json({ success: true, message: 'Registration successful. Please check your email to verify your account.' });
+    }
+
+    if (existing && existing.isVerified) {
+      return res.status(400).json({ success: false, message: 'Email already in use' });
+    }
 
     const allowedRoles = ['STUDENT', 'COMPANY_ADMIN'];
     const assignedRole = allowedRoles.includes(role) ? role : 'STUDENT';
@@ -35,15 +58,20 @@ exports.register = async (req, res) => {
       emailVerificationToken: verToken,
     });
 
-    await sendEmail(
-      email,
-      'Verify your HireStorm account',
-      `Hi ${firstName}, click the link to verify your email.`,
-      `<p>Hi ${firstName}, click below to verify your email:</p><a href="${process.env.CLIENT_URL}/verify-email/${verToken}">Verify Email</a>`
-    );
+    // Respond immediately — don't block on email sending
+    res.status(201).json({ success: true, message: 'Registration successful. Please check your email to verify your account.' });
 
-    res.status(201).json({ success: true, message: 'Registration successful. Please verify your email.' });
+    // Fire-and-forget: send verification email after response
+    setImmediate(() => {
+      sendEmail(
+        email,
+        'Verify your HireStorm account',
+        `Hi ${firstName}, click the link to verify your email.`,
+        `<p>Hi ${firstName}, click below to verify your email:</p><a href="${process.env.CLIENT_URL}/verify-email/${verToken}">Verify Email</a>`
+      ).catch(e => console.error('[Register] Verification email failed:', e.message));
+    });
   } catch (err) {
+    console.error('[Register] Error:', err.message);
     res.status(500).json({ success: false, message: err.message });
   }
 };

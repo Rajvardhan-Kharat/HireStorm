@@ -43,6 +43,7 @@ import CompanyPricing         from './pages/company/CompanyPricing';
 import CompanyHackathons      from './pages/company/CompanyHackathons';
 import CompanyCreateHackathon from './pages/company/CompanyCreateHackathon';
 import CompanyAnalytics       from './pages/company/CompanyAnalytics';
+import CompanyNotifications   from './pages/company/CompanyNotifications';
 
 // ── Admin ─────────────────────────────────────────────────────────────
 import AdminDashboard        from './pages/admin/AdminDashboard';
@@ -180,6 +181,7 @@ export default function App() {
           <Route path="/company/analytics"               element={<ProtectedRoute allowedRoles={COMPANY_ROLES}><CompanyAnalytics         /></ProtectedRoute>} />
           <Route path="/company/courses"                 element={<ProtectedRoute allowedRoles={COMPANY_ROLES}><Courses                  /></ProtectedRoute>} />
           <Route path="/company/pricing"                 element={<ProtectedRoute allowedRoles={['COMPANY_ADMIN']}><CompanyPricing       /></ProtectedRoute>} />
+          <Route path="/company/notifications"           element={<ProtectedRoute allowedRoles={COMPANY_ROLES}><CompanyNotifications     /></ProtectedRoute>} />
           <Route path="/company/settings"                element={<ProtectedRoute allowedRoles={COMPANY_ROLES}><CompanySettings           /></ProtectedRoute>} />
 
           {/* ── Admin ─────────────────────────────────────────── */}

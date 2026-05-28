@@ -53,8 +53,8 @@ export default function StudentDashboard() {
     try {
       await api.post('/ilm/offer/accept');
       toast.success('🎉 Offer accepted! Your internship is now active.');
-      // Reload to get fresh user role (now INTERN)
-      window.location.href = '/ilm';
+      // Hard navigate to flush auth state and get fresh INTERN role
+      window.location.replace('/ilm');
     } catch (err) {
       toast.error(err.response?.data?.message || 'Failed to accept offer');
       setOfferLoading(false);

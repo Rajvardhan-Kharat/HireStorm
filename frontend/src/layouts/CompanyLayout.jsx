@@ -1,22 +1,35 @@
 import { NavLink, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, Briefcase, Users, Code2, Settings, LogOut, Building, BookOpen, TrendingUp, Sun, Moon } from 'lucide-react';
+import { LayoutDashboard, Briefcase, Users, Code2, Settings, LogOut, Building, BookOpen, TrendingUp, Sun, Moon, Bell } from 'lucide-react';
 import useAuthStore from '../store/authStore';
 import useThemeStore from '../store/themeStore';
+import useNotificationStore from '../store/notificationStore';
+import { useEffect } from 'react';
+import api from '../api/axios';
 
 const navItems = [
-  { to: '/company/dashboard',  icon: <LayoutDashboard size={16} />, label: 'Dashboard' },
-  { to: '/company/listings',   icon: <Briefcase size={16} />,       label: 'Listings' },
-  { to: '/company/candidates', icon: <Users size={16} />,           label: 'Candidates' },
-  { to: '/company/hackathons', icon: <Code2 size={16} />,           label: 'Hackathons' },
-  { to: '/company/courses',    icon: <BookOpen size={16} />,        label: 'Courses' },
-  { to: '/company/analytics',  icon: <TrendingUp size={16} />,      label: 'Analytics & Revenue' },
-  { to: '/company/settings',   icon: <Settings size={16} />,        label: 'Settings & Billing' },
+  { to: '/company/dashboard',      icon: <LayoutDashboard size={16} />, label: 'Dashboard' },
+  { to: '/company/listings',       icon: <Briefcase size={16} />,       label: 'Listings' },
+  { to: '/company/candidates',     icon: <Users size={16} />,           label: 'Candidates' },
+  { to: '/company/hackathons',     icon: <Code2 size={16} />,           label: 'Hackathons' },
+  { to: '/company/courses',        icon: <BookOpen size={16} />,        label: 'Courses' },
+  { to: '/company/analytics',      icon: <TrendingUp size={16} />,      label: 'Analytics & Revenue' },
+  { to: '/company/notifications',  icon: <Bell size={16} />,            label: 'Notifications' },
+  { to: '/company/settings',       icon: <Settings size={16} />,        label: 'Settings & Billing' },
 ];
 
 export default function CompanyLayout({ children }) {
   const { user, logout } = useAuthStore();
   const { theme, toggleTheme } = useThemeStore();
+  const { unreadCount, setNotifications } = useNotificationStore();
   const navigate = useNavigate();
+
+  // Fetch unread notification count on mount
+  useEffect(() => {
+    api.get('/notifications?limit=20')
+      .then(r => { if (r.data?.data) setNotifications(r.data.data); })
+      .catch(() => {});
+  }, []);
+
   const handleLogout = async () => { await logout(); navigate('/login'); };
   const initials = [user?.profile?.firstName?.[0], user?.profile?.lastName?.[0]].filter(Boolean).join('') || 'C';
 
@@ -44,7 +57,26 @@ export default function CompanyLayout({ children }) {
             {navItems.map(({ to, icon, label }) => (
               <li key={to}>
                 <NavLink to={to} className={({ isActive }) => isActive ? 'active' : ''}>
-                  {icon}<span style={{ flex:1 }}>{label}</span>
+                  {icon}
+                  <span style={{ flex:1 }}>{label}</span>
+                  {/* Unread badge on Notifications nav item */}
+                  {to === '/company/notifications' && unreadCount > 0 && (
+                    <span style={{
+                      background: '#ef4444',
+                      color: '#fff',
+                      borderRadius: '999px',
+                      fontSize: '0.65rem',
+                      fontWeight: 700,
+                      minWidth: 18,
+                      height: 18,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      padding: '0 5px',
+                    }}>
+                      {unreadCount > 99 ? '99+' : unreadCount}
+                    </span>
+                  )}
                 </NavLink>
               </li>
             ))}

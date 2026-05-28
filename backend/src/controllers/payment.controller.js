@@ -72,3 +72,20 @@ exports.getPaymentHistory = async (req, res) => {
     res.status(500).json({ success: false, message: err.message });
   }
 };
+
+// POST /api/v1/payments/activate-pro-bypass
+// ⚠️  TEMPORARY: Bypasses Razorpay and directly grants PRO_STUDENT.
+//     Replace with real payment flow before going live.
+exports.activateProBypass = async (req, res) => {
+  try {
+    await User.findByIdAndUpdate(req.user._id, {
+      role: 'PRO_STUDENT',
+      'subscription.plan': 'PRO',
+      'subscription.startDate': new Date(),
+      'subscription.endDate': new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+    });
+    res.json({ success: true, message: 'PRO activated' });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+};

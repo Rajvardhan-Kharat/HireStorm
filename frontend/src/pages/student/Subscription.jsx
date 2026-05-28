@@ -50,42 +50,70 @@ const PLANS = [
 ];
 
 export default function Subscription() {
-  const { user } = useAuthStore();
+  const { user, setAuth, accessToken } = useAuthStore();
   const [loading, setLoading] = useState(false);
   const isPro = ['PRO_STUDENT', 'INTERN'].includes(user?.role);
 
+  // ─────────────────────────────────────────────────────────────────────────────
+  // ⚠️  TEMPORARY BYPASS — Click instantly upgrades to PRO (no payment).
+  //     When ready to go live, remove this function and uncomment handleUpgradePay below.
+  // ─────────────────────────────────────────────────────────────────────────────
   const handleUpgrade = async () => {
     setLoading(true);
     try {
-      const { data } = await api.post('/payments/create-order', { type: 'PRO_SUBSCRIPTION' });
-      const options = {
-        key: import.meta.env.VITE_RAZORPAY_KEY_ID || '',
-        amount: data.order.amount,
-        currency: 'INR',
-        name: 'HireStorm PRO',
-        description: 'Monthly PRO Subscription',
-        order_id: data.order.id,
-        handler: async (response) => {
-          try {
-            await api.post('/payments/verify', response);
-            toast.success('🎉 Welcome to PRO! Refresh to see your benefits.');
-            window.location.reload();
-          } catch { toast.error('Payment verification failed. Contact support.'); }
-        },
-        prefill: { email: user?.email, name: `${user?.profile?.firstName} ${user?.profile?.lastName}` },
-        theme: { color: '#4f7ef8' },
-      };
-      if (window.Razorpay) { new window.Razorpay(options).open(); }
-      else {
-        const script = document.createElement('script');
-        script.src = 'https://checkout.razorpay.com/v1/checkout.js';
-        script.onload = () => new window.Razorpay(options).open();
-        document.body.appendChild(script);
-      }
+      await api.post('/payments/activate-pro-bypass');
+      // Refresh user profile so role updates in the store immediately
+      const { data } = await api.get('/auth/me');
+      setAuth(data.user, accessToken);
+      toast.success('🎉 You\'re now PRO! Enjoy all premium features.');
     } catch (err) {
-      toast.error(err.response?.data?.message || 'Could not initiate payment');
-    } finally { setLoading(false); }
+      toast.error(err.response?.data?.message || 'Upgrade failed. Try again.');
+    } finally {
+      setLoading(false);
+    }
   };
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // 💳  REAL PAYMENT FLOW (Razorpay) — restore this when payment goes live.
+  //     1. Rename this to handleUpgrade
+  //     2. Delete the bypass function above
+  //     3. Remove the /activate-pro-bypass route from the backend
+  // ─────────────────────────────────────────────────────────────────────────────
+  // const handleUpgradePay = async () => {
+  //   setLoading(true);
+  //   try {
+  //     const { data } = await api.post('/payments/create-order', {
+  //       type: 'PRO_SUBSCRIPTION',
+  //       amount: 29900, // ₹299 in paise
+  //     });
+  //     const options = {
+  //       key: import.meta.env.VITE_RAZORPAY_KEY_ID || '',
+  //       amount: data.order.amount,
+  //       currency: 'INR',
+  //       name: 'HireStorm PRO',
+  //       description: 'Monthly PRO Subscription',
+  //       order_id: data.order.id,
+  //       handler: async (response) => {
+  //         try {
+  //           await api.post('/payments/verify', response);
+  //           toast.success('🎉 Welcome to PRO! Refresh to see your benefits.');
+  //           window.location.reload();
+  //         } catch { toast.error('Payment verification failed. Contact support.'); }
+  //       },
+  //       prefill: { email: user?.email, name: `${user?.profile?.firstName} ${user?.profile?.lastName}` },
+  //       theme: { color: '#4f7ef8' },
+  //     };
+  //     if (window.Razorpay) { new window.Razorpay(options).open(); }
+  //     else {
+  //       const script = document.createElement('script');
+  //       script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+  //       script.onload = () => new window.Razorpay(options).open();
+  //       document.body.appendChild(script);
+  //     }
+  //   } catch (err) {
+  //     toast.error(err.response?.data?.message || 'Could not initiate payment');
+  //   } finally { setLoading(false); }
+  // };
 
   return (
     <StudentLayout>

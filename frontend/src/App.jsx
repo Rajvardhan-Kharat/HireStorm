@@ -66,6 +66,7 @@ import CollegeLogin         from './pages/college/CollegeLogin';
 import CollegePortal        from './pages/college/CollegePortal';
 import DriveApplicationForm from './pages/college/DriveApplicationForm';
 import AITestPage           from './pages/AITestPage';
+import VerifyCertificate    from './pages/public/VerifyCertificate';
 
 // ── Role Groups ────────────────────────────────────────────────────────
 const STUDENT_ROLES  = ['STUDENT', 'PRO_STUDENT', 'INTERN'];
@@ -137,7 +138,7 @@ export default function App() {
           <Route path="/register"              element={<RedirectIfAuth><Register        /></RedirectIfAuth>} />
           <Route path="/forgot-password"       element={<RedirectIfAuth><ForgotPassword  /></RedirectIfAuth>} />
           <Route path="/reset-password/:token" element={<RedirectIfAuth><ResetPassword   /></RedirectIfAuth>} />
-          <Route path="/verify/:certId"        element={<ComingSoon title="Certificate Verification" />} />
+          <Route path="/verify/:certId"        element={<VerifyCertificate />} />
 
           {/* ── College & Public Forms ──────────────────────── */}
           <Route path="/college/login"  element={<CollegeLogin />} />

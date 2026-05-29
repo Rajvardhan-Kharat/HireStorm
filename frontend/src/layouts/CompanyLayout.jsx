@@ -30,7 +30,11 @@ export default function CompanyLayout({ children }) {
       .catch(() => {});
   }, []);
 
-  const handleLogout = async () => { await logout(); navigate('/login'); };
+  const handleLogout = async () => {
+    if (!window.confirm('Are you sure you want to sign out?')) return;
+    await logout();
+    navigate('/login');
+  };
   const initials = [user?.profile?.firstName?.[0], user?.profile?.lastName?.[0]].filter(Boolean).join('') || 'C';
 
   return (

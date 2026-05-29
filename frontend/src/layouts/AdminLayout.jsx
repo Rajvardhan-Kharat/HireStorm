@@ -19,7 +19,11 @@ export default function AdminLayout({ children }) {
   const { user, logout } = useAuthStore();
   const { theme, toggleTheme } = useThemeStore();
   const navigate = useNavigate();
-  const handleLogout = async () => { await logout(); navigate('/login'); };
+  const handleLogout = async () => {
+    if (!window.confirm('Are you sure you want to sign out?')) return;
+    await logout();
+    navigate('/login');
+  };
   const initials = [user?.profile?.firstName?.[0], user?.profile?.lastName?.[0]].filter(Boolean).join('') || 'A';
 
   return (

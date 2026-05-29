@@ -8,6 +8,7 @@ const { v4: uuidv4 }        = require('uuid');
 const { cloudinary }         = require('../config/cloudinary');
 const { Readable }           = require('stream');
 const Internship             = require('../models/Internship');
+const User                   = require('../models/User');
 const { generateCompletionCertificatePDF } = require('./letterGenerator');
 
 /**
@@ -29,7 +30,9 @@ const generateCertificate = async (internshipId) => {
   const year          = new Date().getFullYear();
   const seq           = internshipId.toString().slice(-5).toUpperCase();
   const certificateId = `HSTORM-${year}-${seq}`;
-  const verifyUrl     = `${process.env.CLIENT_URL || 'https://hirestorm.onrender.com'}/verify/${certificateId}`;
+  // Use the first CLIENT_URL entry (comma-separated list) as the frontend base
+  const clientBase    = (process.env.CLIENT_URL || 'https://hire-storm.vercel.app').split(',')[0].trim();
+  const verifyUrl     = `${clientBase}/verify/${certificateId}`;
 
   const internName = `${internship.intern.profile.firstName} ${internship.intern.profile.lastName}`;
   const [firstName, ...rest] = internName.split(' ');
@@ -66,6 +69,12 @@ const generateCertificate = async (internshipId) => {
   };
   internship.status = 'COMPLETED';
   await internship.save();
+
+  // Revert intern's role back to STUDENT now that the internship is complete
+  await User.findByIdAndUpdate(internship.intern._id, {
+    role: 'STUDENT',
+    activeInternship: null,
+  });
 
   return { certificateId, certificateUrl: uploadResult.secure_url };
 };

@@ -39,7 +39,11 @@ export default function StudentLayout({ children }) {
   const initials = [user?.profile?.firstName?.[0], user?.profile?.lastName?.[0]].filter(Boolean).join('').toUpperCase() || '?';
   const roleName = user?.role?.replace(/_/g, ' ') || 'Student';
 
-  const handleLogout = async () => { await logout(); navigate('/login'); };
+  const handleLogout = async () => {
+    if (!window.confirm('Are you sure you want to sign out?')) return;
+    await logout();
+    navigate('/login');
+  };
 
   return (
     <div className="layout">

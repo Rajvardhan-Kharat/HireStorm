@@ -5,7 +5,8 @@ const { authLimiter } = require('../middleware/rateLimiter');
 const {
   register, login, refreshToken, logout, verifyEmail,
   forgotPassword, resetPassword,
-  getMe, updateCompany, updateProfile, uploadAvatar
+  getMe, updateCompany, updateProfile, uploadAvatar,
+  resendVerification
 } = require('../controllers/auth.controller');
 const { upload } = require('../middleware/upload');
 
@@ -16,6 +17,7 @@ router.post('/logout', protect, logout);
 router.get('/verify-email/:token', verifyEmail);
 router.post('/forgot-password',        authLimiter, forgotPassword);
 router.post('/reset-password/:token',  authLimiter, resetPassword);
+router.post('/resend-verification',    authLimiter, resendVerification);
 router.get('/me',                  protect, getMe);
 router.put('/profile',             protect, updateProfile);
 router.put('/company',             protect, updateCompany);

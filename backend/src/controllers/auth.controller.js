@@ -208,6 +208,38 @@ exports.resetPassword = async (req, res) => {
   }
 };
 
+// POST /api/v1/auth/resend-verification
+exports.resendVerification = async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email) return res.status(400).json({ success: false, message: 'Email is required' });
+
+    const user = await User.findOne({ email });
+    // Always return success to avoid email enumeration
+    if (!user || user.isVerified) {
+      return res.json({ success: true, message: 'If that account exists and is unverified, a new verification email has been sent.' });
+    }
+
+    const verToken = crypto.randomBytes(32).toString('hex');
+    user.emailVerificationToken = verToken;
+    await user.save({ validateBeforeSave: false });
+
+    setImmediate(() => {
+      sendEmail(
+        email,
+        'Verify your HireStorm account',
+        `Hi ${user.profile.firstName}, click the link to verify your email.`,
+        `<p>Hi ${user.profile.firstName}, click below to verify your HireStorm email:</p><a href="${process.env.CLIENT_URL}/verify-email/${verToken}">Verify Email</a>`
+      ).catch(e => console.error('[ResendVerification] Email failed:', e.message));
+    });
+
+    res.json({ success: true, message: 'Verification email resent! Please check your inbox.' });
+  } catch (err) {
+    console.error('[ResendVerification] Error:', err.message);
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
+
 const Company = require('../models/Company');
 
 // GET /api/v1/auth/me

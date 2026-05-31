@@ -20,7 +20,19 @@ const useAuthStore = create(
           return { success: true };
         } catch (err) {
           set({ isLoading: false });
-          return { success: false, message: err.response?.data?.message || 'Login failed' };
+          const message = err.response?.data?.message || 'Login failed';
+          const emailUnverified = err.response?.status === 401 &&
+            message.toLowerCase().includes('verify your email');
+          return { success: false, message, emailUnverified };
+        }
+      },
+
+      resendVerification: async (email) => {
+        try {
+          const { data } = await axios.post('/auth/resend-verification', { email });
+          return { success: true, message: data.message };
+        } catch (err) {
+          return { success: false, message: err.response?.data?.message || 'Failed to resend email' };
         }
       },
 

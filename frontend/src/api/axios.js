@@ -28,7 +28,15 @@ instance.interceptors.response.use(
   (res) => res,
   async (error) => {
     const originalRequest = error.config;
-    if (error.response?.status === 401 && !originalRequest._retry && !originalRequest.url.includes('/auth/refresh-token')) {
+
+    // Skip auto-refresh for ALL auth routes (login, register, verify, etc.)
+    // and for the refresh-token call itself — their 401s should reach the caller as-is.
+    const isAuthRoute = originalRequest.url.includes('/auth/');
+    if (
+      error.response?.status === 401 &&
+      !originalRequest._retry &&
+      !isAuthRoute
+    ) {
       if (isRefreshing) {
         return new Promise((resolve, reject) => {
           failedQueue.push({ resolve, reject });
@@ -47,7 +55,6 @@ instance.interceptors.response.use(
         return instance(originalRequest);
       } else {
         processQueue(new Error('Session expired'));
-        // Clear auth state and redirect to login
         useAuthStore.getState().logout();
         window.location.href = '/login';
         return Promise.reject(error);
@@ -56,5 +63,6 @@ instance.interceptors.response.use(
     return Promise.reject(error);
   }
 );
+
 
 export default instance;

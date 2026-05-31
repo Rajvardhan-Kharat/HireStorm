@@ -13,19 +13,25 @@ const transporter = nodemailer.createTransport(config);
 
 /* ─── Base send function ────────────────────────────────────────────────── */
 const sendEmail = async (to, subject, text, html) => {
-  // In dev without credentials: just log
+  // Mock only when BOTH: no SMTP credentials AND not in production
   if (!process.env.SMTP_USER && process.env.NODE_ENV !== 'production') {
     console.log(`\n[EmailService Mock]\n  To: ${to}\n  Subject: ${subject}\n  Body: ${text}\n`);
     return { messageId: 'mock-dev' };
   }
-  const info = await transporter.sendMail({
-    from: `"Innobytes" <${process.env.SMTP_USER || 'noreply@innobytes.io'}>`,
-    to, subject, text, html,
-  });
-  console.log(`[EmailService] Sent → ${to} | ${subject}`);
-  return info;
+  try {
+    const info = await transporter.sendMail({
+      from: `"HireStorm" <${process.env.SMTP_USER || 'noreply@hirestorm.io'}>`,
+      to, subject, text, html,
+    });
+    console.log(`[EmailService] ✅ Sent → ${to} | ${subject} | msgId: ${info.messageId}`);
+    return info;
+  } catch (err) {
+    console.error(`[EmailService] ❌ FAILED → ${to} | ${subject} | Error: ${err.message}`);
+    throw err; // re-throw so callers know it failed
+  }
 };
 exports.sendEmail = sendEmail;
+
 
 /* ─── Hackathon Pipeline Templates ─────────────────────────────────────── */
 

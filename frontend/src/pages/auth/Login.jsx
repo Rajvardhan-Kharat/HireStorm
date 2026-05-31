@@ -13,19 +13,24 @@ const features = [
 ];
 
 export default function Login() {
-  const [form, setForm]                       = useState({ email: '', password: '' });
-  const [unverifiedEmail, setUnverifiedEmail] = useState(null);
-  const [resending, setResending]             = useState(false);
-  const [resendCooldown, setResendCooldown]   = useState(0);
-  const [resendDone, setResendDone]           = useState(false);
-  const cooldownRef                           = useRef(null);
+  const [form, setForm]                     = useState({ email: '', password: '' });
+  const [resending, setResending]           = useState(false);
+  const [resendCooldown, setResendCooldown] = useState(0);
+  const cooldownRef                         = useRef(null);
 
-  // Granular selectors — so isLoading flips don't cause unnecessary re-renders
+  // Banner state lives in the STORE — survives React StrictMode double-mount,
+  // component remounts, and any re-render triggered by isLoading changes.
+  const loginBannerEmail  = useAuthStore(s => s.loginBannerEmail);
+  const loginBannerResent = useAuthStore(s => s.loginBannerResent);
+  const clearLoginBanner  = useAuthStore(s => s.clearLoginBanner);
+
+  // Granular selectors — avoids Login re-rendering on every store update
   const login              = useAuthStore(s => s.login);
   const resendVerification = useAuthStore(s => s.resendVerification);
   const isLoading          = useAuthStore(s => s.isLoading);
   const navigate           = useNavigate();
 
+  // Clean up cooldown timer on unmount
   useEffect(() => () => clearInterval(cooldownRef.current), []);
 
   const startCooldown = (seconds = 60) => {
@@ -47,24 +52,22 @@ export default function Login() {
       if (['PLATFORM_ADMIN', 'SUPER_ADMIN'].includes(role)) navigate('/admin/dashboard');
       else if (['COMPANY_ADMIN', 'COMPANY_HR'].includes(role)) navigate('/company/dashboard');
       else navigate('/dashboard');
-    } else if (res.emailUnverified) {
-      // Show persistent banner — never auto-dismiss
-      setUnverifiedEmail(form.email);
-      setResendDone(false);
-    } else {
-      setUnverifiedEmail(null);
+    } else if (!res.emailUnverified) {
+      // Clear banner for unrelated errors, show toast
+      clearLoginBanner();
       toast.error(res.message);
     }
+    // If emailUnverified — store already set loginBannerEmail inside login()
   };
 
   const handleResend = async () => {
-    if (resendCooldown > 0 || resending) return;
+    if (resendCooldown > 0 || resending || !loginBannerEmail) return;
     setResending(true);
-    const res = await resendVerification(unverifiedEmail);
+    const res = await resendVerification(loginBannerEmail);
     setResending(false);
     if (res.success) {
-      setResendDone(true);
       startCooldown(60);
+      // loginBannerResent is set inside resendVerification() in the store
     } else {
       toast.error(res.message);
     }
@@ -114,92 +117,101 @@ export default function Login() {
       </div>
 
       {/* ─── Right – Form side ──────────────────────────────── */}
-      <div className="auth-form-side" style={{ position: 'relative' }}>
+      <div className="auth-form-side" style={{ position: 'relative', flexDirection: 'column', gap: 0 }}>
 
-        {/* Email-not-verified banner — sits at top of right panel, outside the card
-            so it's NEVER affected by card re-renders / animations               */}
-        {unverifiedEmail && (
-          <div style={{
-            position: 'absolute',
-            top: 20,
-            left: '50%',
-            transform: 'translateX(-50%)',
-            width: 'min(440px, calc(100% - 40px))',
-            zIndex: 100,
-            padding: '14px 18px',
-            borderRadius: 'var(--r-md)',
-            border: '1.5px solid #f59e0b',
-            background: '#fffbeb',
-            boxShadow: '0 6px 24px rgba(245,158,11,0.18)',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: 12,
-          }}>
-            {/* Header row */}
+        {/* ── Persistent email-not-verified banner ──────────────────────────
+            State is in Zustand store, NOT useState — survives StrictMode and
+            any component remount. Rendered outside the form card so it's never
+            inside an animated container.                                      */}
+        {loginBannerEmail && (
+          <div
+            id="email-unverified-banner"
+            style={{
+              width: '100%',
+              maxWidth: 440,
+              marginBottom: 20,
+              padding: '16px 18px',
+              borderRadius: 'var(--r-md)',
+              border: '2px solid #f59e0b',
+              background: '#fffbeb',
+              boxShadow: '0 4px 20px rgba(245,158,11,0.15)',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 12,
+            }}
+          >
+            {/* Top row: icon + text + dismiss */}
             <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
-              <MailWarning size={20} style={{ color: '#d97706', flexShrink: 0, marginTop: 1 }} />
+              <MailWarning size={22} style={{ color: '#d97706', flexShrink: 0, marginTop: 1 }} />
               <div style={{ flex: 1 }}>
-                <p style={{ fontWeight: 700, fontSize: '0.9rem', color: '#92400e', marginBottom: 4 }}>
-                  Email not verified
+                <p style={{ fontWeight: 800, fontSize: '0.92rem', color: '#92400e', marginBottom: 5 }}>
+                  ✉️ Verify your email first
                 </p>
-                <p style={{ fontSize: '0.82rem', color: '#78350f', lineHeight: 1.6, margin: 0 }}>
-                  A verification link was sent to <strong>{unverifiedEmail}</strong>.
-                  Check your inbox (and spam) then click the link to sign in.
+                <p style={{ fontSize: '0.83rem', color: '#78350f', lineHeight: 1.65, margin: 0 }}>
+                  We sent a link to <strong>{loginBannerEmail}</strong>. Click it to activate your account, then try signing in again.
                 </p>
-                {resendDone && (
-                  <p style={{ fontSize: '0.8rem', color: '#065f46', fontWeight: 600, marginTop: 8, display: 'flex', alignItems: 'center', gap: 5, margin: '8px 0 0' }}>
-                    <CheckCircle2 size={13} /> New verification email sent — check your inbox!
+                {loginBannerResent && (
+                  <p style={{
+                    fontSize: '0.8rem', color: '#065f46', fontWeight: 700,
+                    marginTop: 8, display: 'flex', alignItems: 'center', gap: 5,
+                  }}>
+                    <CheckCircle2 size={13} />
+                    New email sent — check your inbox!
                   </p>
                 )}
               </div>
-              {/* Dismiss X */}
               <button
                 type="button"
                 aria-label="Dismiss"
-                onClick={() => { setUnverifiedEmail(null); setResendDone(false); }}
-                style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#92400e', fontSize: '1.1rem', lineHeight: 1, padding: '2px 4px', opacity: 0.6, flexShrink: 0 }}
-              >
-                ×
-              </button>
+                onClick={() => { clearLoginBanner(); setResendCooldown(0); clearInterval(cooldownRef.current); }}
+                style={{
+                  background: 'none', border: 'none', cursor: 'pointer',
+                  color: '#92400e', fontSize: '1.3rem', lineHeight: 1,
+                  padding: '0 4px', opacity: 0.55, flexShrink: 0,
+                  fontWeight: 300,
+                }}
+              >×</button>
             </div>
 
-            {/* Resend button row */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            {/* Bottom row: resend button + hint */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
               <button
                 type="button"
                 id="resend-verification-btn"
                 onClick={handleResend}
                 disabled={resending || resendCooldown > 0}
                 style={{
-                  display: 'flex', alignItems: 'center', gap: 6,
-                  padding: '8px 18px',
+                  display: 'flex', alignItems: 'center', gap: 7,
+                  padding: '9px 20px',
                   borderRadius: 'var(--r-sm)',
-                  border: '1.5px solid #f59e0b',
-                  background: (resending || resendCooldown > 0) ? 'transparent' : '#f59e0b',
+                  border: '2px solid #f59e0b',
+                  background: (resending || resendCooldown > 0) ? '#fef3c7' : '#f59e0b',
                   color: (resending || resendCooldown > 0) ? '#92400e' : '#fff',
-                  fontWeight: 700, fontSize: '0.82rem',
+                  fontWeight: 700, fontSize: '0.84rem',
                   cursor: (resending || resendCooldown > 0) ? 'not-allowed' : 'pointer',
-                  transition: 'all 0.2s',
-                  opacity: (resending || resendCooldown > 0) ? 0.7 : 1,
+                  transition: 'all 0.18s',
                   whiteSpace: 'nowrap',
                 }}
               >
-                <RefreshCw size={13} style={{ animation: resending ? 'spin 0.8s linear infinite' : 'none' }} />
+                <RefreshCw
+                  size={14}
+                  style={{ animation: resending ? 'spin 0.75s linear infinite' : 'none' }}
+                />
                 {resending
                   ? 'Sending…'
                   : resendCooldown > 0
                     ? `Resend in ${resendCooldown}s`
                     : 'Resend verification email'}
               </button>
-              <span style={{ fontSize: '0.75rem', color: '#92400e', opacity: 0.7 }}>
-                Didn't get it? Check spam or resend.
+              <span style={{ fontSize: '0.75rem', color: '#92400e', opacity: 0.65 }}>
+                Not in inbox? Check your spam folder.
               </span>
             </div>
           </div>
         )}
 
-        {/* Login Card — no animate-fade-up class to prevent animation re-triggering */}
-        <div className="auth-form-card" style={{ marginTop: unverifiedEmail ? 140 : 0, transition: 'margin-top 0.25s ease' }}>
+        {/* ── Login Card ──────────────────────────────────────── */}
+        <div className="auth-form-card" style={{ width: '100%', maxWidth: 440 }}>
           <h2 style={{ fontSize: '1.6rem', fontWeight: 800, letterSpacing: '-0.03em', marginBottom: 6 }}>Welcome back</h2>
           <p className="text-muted text-sm" style={{ marginBottom: 32 }}>Sign in to your HireStorm account</p>
 
@@ -209,16 +221,15 @@ export default function Login() {
               <div className="input-with-icon">
                 <Mail size={15} />
                 <input
-                  type="email"
                   id="login-email"
+                  type="email"
                   placeholder="you@example.com"
                   value={form.email}
                   onChange={e => {
                     setForm(p => ({ ...p, email: e.target.value }));
-                    // Only clear banner if user types a *different* email
-                    if (unverifiedEmail && e.target.value !== unverifiedEmail) {
-                      setUnverifiedEmail(null);
-                      setResendDone(false);
+                    // Clear banner only if user types a different email
+                    if (loginBannerEmail && e.target.value !== loginBannerEmail) {
+                      clearLoginBanner();
                     }
                   }}
                   required
@@ -234,8 +245,8 @@ export default function Login() {
               <div className="input-with-icon">
                 <Lock size={15} />
                 <input
-                  type="password"
                   id="login-password"
+                  type="password"
                   placeholder="••••••••"
                   value={form.password}
                   onChange={e => setForm(p => ({ ...p, password: e.target.value }))}
@@ -245,8 +256,8 @@ export default function Login() {
             </div>
 
             <button
-              className="btn btn-primary btn-lg w-full"
               id="login-submit-btn"
+              className="btn btn-primary btn-lg w-full"
               type="submit"
               disabled={isLoading}
               style={{ marginTop: 4 }}

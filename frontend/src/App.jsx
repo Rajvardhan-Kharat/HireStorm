@@ -151,7 +151,7 @@ export default function App() {
           <Route path="/my-applications"       element={<ProtectedRoute allowedRoles={STUDENT_ROLES}><MyApplications  /></ProtectedRoute>} />
           <Route path="/profile"               element={<ProtectedRoute allowedRoles={STUDENT_ROLES}><Profile         /></ProtectedRoute>} />
           <Route path="/profile/analytics"     element={<ProtectedRoute allowedRoles={STUDENT_ROLES}><Profile         /></ProtectedRoute>} />
-          <Route path="/settings/subscription" element={<ProtectedRoute allowedRoles={['STUDENT','PRO_STUDENT']}><Subscription /></ProtectedRoute>} />
+          <Route path="/settings/subscription" element={<ProtectedRoute allowedRoles={STUDENT_ROLES}><Subscription /></ProtectedRoute>} />
 
           {/* ── Shared (all logged-in users can browse) ─────────── */}
           <Route path="/listings"         element={<ProtectedRoute allowedRoles={ALL_ROLES}><Listings        /></ProtectedRoute>} />

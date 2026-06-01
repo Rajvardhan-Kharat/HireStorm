@@ -308,7 +308,7 @@ textarea { resize: vertical; min-height: 100px; }
 
 .sidebar {
   width: var(--sidebar-w);
-  min-height: 100vh;
+  height: 100vh;
   background: var(--clr-surface);
   border-right: 1px solid var(--clr-border);
   display: flex;
@@ -317,9 +317,22 @@ textarea { resize: vertical; min-height: 100px; }
   top: 0;
   left: 0;
   z-index: 200;
+  overflow: hidden; /* children handle their own scroll */
+}
+
+/* Scrollable nav area between brand and footer */
+.sidebar-scroll {
+  flex: 1;
   overflow-y: auto;
   overflow-x: hidden;
+  /* thin, subtle scrollbar */
+  scrollbar-width: thin;
+  scrollbar-color: var(--clr-border-2) transparent;
 }
+.sidebar-scroll::-webkit-scrollbar { width: 4px; }
+.sidebar-scroll::-webkit-scrollbar-track { background: transparent; }
+.sidebar-scroll::-webkit-scrollbar-thumb { background: var(--clr-border-2); border-radius: 2px; }
+.sidebar-scroll::-webkit-scrollbar-thumb:hover { background: var(--clr-text-3); }
 
 .sidebar-brand {
   padding: 22px var(--sp-5) 20px;
@@ -393,9 +406,10 @@ textarea { resize: vertical; min-height: 100px; }
 }
 
 .sidebar-bottom {
-  margin-top: auto;
+  flex-shrink: 0; /* never squish — always visible at bottom */
   padding: var(--sp-4);
   border-top: 1px solid var(--clr-border);
+  background: var(--clr-surface);
 }
 .sidebar-user {
   display: flex;

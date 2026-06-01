@@ -16,6 +16,7 @@ export default function Login() {
   const [form, setForm]                     = useState({ email: '', password: '' });
   const [resending, setResending]           = useState(false);
   const [resendCooldown, setResendCooldown] = useState(0);
+  const [loginError, setLoginError]         = useState('');
   const cooldownRef                         = useRef(null);
 
   // Banner state lives in the STORE — survives React StrictMode double-mount,
@@ -46,6 +47,7 @@ export default function Login() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoginError(''); // clear previous error immediately
     const res = await login(form.email, form.password);
     if (res.success) {
       const role = useAuthStore.getState().user?.role;
@@ -53,9 +55,9 @@ export default function Login() {
       else if (['COMPANY_ADMIN', 'COMPANY_HR'].includes(role)) navigate('/company/dashboard');
       else navigate('/dashboard');
     } else if (!res.emailUnverified) {
-      // Clear banner for unrelated errors, show toast
+      // Clear banner for unrelated errors, show inline error immediately
       clearLoginBanner();
-      toast.error(res.message);
+      setLoginError(res.message || 'Invalid email or password. Please try again.');
     }
     // If emailUnverified — store already set loginBannerEmail inside login()
   };
@@ -227,6 +229,7 @@ export default function Login() {
                   value={form.email}
                   onChange={e => {
                     setForm(p => ({ ...p, email: e.target.value }));
+                    setLoginError(''); // clear error on new input
                     // Clear banner only if user types a different email
                     if (loginBannerEmail && e.target.value !== loginBannerEmail) {
                       clearLoginBanner();
@@ -249,7 +252,7 @@ export default function Login() {
                   type="password"
                   placeholder="••••••••"
                   value={form.password}
-                  onChange={e => setForm(p => ({ ...p, password: e.target.value }))}
+                  onChange={e => { setForm(p => ({ ...p, password: e.target.value })); setLoginError(''); }}
                   required
                 />
               </div>
@@ -263,10 +266,33 @@ export default function Login() {
               style={{ marginTop: 4 }}
             >
               {isLoading
-                ? <span className="spinner" style={{ borderTopColor: '#fff' }} />
+                ? <><span className="spinner" style={{ borderTopColor: '#fff' }} /><span>Signing in…</span></>
                 : <><span>Sign In</span><ArrowRight size={16} /></>
               }
             </button>
+
+            {/* Inline error — appears instantly, no toast delay */}
+            {loginError && (
+              <div
+                role="alert"
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 8,
+                  padding: '10px 14px',
+                  borderRadius: 'var(--r-sm)',
+                  background: 'rgba(239,68,68,0.08)',
+                  border: '1.5px solid rgba(239,68,68,0.3)',
+                  color: 'var(--clr-danger)',
+                  fontSize: '0.85rem',
+                  fontWeight: 500,
+                  animation: 'fadeIn 0.15s ease',
+                }}
+              >
+                <span style={{ fontSize: '1rem', flexShrink: 0 }}>⚠️</span>
+                {loginError}
+              </div>
+            )}
           </form>
 
           <div className="divider" style={{ margin: '28px 0' }} />

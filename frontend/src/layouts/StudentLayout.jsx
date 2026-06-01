@@ -62,54 +62,57 @@ export default function StudentLayout({ children }) {
           </button>
         </div>
 
-        {/* Main Nav */}
-        <div className="sidebar-section">
-          <div className="sidebar-section-label">Menu</div>
-          <ul className="sidebar-nav">
-            {navItems.map(({ to, icon, label }) => (
-              <li key={to}>
-                <NavLink to={to} end={to === '/dashboard'} className={({ isActive }) => isActive ? 'active' : ''}>
-                  {icon}
-                  <span style={{ flex:1 }}>{label}</span>
-                </NavLink>
-              </li>
-            ))}
-          </ul>
+        {/* Scrollable nav area */}
+        <div className="sidebar-scroll">
+          {/* Main Nav */}
+          <div className="sidebar-section">
+            <div className="sidebar-section-label">Menu</div>
+            <ul className="sidebar-nav">
+              {navItems.map(({ to, icon, label }) => (
+                <li key={to}>
+                  <NavLink to={to} end={to === '/dashboard'} className={({ isActive }) => isActive ? 'active' : ''}>
+                    {icon}
+                    <span style={{ flex:1 }}>{label}</span>
+                  </NavLink>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* ILM Nav (always visible so students know where to go) */}
+          <div className="sidebar-section">
+            <div className="sidebar-section-label" style={{ color: 'var(--clr-success)' }}>🎓 Internship</div>
+            <ul className="sidebar-nav">
+              {ilmItems.map(({ to, icon, label }) => (
+                <li key={to}>
+                  <NavLink to={to} className={({ isActive }) => isActive ? 'active' : ''}>
+                    {icon}<span style={{ flex:1 }}>{label}</span>
+                  </NavLink>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Account Nav */}
+          <div className="sidebar-section">
+            <div className="sidebar-section-label">Account</div>
+            <ul className="sidebar-nav">
+              {accountItems.map(({ to, icon, label }) => (
+                <li key={to}>
+                  <NavLink to={to} className={({ isActive }) => isActive ? 'active' : ''}>
+                    {icon}
+                    <span style={{ flex:1 }}>{label}</span>
+                    {to === '/notifications' && unreadCount > 0 && (
+                      <span className="badge badge-blue" style={{ fontSize: '0.6rem', padding: '2px 6px' }}>{unreadCount}</span>
+                    )}
+                  </NavLink>
+                </li>
+              ))}
+            </ul>
+          </div>
         </div>
 
-        {/* ILM Nav (always visible so students know where to go) */}
-        <div className="sidebar-section">
-          <div className="sidebar-section-label" style={{ color: 'var(--clr-success)' }}>🎓 Internship</div>
-          <ul className="sidebar-nav">
-            {ilmItems.map(({ to, icon, label }) => (
-              <li key={to}>
-                <NavLink to={to} className={({ isActive }) => isActive ? 'active' : ''}>
-                  {icon}<span style={{ flex:1 }}>{label}</span>
-                </NavLink>
-              </li>
-            ))}
-          </ul>
-        </div>
-
-        {/* Account Nav */}
-        <div className="sidebar-section">
-          <div className="sidebar-section-label">Account</div>
-          <ul className="sidebar-nav">
-            {accountItems.map(({ to, icon, label }) => (
-              <li key={to}>
-                <NavLink to={to} className={({ isActive }) => isActive ? 'active' : ''}>
-                  {icon}
-                  <span style={{ flex:1 }}>{label}</span>
-                  {to === '/notifications' && unreadCount > 0 && (
-                    <span className="badge badge-blue" style={{ fontSize: '0.6rem', padding: '2px 6px' }}>{unreadCount}</span>
-                  )}
-                </NavLink>
-              </li>
-            ))}
-          </ul>
-        </div>
-
-        {/* User Footer */}
+        {/* User Footer — always visible at bottom */}
         <div className="sidebar-bottom">
           <div className="sidebar-user">
             <div className="sidebar-avatar">{initials}</div>

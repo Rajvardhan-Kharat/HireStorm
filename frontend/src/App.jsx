@@ -11,6 +11,7 @@ import Login          from './pages/auth/Login';
 import Register       from './pages/auth/Register';
 import ForgotPassword from './pages/auth/ForgotPassword';
 import ResetPassword  from './pages/auth/ResetPassword';
+import VerifyEmail    from './pages/auth/VerifyEmail';
 
 // ── Student ───────────────────────────────────────────────────────────
 import StudentDashboard from './pages/student/Dashboard';
@@ -138,6 +139,7 @@ export default function App() {
           <Route path="/register"              element={<RedirectIfAuth><Register        /></RedirectIfAuth>} />
           <Route path="/forgot-password"       element={<RedirectIfAuth><ForgotPassword  /></RedirectIfAuth>} />
           <Route path="/reset-password/:token" element={<RedirectIfAuth><ResetPassword   /></RedirectIfAuth>} />
+          <Route path="/verify-email/:token"   element={<RedirectIfAuth><VerifyEmail     /></RedirectIfAuth>} />
           <Route path="/verify/:certId"        element={<VerifyCertificate />} />
 
           {/* ── College & Public Forms ──────────────────────── */}

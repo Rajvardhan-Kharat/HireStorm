@@ -29,17 +29,14 @@ exports.register = async (req, res) => {
       existing.emailVerificationToken = verToken;
       await existing.save({ validateBeforeSave: false });
 
-      // Await email so it actually sends on managed hosts (Render, etc.)
-      try {
-        await sendEmail(
-          email,
-          'Verify your HireStorm account',
-          `Hi ${existing.profile.firstName}, click the link to verify your email.`,
-          `<p>Hi ${existing.profile.firstName}, click below to verify your email:</p><a href="${process.env.CLIENT_URL}/verify-email/${verToken}">Verify Email</a>`
-        );
-      } catch (e) {
-        console.error('[Register] Email resend failed:', e.message);
-      }
+      // Fire-and-forget: start the promise immediately (no setImmediate/await)
+      // so the event loop runs it while response is already sent
+      sendEmail(
+        email,
+        'Verify your HireStorm account',
+        `Hi ${existing.profile.firstName}, click the link to verify your email.`,
+        `<p>Hi ${existing.profile.firstName}, click below to verify your email:</p><a href="${process.env.CLIENT_URL}/verify-email/${verToken}">Verify Email</a>`
+      ).catch(e => console.error('[Register] Email resend failed:', e.message));
 
       return res.status(201).json({ success: true, message: 'Registration successful. Please check your email to verify your account.' });
     }
@@ -60,17 +57,13 @@ exports.register = async (req, res) => {
       emailVerificationToken: verToken,
     });
 
-    // Send verification email before responding so it's guaranteed to run
-    try {
-      await sendEmail(
-        email,
-        'Verify your HireStorm account',
-        `Hi ${firstName}, click the link to verify your email.`,
-        `<p>Hi ${firstName}, click below to verify your email:</p><a href="${process.env.CLIENT_URL}/verify-email/${verToken}">Verify Email</a>`
-      );
-    } catch (e) {
-      console.error('[Register] Verification email failed:', e.message);
-    }
+    // Fire-and-forget: queued immediately in event loop, runs after response
+    sendEmail(
+      email,
+      'Verify your HireStorm account',
+      `Hi ${firstName}, click the link to verify your email.`,
+      `<p>Hi ${firstName}, click below to verify your email:</p><a href="${process.env.CLIENT_URL}/verify-email/${verToken}">Verify Email</a>`
+    ).catch(e => console.error('[Register] Verification email failed:', e.message));
 
     res.status(201).json({ success: true, message: 'Registration successful. Please check your email to verify your account.' });
   } catch (err) {
@@ -227,17 +220,13 @@ exports.resendVerification = async (req, res) => {
     user.emailVerificationToken = verToken;
     await user.save({ validateBeforeSave: false });
 
-    // Await email send — ensures it actually sends on managed hosts (Render, etc.)
-    try {
-      await sendEmail(
-        email,
-        'Verify your HireStorm account',
-        `Hi ${user.profile.firstName}, click the link to verify your email.`,
-        `<p>Hi ${user.profile.firstName}, click below to verify your HireStorm email:</p><a href="${process.env.CLIENT_URL}/verify-email/${verToken}">Verify Email</a>`
-      );
-    } catch (e) {
-      console.error('[ResendVerification] Email failed:', e.message);
-    }
+    // Fire-and-forget: queued immediately in event loop, runs after response
+    sendEmail(
+      email,
+      'Verify your HireStorm account',
+      `Hi ${user.profile.firstName}, click the link to verify your email.`,
+      `<p>Hi ${user.profile.firstName}, click below to verify your HireStorm email:</p><a href="${process.env.CLIENT_URL}/verify-email/${verToken}">Verify Email</a>`
+    ).catch(e => console.error('[ResendVerification] Email failed:', e.message));
 
     res.json({ success: true, message: 'Verification email resent! Please check your inbox.' });
   } catch (err) {

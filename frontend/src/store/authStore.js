@@ -42,11 +42,15 @@ const useAuthStore = create(
 
       resendVerification: async (email) => {
         try {
-          const { data } = await axios.post('/auth/resend-verification', { email });
+          const timeout = new Promise((_, reject) =>
+            setTimeout(() => reject(new Error('Request timed out. The server may be waking up — try again in a moment.')), 12000)
+          );
+          const request = axios.post('/auth/resend-verification', { email });
+          const { data } = await Promise.race([request, timeout]);
           set({ loginBannerResent: true });
           return { success: true, message: data.message };
         } catch (err) {
-          return { success: false, message: err.response?.data?.message || 'Failed to resend email' };
+          return { success: false, message: err.response?.data?.message || err.message || 'Failed to resend email' };
         }
       },
 

@@ -1,6 +1,7 @@
 const nodemailer = require('nodemailer');
+const sgMail = require('@sendgrid/mail');
 
-/* ─── Transporter ──────────────────────────────────────────────────────── */
+/* ─── Transporter Config ────────────────────────────────────────────────── */
 const config = {
   host: process.env.SMTP_HOST || 'smtp.gmail.com',
   port: parseInt(process.env.SMTP_PORT || '587', 10),
@@ -11,22 +12,46 @@ if (process.env.SMTP_USER && process.env.SMTP_PASS) {
 }
 const transporter = nodemailer.createTransport(config);
 
+// Initialize SendGrid if key is present
+if (process.env.SENDGRID_API_KEY) {
+  sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+}
+
 /* ─── Base send function ────────────────────────────────────────────────── */
 const sendEmail = async (to, subject, text, html) => {
-  // Mock only when BOTH: no SMTP credentials AND not in production
-  if (!process.env.SMTP_USER && process.env.NODE_ENV !== 'production') {
+  // Mock only when BOTH: no SMTP credentials AND no SendGrid AND not in production
+  if (!process.env.SENDGRID_API_KEY && !process.env.SMTP_USER && process.env.NODE_ENV !== 'production') {
     console.log(`\n[EmailService Mock]\n  To: ${to}\n  Subject: ${subject}\n  Body: ${text}\n`);
     return { messageId: 'mock-dev' };
   }
+  
   try {
+    // USE SENDGRID OVER HTTP (Bypasses Render SMTP Block)
+    if (process.env.SENDGRID_API_KEY) {
+      const msg = {
+        to,
+        from: process.env.SENDGRID_FROM_EMAIL || process.env.SMTP_USER || 'noreply@hirestorm.io',
+        subject,
+        text,
+        html,
+      };
+      await sgMail.send(msg);
+      console.log(`[EmailService] ✅ Sent via SendGrid API → ${to} | ${subject}`);
+      return { messageId: 'sendgrid-success' };
+    }
+
+    // FALLBACK TO NODEMAILER (Used for local dev)
     const info = await transporter.sendMail({
       from: `"HireStorm" <${process.env.SMTP_USER || 'noreply@hirestorm.io'}>`,
       to, subject, text, html,
     });
-    console.log(`[EmailService] ✅ Sent → ${to} | ${subject} | msgId: ${info.messageId}`);
+    console.log(`[EmailService] ✅ Sent via Nodemailer → ${to} | ${subject} | msgId: ${info.messageId}`);
     return info;
   } catch (err) {
     console.error(`[EmailService] ❌ FAILED → ${to} | ${subject} | Error: ${err.message}`);
+    if (err.response) {
+      console.error(err.response.body); // specifically for SendGrid detailed error logging
+    }
     throw err; // re-throw so callers know it failed
   }
 };
@@ -361,14 +386,44 @@ exports.sendCampusOfferLetter = async (toEmail, studentName, role, collegeName, 
   }
 
   // In dev without credentials: just log
-  if (!process.env.SMTP_USER && process.env.NODE_ENV !== 'production') {
+  if (!process.env.SENDGRID_API_KEY && !process.env.SMTP_USER && process.env.NODE_ENV !== 'production') {
     console.log(`\n[EmailService Mock — Offer Letter]\n  To: ${toEmail}\n  Subject: ${mailOpts.subject}\n  PDF attached: ${!!pdfBuffer}\n`);
     return { messageId: 'mock-dev' };
   }
 
-  const info = await transporter.sendMail(mailOpts);
-  console.log(`[EmailService] Offer letter sent → ${toEmail} | PDF: ${!!pdfBuffer}`);
-  return info;
+  try {
+    if (process.env.SENDGRID_API_KEY) {
+      const msg = {
+        to: mailOpts.to,
+        from: process.env.SENDGRID_FROM_EMAIL || process.env.SMTP_USER || 'noreply@hirestorm.io',
+        subject: mailOpts.subject,
+        text: mailOpts.text,
+        html: mailOpts.html,
+      };
+      if (pdfBuffer) {
+        msg.attachments = [{
+          content: pdfBuffer.toString('base64'),
+          filename: `Offer_Letter_${studentName.replace(/\s+/g, '_')}.pdf`,
+          type: 'application/pdf',
+          disposition: 'attachment',
+        }];
+      }
+      await sgMail.send(msg);
+      console.log(`[EmailService] Offer letter sent via SendGrid API → ${toEmail} | PDF: ${!!pdfBuffer}`);
+      return { messageId: 'sendgrid-success' };
+    }
+
+    // Fallback to Nodemailer
+    const info = await transporter.sendMail(mailOpts);
+    console.log(`[EmailService] Offer letter sent via Nodemailer → ${toEmail} | PDF: ${!!pdfBuffer}`);
+    return info;
+  } catch (err) {
+    console.error(`[EmailService] ❌ FAILED Offer Letter → ${toEmail} | Error: ${err.message}`);
+    if (err.response) {
+      console.error(err.response.body);
+    }
+    throw err;
+  }
 };
 
 /** AI test failed notification */

@@ -5,6 +5,7 @@ import { SocketProvider } from './context/SocketContext';
 import { CollegeAuthProvider } from './context/CollegeAuthContext';
 import useAuthStore from './store/authStore';
 import useThemeStore from './store/themeStore';
+import useInactivityLogout from './hooks/useInactivityLogout';
 
 // ── Auth ─────────────────────────────────────────────────────────────
 import Login          from './pages/auth/Login';
@@ -109,6 +110,7 @@ const ComingSoon = ({ title }) => (
 // ── App ───────────────────────────────────────────────────────────────
 export default function App() {
   const { theme } = useThemeStore();
+  useInactivityLogout();
   
   // Set initial theme on document
   useEffect(() => {

@@ -28,12 +28,12 @@ export default function Profile() {
           lastName:    u.profile?.lastName  || '',
           bio:         u.profile?.bio       || '',
           phone:       u.profile?.phone     || '',
-          linkedin:    u.profile?.linkedin  || '',
-          github:      u.profile?.github    || '',
-          portfolio:   u.profile?.portfolio || '',
+          linkedin:    u.profile?.links?.linkedin  || '',
+          github:      u.profile?.links?.github    || '',
+          portfolio:   u.profile?.links?.portfolio || '',
           institution: u.profile?.institution || '',
           degree:      u.profile?.degree    || '',
-          skills:      u.skills             || [],
+          skills:      u.profile?.skills    || [],
         });
         setLoading(false);
       })

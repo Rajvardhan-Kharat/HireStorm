@@ -3,8 +3,7 @@ import StudentLayout from '../../layouts/StudentLayout';
 import api from '../../api/axios';
 import { Search, Filter, MapPin, Clock, IndianRupee, Wifi } from 'lucide-react';
 import { Link } from 'react-router-dom';
-
-const DOMAINS = ['Web Dev', 'Data Science', 'UI/UX', 'Mobile', 'AI/ML', 'DevOps', 'Blockchain', 'Cybersecurity'];
+import { DOMAINS } from '../../utils/constants';
 
 export default function Listings() {
   const [listings, setListings] = useState([]);

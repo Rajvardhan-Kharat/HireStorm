@@ -13,7 +13,19 @@ const userSchema = new mongoose.Schema({
     firstName: { type: String },
     lastName: { type: String },
     avatar: String,
-    resume: String
+    resume: String,
+    bio: String,
+    phone: String,
+    location: String,
+    institution: String,
+    degree: String,
+    experience: String,
+    skills: [String],
+    links: {
+      linkedin: String,
+      github: String,
+      portfolio: String
+    }
   },
   isActive: { type: Boolean, default: true },
   isVerified: { type: Boolean, default: false },

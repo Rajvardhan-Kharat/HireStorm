@@ -6,9 +6,9 @@ import toast from 'react-hot-toast';
 import { Plus, X, ArrowRight, ArrowLeft, CheckCircle2, CreditCard, Lock } from 'lucide-react';
 import useAuthStore from '../../store/authStore';
 import PaymentModal from '../../components/PaymentModal';
+import { DOMAINS } from '../../utils/constants';
 
 const STEPS = ['Basic Info', 'Requirements', 'Perks & Deadline', 'Payment'];
-const DOMAINS = ['Web Dev','Data Science','UI/UX','Mobile','AI/ML','DevOps','Blockchain','Cybersecurity','Marketing','Finance'];
 
 /* ── Listing plans ─────────────────────────────────────────────────────────── */
 const PLANS = [

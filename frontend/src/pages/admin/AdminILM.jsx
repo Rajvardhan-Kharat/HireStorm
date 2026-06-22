@@ -6,6 +6,7 @@ import {
   User, Clock, CheckCircle2, ChevronDown, ChevronUp, Check, X,
   Plus, UserCheck, Send, Award, BookOpen, AlertCircle,
 } from 'lucide-react';
+import { DOMAINS } from '../../utils/constants';
 
 const TABS = ['All Interns', 'Send Offer', 'Assign Mentor'];
 
@@ -169,6 +170,10 @@ export default function AdminILM() {
                       </div>
                     </div>
                     <div style={{ display: 'flex', gap: 20, alignItems: 'center' }}>
+                      <div style={{ display: 'flex', gap: 6 }}>
+                        {!ilm.mentor && <span className="badge badge-yellow" style={{ height: 'fit-content' }}>No Mentor</span>}
+                        {ilm.dailyLogs?.some(l => l.status === 'SUBMITTED') && <span className="badge badge-yellow" style={{ height: 'fit-content' }}>Pending Logs</span>}
+                      </div>
                       <div style={{ textAlign: 'right' }}>
                         <span className={`badge ${ilm.status === 'ACTIVE' ? 'badge-green' : ilm.status === 'COMPLETED' ? 'badge-blue' : 'badge-yellow'}`}>{ilm.status}</span>
                         <div className="text-xs text-muted" style={{ marginTop: 4 }}>
@@ -382,7 +387,7 @@ export default function AdminILM() {
                 <div className="form-group">
                   <label>Domain / Project Area</label>
                   <select value={offerForm.domain} onChange={e => setOfferForm(p => ({ ...p, domain: e.target.value }))}>
-                    {['Full Stack Development', 'Machine Learning / AI', 'Data Analytics', 'Mobile Development', 'DevOps & Cloud', 'UI/UX Design', 'Cybersecurity', 'Blockchain'].map(d => (
+                    {DOMAINS.map(d => (
                       <option key={d} value={d}>{d}</option>
                     ))}
                   </select>

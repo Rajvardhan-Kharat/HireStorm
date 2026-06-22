@@ -16,7 +16,18 @@ exports.getHackathons = async (req, res) => {
   try {
     const { status, page = 1, limit = 9 } = req.query;
     const filter = { status: { $ne: 'DRAFT' } };
-    if (status) filter.status = status;
+    
+    if (status && status !== 'ALL') {
+      filter.status = status;
+    } else if (!status) {
+      filter.status = { $nin: ['DRAFT', 'COMPLETED'] };
+      filter.$or = [
+        { status: { $ne: 'REGISTRATION_OPEN' } },
+        { 'timeline.registrationClose': { $gte: new Date() } },
+        { 'timeline.registrationClose': null }
+      ];
+    }
+
     const [hackathons, total] = await Promise.all([
       Hackathon.find(filter)
         .skip((page - 1) * limit).limit(Number(limit))

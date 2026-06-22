@@ -7,7 +7,10 @@ exports.getListings = async (req, res) => {
     const { type, domain, skills, isRemote, search, page = 1, limit = 12 } = req.query;
     const isPro = req.user && ['PRO_STUDENT', 'INTERN', 'COMPANY_HR', 'COMPANY_ADMIN', 'PLATFORM_ADMIN', 'SUPER_ADMIN'].includes(req.user.role);
 
-    const filter = { status: 'ACTIVE' };
+    const filter = { 
+      status: 'ACTIVE',
+      $or: [{ applicationDeadline: { $gte: new Date() } }, { applicationDeadline: null }]
+    };
     if (!isPro) filter.visibility = 'PUBLIC';
     if (type) filter.type = type;
     if (domain) filter.domain = new RegExp(domain, 'i');

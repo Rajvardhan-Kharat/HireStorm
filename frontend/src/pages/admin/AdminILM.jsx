@@ -184,14 +184,13 @@ export default function AdminILM() {
                       <div>
                         <div style={{ fontWeight: 700, fontSize: '1.05rem' }}>{ilm.intern?.profile?.firstName} {ilm.intern?.profile?.lastName}</div>
                         <div className="text-sm text-muted">
-                          {ilm.intern?.email} •{' '}
-                          Mentor: {ilm.mentor ? `${ilm.mentor?.profile?.firstName || ''} ${ilm.mentor?.profile?.lastName || ''}`.trim() : <span style={{ color: 'var(--clr-warning)' }}>Unassigned</span>}
+                          Mentor: {ilm.mentor ? (`${ilm.mentor?.profile?.firstName || ''} ${ilm.mentor?.profile?.lastName || ''}`.trim() || 'Sachin Deshpande') : 'Sachin Deshpande'}
                         </div>
                       </div>
                     </div>
                     <div style={{ display: 'flex', gap: 20, alignItems: 'center' }}>
                       <div style={{ display: 'flex', gap: 6 }}>
-                        {!ilm.mentor && <span className="badge badge-yellow" style={{ height: 'fit-content' }}>No Mentor</span>}
+                        {/* No Mentor badge removed because we default to Sachin Deshpande */}
                       </div>
                       <div style={{ textAlign: 'right' }}>
                         <span className={`badge ${ilm.status === 'ACTIVE' ? 'badge-green' : ilm.status === 'COMPLETED' ? 'badge-blue' : 'badge-yellow'}`}>{ilm.status}</span>

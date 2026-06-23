@@ -94,6 +94,22 @@ exports.acceptOffer = async (req, res) => {
   }
 };
 
+// POST /api/v1/ilm/offer/decline
+exports.declineOffer = async (req, res) => {
+  try {
+    const internship = await Internship.findOne({ intern: req.user._id, offerStatus: 'PENDING' });
+    if (!internship) return res.status(404).json({ success: false, message: 'No pending offer found' });
+    
+    internship.offerStatus = 'DECLINED';
+    internship.status      = 'COMPLETED'; // Or some other terminal state so it doesn't stay pending
+    await internship.save();
+    
+    res.json({ success: true, data: internship });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
+
 // GET /api/v1/ilm/my
 exports.getMyInternship = async (req, res) => {
   try {

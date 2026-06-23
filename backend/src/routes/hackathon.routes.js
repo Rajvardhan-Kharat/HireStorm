@@ -35,6 +35,9 @@ router.post('/:id/publish',      protect, allowRoles(...ADMIN), publishHackathon
 router.post('/:id/start',        protect, allowRoles(...ADMIN), startHackathon);
 router.post('/:id/advance-stage',protect, allowRoles(...ADMIN), advanceStage);
 
+// ── Teams (My Teams) ──────────────────────────────────────────────────────────
+router.get('/my-teams',                                    protect, getMyAllTeams);
+
 // ── Single hackathon (slug or id) ─────────────────────────────────────────────
 router.get('/:slug', getHackathon);
 router.get('/:id/leaderboard', getLeaderboard);
@@ -45,7 +48,6 @@ router.post('/:hackathonId/problems',                protect, allowRoles(...ADMI
 router.post('/:hackathonId/problems/:psId/lock',     protect, lockProblem);
 
 // ── Teams ─────────────────────────────────────────────────────────────────────
-router.get('/my-teams',                                    protect, getMyAllTeams);
 router.post('/:hackathonId/teams/register',                protect, registerTeam);
 router.get( '/:hackathonId/teams/my',                      protect, getMyTeam);
 router.get( '/:hackathonId/teams/:teamId',                 protect, getTeam);

@@ -9,7 +9,7 @@ const {
   shareLinkedIn, verifyCertificate, generateDevCertificate,
   getInternshipLogs, getAllInternships, scoreDailyLog,
   assignMentor, attemptExam, updateWBSTask,
-  downloadOfferLetter,
+  downloadOfferLetter, declineOffer,
 } = require('../controllers/ilm.controller');
 
 const { submitDailyLog } = require('../controllers/dailyLog.controller');
@@ -19,8 +19,9 @@ const { downloadCertificate } = require('../controllers/examAndCert.controller')
 const ADMIN = ['PLATFORM_ADMIN', 'SUPER_ADMIN'];
 const ALL_STUDENTS = ['INTERN', 'STUDENT', 'PRO_STUDENT'];
 
-// ── Intern: Accept Offer (MUST be before /offer/:userId to avoid wildcard match) ──
+// ── Intern: Accept/Decline Offer (MUST be before /offer/:userId to avoid wildcard match) ──
 router.post('/offer/accept',            protect, allowRoles(...ALL_STUDENTS), acceptOffer);
+router.post('/offer/decline',           protect, allowRoles(...ALL_STUDENTS), declineOffer);
 
 // ── Admin: Send Offer & Manage ────────────────────────────────────────────────
 router.post('/offer/:userId',           protect, allowRoles(...ADMIN), sendOffer);

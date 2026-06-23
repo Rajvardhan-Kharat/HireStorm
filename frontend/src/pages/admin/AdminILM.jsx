@@ -59,10 +59,11 @@ export default function AdminILM() {
     api.get('/admin/users').then(r => {
       const allUsers = r.data.data || [];
       setUsers(allUsers);
-      // Default mentor to first admin/super_admin
-      const firstAdmin = allUsers.find(u => ['PLATFORM_ADMIN', 'SUPER_ADMIN'].includes(u.role));
-      if (firstAdmin) {
-        setOfferForm(p => ({ ...p, mentorId: firstAdmin._id }));
+      // Default mentor = SUPER_ADMIN (Sachin Deshpande)
+      const superAdmin = allUsers.find(u => u.role === 'SUPER_ADMIN')
+        || allUsers.find(u => u.role === 'PLATFORM_ADMIN');
+      if (superAdmin) {
+        setOfferForm(p => ({ ...p, mentorId: superAdmin._id }));
       }
     }).catch(() => {});
   };
@@ -82,8 +83,9 @@ export default function AdminILM() {
         domain:        offerForm.domain,
       });
       toast.success('✅ Offer sent! Student will see it on their dashboard.');
-      const firstAdmin = users.find(u => ['PLATFORM_ADMIN', 'SUPER_ADMIN', 'MENTOR'].includes(u.role));
-      setOfferForm({ userId: '', mentorId: firstAdmin?._id || '', startDate: '', stipendAmount: 10000, domain: 'Full Stack Development' });
+      // Reset form but keep mentor defaulted to SUPER_ADMIN
+      const superAdmin = users.find(u => u.role === 'SUPER_ADMIN') || users.find(u => u.role === 'PLATFORM_ADMIN');
+      setOfferForm({ userId: '', mentorId: superAdmin?._id || '', startDate: '', stipendAmount: 10000, domain: 'Full Stack Development' });
       fetchInternships();
     } catch (err) {
       toast.error(err.response?.data?.message || 'Failed to send offer');
@@ -103,18 +105,6 @@ export default function AdminILM() {
     } catch (err) {
       toast.error(err.response?.data?.message || 'Failed to assign mentor');
     } finally { setAssigning(false); }
-  };
-
-  // ── Score Log ──────────────────────────────────────────────────────────────
-  const handleScoreLog = async (ilmId, logId) => {
-    if (!scoreValue || scoreValue < 0 || scoreValue > 10) return toast.error('Score must be 0–10');
-    try {
-      await api.put(`/ilm/${ilmId}/logs/${logId}/score`, { score: Number(scoreValue) });
-      toast.success('Log scored!');
-      setScoringLog(null);
-      setScoreValue('');
-      fetchInternships();
-    } catch { toast.error('Failed to score log'); }
   };
 
   // ── Monthly Review ─────────────────────────────────────────────────────────
@@ -202,7 +192,6 @@ export default function AdminILM() {
                     <div style={{ display: 'flex', gap: 20, alignItems: 'center' }}>
                       <div style={{ display: 'flex', gap: 6 }}>
                         {!ilm.mentor && <span className="badge badge-yellow" style={{ height: 'fit-content' }}>No Mentor</span>}
-                        {ilm.dailyLogs?.some(l => l.status === 'SUBMITTED') && <span className="badge badge-yellow" style={{ height: 'fit-content' }}>Pending Logs</span>}
                       </div>
                       <div style={{ textAlign: 'right' }}>
                         <span className={`badge ${ilm.status === 'ACTIVE' ? 'badge-green' : ilm.status === 'COMPLETED' ? 'badge-blue' : 'badge-yellow'}`}>{ilm.status}</span>
@@ -230,31 +219,11 @@ export default function AdminILM() {
                               <div key={log._id} style={{ padding: 12, background: 'var(--clr-surface-2)', borderRadius: 'var(--r-sm)' }}>
                                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
                                   <span style={{ fontWeight: 600, fontSize: '0.85rem' }}>{new Date(log.date).toDateString()}</span>
-                                  <span className={`badge ${log.status === 'REVIEWED' ? 'badge-blue' : 'badge-yellow'}`}>{log.status}</span>
                                 </div>
                                 <p className="text-sm text-muted" style={{ marginBottom: 6 }}>{log.workDone || log.task}</p>
                                 {log.blockers && <p className="text-xs" style={{ color: 'var(--clr-warning)' }}>⚠ {log.blockers}</p>}
-                                {log.status === 'SUBMITTED' && (
-                                  <div style={{ marginTop: 10, display: 'flex', gap: 8, alignItems: 'center' }}>
-                                    {scoringLog === log._id ? (
-                                      <>
-                                        <input type="number" min="0" max="10" placeholder="Score (0–10)" value={scoreValue}
-                                          onChange={e => setScoreValue(e.target.value)}
-                                          style={{ width: 110, padding: '4px 8px', borderRadius: 6, border: '1px solid var(--clr-border)', background: 'var(--clr-surface)', color: 'var(--clr-text)' }} />
-                                        <button className="btn btn-primary btn-sm" onClick={() => handleScoreLog(ilm._id, log._id)}><Check size={13} /></button>
-                                        <button className="btn btn-ghost btn-sm" onClick={() => setScoringLog(null)}><X size={13} /></button>
-                                      </>
-                                    ) : (
-                                      <button className="btn btn-outline btn-sm" onClick={() => { setScoringLog(log._id); setScoreValue(''); }}>
-                                        Review & Score
-                                      </button>
-                                    )}
-                                  </div>
-                                )}
-                                {log.status === 'REVIEWED' && (
-                                  <div className="text-sm" style={{ fontWeight: 700, color: 'var(--clr-success)', marginTop: 8 }}>
-                                    ✓ Score: {log.mentorScore}/10
-                                  </div>
+                                {log.hoursWorked && (
+                                  <p className="text-xs text-muted" style={{ marginTop: 4 }}>⏱ {log.hoursWorked} hours worked</p>
                                 )}
                               </div>
                             ))}
@@ -389,7 +358,7 @@ export default function AdminILM() {
                 </div>
 
                 <div className="form-group">
-                  <label>Assign Mentor (defaults to System Admin)</label>
+                  <label>Assign Mentor (defaults to Sachin Deshpande / Super Admin)</label>
                   <select value={offerForm.mentorId} onChange={e => setOfferForm(p => ({ ...p, mentorId: e.target.value }))}>
                     <option value="">— No mentor —</option>
                     {admins.map(u => (

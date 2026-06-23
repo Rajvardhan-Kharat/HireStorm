@@ -32,7 +32,7 @@ const colleges = [
     address:'Survey No. 27, Dhankawadi, Pune - 411043',
     phone:'+91 20 2437 1101', website:'https://pict.edu',
     tpo:{ name:'Training & Placement Officer', email:'tpo@pict.edu', phone:'+91 9876543210' },
-    disciplines:['Computer Science','Information Technology','Electronics & Telecommunication','AIDS (AI & Data Science)'],
+    disciplines:['Computer Engineering', 'Information Technology', 'Electronics & Telecommunication', 'AI & Data Science'],
   },
   {
     name:'College of Engineering Pune', slug:'coep', code:'COEP',
@@ -41,7 +41,7 @@ const colleges = [
     address:'Wellesley Rd, Shivajinagar, Pune - 411005',
     phone:'+91 20 2550 7000', website:'https://coep.org.in',
     tpo:{ name:'Training & Placement Officer', email:'tpo@coep.org.in', phone:'+91 9876543211' },
-    disciplines:[...ENG],
+    disciplines:['Computer Engineering', 'Information Technology', 'Electronics & Telecommunication', 'Mechanical Engineering', 'Civil Engineering', 'Electrical Engineering', 'Instrumentation Engineering', 'Production Engineering', 'Metallurgy'],
   },
   {
     name:'Vishwakarma Institute of Technology', slug:'vit-pune', code:'VITPUNE',
@@ -50,7 +50,7 @@ const colleges = [
     address:'666, Upper Indiranagar, Bibwewadi, Pune - 411037',
     phone:'+91 20 2440 2800', website:'https://vit.edu',
     tpo:{ name:'Training & Placement Officer', email:'tpo@vit.edu', phone:'+91 9876543212' },
-    disciplines:[...ENG],
+    disciplines:['Computer Engineering', 'Information Technology', 'Electronics & Telecommunication', 'Mechanical Engineering', 'Chemical Engineering', 'Instrumentation Engineering', 'Industrial Engineering', 'AI & Data Science'],
   },
   {
     name:'MIT World Peace University', slug:'mit-wpu', code:'MITWPU',
@@ -86,7 +86,15 @@ const colleges = [
     address:'Gram: Lavale, Tal: Mulshi, Pune - 412115',
     phone:'+91 20 3911 6200', website:'https://sitpune.edu.in',
     tpo:{ name:'Training & Placement Officer', email:'tpo@sitpune.edu.in', phone:'+91 9876543217' },
-    disciplines:['Computer Science','Electronics & Telecommunication','Mechanical Engineering','AIDS (AI & Data Science)','Civil Engineering'],
+    disciplines:['Computer Science', 'Electronics & Telecommunication', 'Mechanical Engineering', 'Civil Engineering', 'AI & Data Science', 'Robotics & Automation'],
+  },
+  {
+    name: 'Sinhgad College of Engineering', slug: 'scoe-pune', code: 'SCOE',
+    type: 'ENGINEERING', university: 'SPPU', city: 'Pune', state: 'Maharashtra',
+    email: 'tpo@sinhgad.edu', password: 'SCOE@Drive2025',
+    address: 'Vadgaon (Bk), Pune - 411041', phone: '+91 20 2435 4705', website: 'https://sinhgad.edu',
+    tpo: { name: 'Training & Placement Officer', email: 'tpo@sinhgad.edu', phone: '+91 9876543240' },
+    disciplines: ['Computer Engineering', 'Information Technology', 'Electronics & Telecommunication', 'Mechanical Engineering', 'Civil Engineering', 'Chemical Engineering', 'Production Engineering', 'Biotechnology']
   },
   {
     name:'Marathwada Mitra Mandal\'s College of Engineering', slug:'mmcoe', code:'MMCOE',
@@ -95,7 +103,7 @@ const colleges = [
     address:'Karvenagar, Pune - 411052',
     phone:'+91 20 2547 3160', website:'https://mmcoe.edu.in',
     tpo:{ name:'Training & Placement Officer', email:'tpo@mmcoe.edu.in', phone:'+91 9876543201' },
-    disciplines:[...ENG],
+    disciplines:['Computer Engineering', 'Information Technology', 'Electronics & Telecommunication', 'Mechanical Engineering', 'Electrical Engineering', 'AI & Data Science'],
   },
   {
     name:'Pimpri Chinchwad College of Engineering', slug:'pccoe', code:'PCCOE',
@@ -104,7 +112,7 @@ const colleges = [
     address:'Sector-26, Pradhikaran, Nigdi, Pimpri-Chinchwad, Pune - 411044',
     phone:'+91 20 2765 3168', website:'https://pccoepune.com',
     tpo:{ name:'Training & Placement Officer', email:'tpo@pccoepune.org', phone:'+91 9876543202' },
-    disciplines:[...ENG],
+    disciplines:['Computer Engineering', 'Information Technology', 'Electronics & Telecommunication', 'Mechanical Engineering', 'Civil Engineering', 'AI & Machine Learning'],
   },
   {
     name:'Pimpri Chinchwad College of Engineering and Research', slug:'pccoer', code:'PCCOER',
@@ -113,7 +121,7 @@ const colleges = [
     address:'Ravet, Pune - 412101',
     phone:'+91 20 2765 3168', website:'https://pccoer.com',
     tpo:{ name:'Training & Placement Officer', email:'tpo@pccoer.org', phone:'+91 9876543203' },
-    disciplines:[...ENG],
+    disciplines:['Computer Engineering', 'Mechanical Engineering', 'Civil Engineering', 'Electronics & Telecommunication'],
   },
   {
     name:'Dr. D. Y. Patil Institute of Technology', slug:'dypatil-pimpri', code:'DYPIOT',
@@ -122,7 +130,7 @@ const colleges = [
     address:'Sant Tukaram Nagar, Pimpri, Pune - 411018',
     phone:'+91 20 2742 1095', website:'https://engg.dypvp.edu.in',
     tpo:{ name:'Training & Placement Officer', email:'tpo@dypit.edu.in', phone:'+91 9876543204' },
-    disciplines:[...ENG],
+    disciplines:['Computer Engineering', 'Information Technology', 'Electronics & Telecommunication', 'Mechanical Engineering', 'Civil Engineering', 'AI & Data Science', 'Instrumentation Engineering', 'Electrical Engineering'],
   },
   {
     name:'D. Y. Patil College of Engineering', slug:'dypatil-akurdi', code:'DYPCOE',
@@ -131,7 +139,7 @@ const colleges = [
     address:'Sector 29, Nigdi Pradhikaran, Akurdi, Pune - 411044',
     phone:'+91 20 2765 3054', website:'https://dypcoeakurdi.ac.in',
     tpo:{ name:'Training & Placement Officer', email:'tpo@dypcoeakurdi.ac.in', phone:'+91 9876543205' },
-    disciplines:[...ENG],
+    disciplines:['Computer Engineering', 'Information Technology', 'Electronics & Telecommunication', 'Mechanical Engineering', 'Civil Engineering', 'AI & Data Science', 'Robotics & Automation'],
   },
   {
     name:'Deccan Education Society\'s Pune University', slug:'des-pune', code:'DES',
@@ -158,7 +166,39 @@ const colleges = [
     address:'Survey No. 2/3/4, Kondhwa (Bk), Pune - 411048',
     phone:'+91 20 2695 0200', website:'https://viit.ac.in',
     tpo:{ name:'Training & Placement Officer', email:'tpo@viit.ac.in', phone:'+91 9876543209' },
-    disciplines:[...ENG],
+    disciplines:['Computer Engineering', 'Information Technology', 'Electronics & Telecommunication', 'Mechanical Engineering', 'Civil Engineering', 'AI & Data Science'],
+  },
+  {
+    name: 'Cummins College of Engineering for Women', slug: 'cummins', code: 'CCOEW',
+    type: 'ENGINEERING', university: 'SPPU', city: 'Pune', state: 'Maharashtra',
+    email: 'tpo@cumminscollege.edu', password: 'CCOEW@Drive2025',
+    address: 'Karvenagar, Pune - 411052', phone: '+91 20 2531 1000', website: 'https://cumminscollege.org',
+    tpo: { name: 'Training & Placement Officer', email: 'tpo@cumminscollege.edu', phone: '+91 9876543230' },
+    disciplines: ['Computer Engineering', 'Information Technology', 'Electronics & Telecommunication', 'Mechanical Engineering', 'Instrumentation Engineering']
+  },
+  {
+    name: 'AISSMS College of Engineering', slug: 'aissms-coe', code: 'AISSMSCOE',
+    type: 'ENGINEERING', university: 'SPPU', city: 'Pune', state: 'Maharashtra',
+    email: 'tpo@aissmscoe.com', password: 'AISSMS@Drive2025',
+    address: 'Kennedy Road, Pune - 411001', phone: '+91 20 2605 7660', website: 'https://aissmscoe.com',
+    tpo: { name: 'Training & Placement Officer', email: 'tpo@aissmscoe.com', phone: '+91 9876543231' },
+    disciplines: ['Computer Engineering', 'Mechanical Engineering', 'Civil Engineering', 'Chemical Engineering', 'Electrical Engineering', 'Production Engineering']
+  },
+  {
+    name: 'AISSMS Institute of Information Technology', slug: 'aissms-ioit', code: 'AISSMSIOIT',
+    type: 'ENGINEERING', university: 'SPPU', city: 'Pune', state: 'Maharashtra',
+    email: 'tpo@aissmsioit.org', password: 'AISSMS@Drive2025',
+    address: 'Kennedy Road, Pune - 411001', phone: '+91 20 2605 7983', website: 'https://aissmsioit.org',
+    tpo: { name: 'Training & Placement Officer', email: 'tpo@aissmsioit.org', phone: '+91 9876543232' },
+    disciplines: ['Computer Engineering', 'Information Technology', 'Electronics & Telecommunication', 'Instrumentation Engineering', 'Electrical Engineering', 'AI & Data Science']
+  },
+  {
+    name: 'Modern Education Society\'s College of Engineering', slug: 'mescoe', code: 'MESCOE',
+    type: 'ENGINEERING', university: 'SPPU', city: 'Pune', state: 'Maharashtra',
+    email: 'tpo@mescoepune.org', password: 'MESCOE@Drive2025',
+    address: 'Wadia College Campus, Pune - 411001', phone: '+91 20 2616 3831', website: 'https://mescoepune.org',
+    tpo: { name: 'Training & Placement Officer', email: 'tpo@mescoepune.org', phone: '+91 9876543233' },
+    disciplines: ['Computer Engineering', 'Electronics & Telecommunication', 'Mechanical Engineering']
   },
   // ── PUNE — Management ────────────────────────────────────────────────────
   {

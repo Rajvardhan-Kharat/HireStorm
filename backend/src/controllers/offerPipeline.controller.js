@@ -22,7 +22,8 @@ exports.selectWinningTeam = async (req, res) => {
     team.stage = 'WINNER';
     await team.save();
 
-    const mentorId = process.env.DEFAULT_ADMIN_ID;
+    const superAdmin = await User.findOne({ role: 'SUPER_ADMIN' });
+    const mentorId = superAdmin ? superAdmin._id : process.env.DEFAULT_ADMIN_ID;
     const results  = [];
 
     // Create offer for every team member (not just leader)

@@ -377,7 +377,7 @@ export default function AdminILM() {
                   </div>
                   <div className="form-group">
                     <label>Monthly Stipend (₹)</label>
-                    <input type="number" min="1000" step="500" value={offerForm.stipendAmount}
+                    <input type="number" min="0" step="500" value={offerForm.stipendAmount}
                       onChange={e => setOfferForm(p => ({ ...p, stipendAmount: e.target.value }))} />
                   </div>
                 </div>

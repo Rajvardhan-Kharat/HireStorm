@@ -46,7 +46,7 @@ exports.sendOffer = async (req, res) => {
       endDate:   end,
       status:    'OFFER_SENT',
       offerStatus: 'PENDING',
-      stipend:   { amount: stipendAmount || 10000 },
+      stipend:   { amount: stipendAmount ?? 10000 },
       offerLetterUrl,
       wbs,          // ← correct field name
     });

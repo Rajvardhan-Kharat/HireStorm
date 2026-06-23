@@ -93,6 +93,19 @@ export default function AdminHackathons() {
     }
   };
 
+  const markComplete = async (id, title, e) => {
+    e.stopPropagation();
+    if (!window.confirm(`Mark "${title}" as Completed? This cannot be undone.`)) return;
+    try {
+      await api.post(`/hackathons/${id}/advance-stage`);
+      toast.success('Hackathon marked as Completed!');
+      load();
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to mark complete');
+    }
+  };
+
+
   const filtered = hackathons.filter(h =>
     h.title?.toLowerCase().includes(search.toLowerCase())
   );
@@ -211,6 +224,15 @@ export default function AdminHackathons() {
                     {!hack.isStarted && ['REGISTRATION_OPEN','REGISTRATION_CLOSED'].includes(hack.status) && (
                       <button className="btn btn-primary btn-sm" onClick={(e) => startHackathon(hack._id, e)}>
                         <Play size={13} /> Start
+                      </button>
+                    )}
+                    {hack.status === 'EVALUATION' && (
+                      <button
+                        className="btn btn-sm"
+                        style={{ background: 'rgba(52,211,153,0.15)', color: 'var(--clr-success)', border: '1px solid var(--clr-success)' }}
+                        onClick={(e) => markComplete(hack._id, hack.title, e)}
+                      >
+                        <CheckCircle2 size={13} /> Mark Complete
                       </button>
                     )}
                     <button

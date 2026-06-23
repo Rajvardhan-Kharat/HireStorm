@@ -39,11 +39,19 @@ exports.getListing = async (req, res) => {
   try {
     const listing = await Listing.findById(req.params.id).populate('company', 'name logo website isVerified description');
     if (!listing) return res.status(404).json({ success: false, message: 'Listing not found' });
+    // Return 404 if listing is not active or deadline has passed
+    if (listing.status !== 'ACTIVE') {
+      return res.status(404).json({ success: false, message: 'This listing is no longer available' });
+    }
+    if (listing.applicationDeadline && new Date(listing.applicationDeadline) < new Date()) {
+      return res.status(404).json({ success: false, message: 'The application deadline for this listing has passed' });
+    }
     res.json({ success: true, data: listing });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
   }
 };
+
 
 // POST /api/v1/listings
 exports.createListing = async (req, res) => {

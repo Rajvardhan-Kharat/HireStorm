@@ -7,7 +7,7 @@ const {
   getHackathons, getHackathon, createHackathon, updateHackathon,
   publishHackathon, startHackathon, advanceStage, getLeaderboard,
   getProblems, createProblem, lockProblem,
-  registerTeam, getMyTeam, getTeam, inviteToTeam, acceptInvite,
+  registerTeam, getMyTeam, getMyAllTeams, getTeam, inviteToTeam, acceptInvite,
   submitIdeation, submitFinal, getSubmissions, scoreSubmission,
   getPhase1Submissions, createRegistrationOrder,
   getCheckIns, completeCheckIn,
@@ -45,6 +45,7 @@ router.post('/:hackathonId/problems',                protect, allowRoles(...ADMI
 router.post('/:hackathonId/problems/:psId/lock',     protect, lockProblem);
 
 // ── Teams ─────────────────────────────────────────────────────────────────────
+router.get('/my-teams',                                    protect, getMyAllTeams);
 router.post('/:hackathonId/teams/register',                protect, registerTeam);
 router.get( '/:hackathonId/teams/my',                      protect, getMyTeam);
 router.get( '/:hackathonId/teams/:teamId',                 protect, getTeam);

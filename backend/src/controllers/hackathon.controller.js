@@ -245,6 +245,20 @@ exports.getMyTeam = async (req, res) => {
   }
 };
 
+// ── Get all teams this user is a member of (across all hackathons) ─────────
+exports.getMyAllTeams = async (req, res) => {
+  try {
+    const teams = await Team.find({ 'members.user': req.user._id })
+      .populate('hackathon', 'title slug status')
+      .populate('leader', 'profile email');
+    res.json({ success: true, data: teams });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
+
+
+
 exports.getTeam = async (req, res) => {
   try {
     const team = await Team.findById(req.params.teamId)

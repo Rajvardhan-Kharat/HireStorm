@@ -16,7 +16,7 @@ const generateTokens = (userId, role) => {
 // POST /api/v1/auth/register
 exports.register = async (req, res) => {
   try {
-    const { email, password, firstName, lastName, role } = req.body;
+    const { email, password, firstName, lastName, role, companyName } = req.body;
     if (!email || !password || !firstName || !lastName) {
       return res.status(400).json({ success: false, message: 'All fields required' });
     }
@@ -49,13 +49,42 @@ exports.register = async (req, res) => {
     const assignedRole = allowedRoles.includes(role) ? role : 'STUDENT';
 
     const verToken = crypto.randomBytes(32).toString('hex');
-    const user = await User.create({
+
+    const userData = {
       email,
       password,
       role: assignedRole,
       profile: { firstName, lastName },
       emailVerificationToken: verToken,
-    });
+    };
+
+    // For COMPANY_ADMIN: create Company and link it; also auto-verify so they can login
+    if (assignedRole === 'COMPANY_ADMIN') {
+      const Company = require('../models/Company');
+      const company = await Company.create({
+        name: companyName || `${firstName} ${lastName}'s Company`,
+        admins: [],
+      });
+      userData.companyRef = company._id;
+      // Auto-verify company accounts so they can post listings immediately
+      userData.isVerified = true;
+
+      // Update the company's admins after user creation
+      const user = await User.create(userData);
+      await Company.findByIdAndUpdate(company._id, { $push: { admins: user._id } });
+
+      // Fire-and-forget welcome email
+      sendEmail(
+        email,
+        'Welcome to HireStorm — Company Account Created',
+        `Hi ${firstName}, your company account for "${company.name}" has been created.`,
+        `<p>Hi ${firstName}, welcome to HireStorm!</p><p>Your company account for <strong>${company.name}</strong> is ready. You can now post job listings and manage applications.</p><a href="${process.env.CLIENT_URL}/login">Sign in to get started</a>`
+      ).catch(e => console.error('[Register] Welcome email failed:', e.message));
+
+      return res.status(201).json({ success: true, message: 'Company account created! You can now sign in.' });
+    }
+
+    const user = await User.create(userData);
 
     // Fire-and-forget: queued immediately in event loop, runs after response
     sendEmail(
@@ -71,6 +100,7 @@ exports.register = async (req, res) => {
     res.status(500).json({ success: false, message: err.message });
   }
 };
+
 
 // POST /api/v1/auth/login
 exports.login = async (req, res) => {

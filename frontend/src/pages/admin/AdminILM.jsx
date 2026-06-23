@@ -4,11 +4,22 @@ import api from '../../api/axios';
 import toast from 'react-hot-toast';
 import {
   User, Clock, CheckCircle2, ChevronDown, ChevronUp, Check, X,
-  Plus, UserCheck, Send, Award, BookOpen, AlertCircle,
+  Plus, UserCheck, Send, Award, BookOpen, AlertCircle, ListChecks,
+  TrendingUp, XCircle,
 } from 'lucide-react';
 import { DOMAINS } from '../../utils/constants';
 
-const TABS = ['All Interns', 'Send Offer', 'Assign Mentor'];
+const TABS = ['All Interns', 'Send Offer', 'Assign Mentor', 'Offer Transactions'];
+
+const STATUS_COLORS = {
+  OFFER_SENT:         'badge-yellow',
+  ACCEPTED:           'badge-blue',
+  REJECTED:           'badge-red',
+  ACTIVE:             'badge-green',
+  COMPLETED:          'badge-blue',
+  TERMINATED:         'badge-red',
+  FAILED_ASSESSMENT:  'badge-red',
+};
 
 export default function AdminILM() {
   const [activeTab, setActiveTab] = useState('All Interns');
@@ -27,7 +38,7 @@ export default function AdminILM() {
     month: 1, taskCompletion: 0, codeQuality: 0, communication: 0, initiative: 0, feedback: '',
   });
 
-  // Send offer form
+  // Send offer form — mentorId defaults to first admin after users load
   const [offerForm, setOfferForm] = useState({
     userId: '', mentorId: '', startDate: '', stipendAmount: 10000, domain: 'Full Stack Development',
   });
@@ -45,7 +56,15 @@ export default function AdminILM() {
   };
 
   const fetchUsers = () => {
-    api.get('/admin/users').then(r => setUsers(r.data.data || [])).catch(() => {});
+    api.get('/admin/users').then(r => {
+      const allUsers = r.data.data || [];
+      setUsers(allUsers);
+      // Default mentor to first admin/super_admin
+      const firstAdmin = allUsers.find(u => ['PLATFORM_ADMIN', 'SUPER_ADMIN'].includes(u.role));
+      if (firstAdmin) {
+        setOfferForm(p => ({ ...p, mentorId: firstAdmin._id }));
+      }
+    }).catch(() => {});
   };
 
   useEffect(() => { fetchInternships(); fetchUsers(); }, []);
@@ -63,7 +82,8 @@ export default function AdminILM() {
         domain:        offerForm.domain,
       });
       toast.success('✅ Offer sent! Student will see it on their dashboard.');
-      setOfferForm({ userId: '', mentorId: '', startDate: '', stipendAmount: 10000, domain: 'Full Stack Development' });
+      const firstAdmin = users.find(u => ['PLATFORM_ADMIN', 'SUPER_ADMIN', 'MENTOR'].includes(u.role));
+      setOfferForm({ userId: '', mentorId: firstAdmin?._id || '', startDate: '', stipendAmount: 10000, domain: 'Full Stack Development' });
       fetchInternships();
     } catch (err) {
       toast.error(err.response?.data?.message || 'Failed to send offer');
@@ -112,7 +132,17 @@ export default function AdminILM() {
   };
 
   const students = users.filter(u => ['STUDENT', 'PRO_STUDENT', 'INTERN'].includes(u.role));
-  const admins   = users.filter(u => ['PLATFORM_ADMIN', 'SUPER_ADMIN', 'MENTOR'].includes(u.role));
+  const admins   = users.filter(u => ['PLATFORM_ADMIN', 'SUPER_ADMIN'].includes(u.role));
+
+  // ── Offer Transactions stats ──────────────────────────────────────────────
+  const txStats = {
+    total:    internships.length,
+    sent:     internships.filter(i => i.status === 'OFFER_SENT').length,
+    accepted: internships.filter(i => ['ACCEPTED', 'ACTIVE', 'COMPLETED'].includes(i.status)).length,
+    active:   internships.filter(i => i.status === 'ACTIVE').length,
+    rejected: internships.filter(i => i.status === 'REJECTED' || i.offerStatus === 'REJECTED').length,
+    completed:internships.filter(i => i.status === 'COMPLETED').length,
+  };
 
   return (
     <AdminLayout>
@@ -341,7 +371,7 @@ export default function AdminILM() {
               <div style={{ padding: '14px 16px', background: 'rgba(59,130,246,0.06)', border: '1px solid rgba(59,130,246,0.2)', borderRadius: 'var(--r-sm)', marginBottom: 24, display: 'flex', gap: 10 }}>
                 <AlertCircle size={16} style={{ color: 'var(--clr-primary)', flexShrink: 0, marginTop: 2 }} />
                 <p className="text-sm" style={{ color: 'var(--clr-text-2)' }}>
-                  When you send an offer, the student's role immediately updates to <strong>INTERN</strong> and they see a banner on their dashboard to Accept or Decline.
+                  When you send an offer, the student sees a banner on their dashboard to Accept or Decline. Mentor defaults to the System Admin.
                 </p>
               </div>
 
@@ -359,9 +389,9 @@ export default function AdminILM() {
                 </div>
 
                 <div className="form-group">
-                  <label>Assign Mentor (optional)</label>
+                  <label>Assign Mentor (defaults to System Admin)</label>
                   <select value={offerForm.mentorId} onChange={e => setOfferForm(p => ({ ...p, mentorId: e.target.value }))}>
-                    <option value="">— Assign later —</option>
+                    <option value="">— No mentor —</option>
                     {admins.map(u => (
                       <option key={u._id} value={u._id}>
                         {u.profile?.firstName} {u.profile?.lastName} ({u.role})
@@ -463,6 +493,87 @@ export default function AdminILM() {
                 </div>
               )}
             </div>
+          </div>
+        )}
+
+        {/* ── Tab: Offer Transactions ──────────────────────────────────────── */}
+        {activeTab === 'Offer Transactions' && (
+          <div>
+            {/* Stats row */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: 12, marginBottom: 28 }}>
+              {[
+                { label: 'Total Offers',  value: txStats.total,     color: 'var(--clr-primary)', icon: <ListChecks size={16} /> },
+                { label: 'Pending',       value: txStats.sent,      color: '#f59e0b',             icon: <Clock size={16} /> },
+                { label: 'Accepted',      value: txStats.accepted,  color: 'var(--clr-success)',  icon: <CheckCircle2 size={16} /> },
+                { label: 'Active Interns',value: txStats.active,    color: 'var(--clr-accent)',   icon: <TrendingUp size={16} /> },
+                { label: 'Declined',      value: txStats.rejected,  color: 'var(--clr-danger)',   icon: <XCircle size={16} /> },
+                { label: 'Completed',     value: txStats.completed, color: '#6b7280',             icon: <Award size={16} /> },
+              ].map(s => (
+                <div key={s.label} className="metric-card" style={{ '--metric-color': s.color }}>
+                  <div className="metric-icon" style={{ color: s.color }}>{s.icon}</div>
+                  <div className="metric-value">{s.value}</div>
+                  <div className="metric-label">{s.label}</div>
+                </div>
+              ))}
+            </div>
+
+            {/* Transactions table */}
+            {loading ? (
+              <div className="skeleton" style={{ height: 300, borderRadius: 'var(--r-sm)' }} />
+            ) : internships.length === 0 ? (
+              <div className="empty-state">
+                <ListChecks size={48} style={{ color: 'var(--clr-text-3)', marginBottom: 16 }} />
+                <h3>No Offers Sent Yet</h3>
+                <p>Go to "Send Offer" tab to send your first internship offer.</p>
+              </div>
+            ) : (
+              <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
+                <div style={{ overflowX: 'auto' }}>
+                  <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                    <thead>
+                      <tr style={{ background: 'var(--clr-surface-2)', borderBottom: '1px solid var(--clr-border)' }}>
+                        {['Candidate', 'Email', 'Mentor', 'Offer Status', 'Internship Status', 'Start Date', 'Stipend'].map(h => (
+                          <th key={h} style={{ padding: '12px 16px', textAlign: 'left', fontWeight: 700, fontSize: '0.78rem', textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--clr-text-3)', whiteSpace: 'nowrap' }}>{h}</th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {internships.map((ilm, idx) => (
+                        <tr key={ilm._id} style={{ borderBottom: '1px solid var(--clr-border)', background: idx % 2 === 0 ? 'transparent' : 'var(--clr-surface-2)' }}>
+                          <td style={{ padding: '12px 16px', fontWeight: 600, fontSize: '0.88rem' }}>
+                            {ilm.intern?.profile?.firstName} {ilm.intern?.profile?.lastName}
+                          </td>
+                          <td style={{ padding: '12px 16px', fontSize: '0.82rem', color: 'var(--clr-text-2)' }}>
+                            {ilm.intern?.email}
+                          </td>
+                          <td style={{ padding: '12px 16px', fontSize: '0.82rem' }}>
+                            {ilm.mentor
+                              ? `${ilm.mentor?.profile?.firstName} ${ilm.mentor?.profile?.lastName}`
+                              : <span style={{ color: 'var(--clr-warning)' }}>—</span>}
+                          </td>
+                          <td style={{ padding: '12px 16px' }}>
+                            <span className={`badge ${ilm.offerStatus === 'ACCEPTED' ? 'badge-green' : ilm.offerStatus === 'REJECTED' ? 'badge-red' : 'badge-yellow'}`}>
+                              {ilm.offerStatus || 'PENDING'}
+                            </span>
+                          </td>
+                          <td style={{ padding: '12px 16px' }}>
+                            <span className={`badge ${STATUS_COLORS[ilm.status] || 'badge-gray'}`}>
+                              {ilm.status}
+                            </span>
+                          </td>
+                          <td style={{ padding: '12px 16px', fontSize: '0.82rem', color: 'var(--clr-text-2)' }}>
+                            {ilm.startDate ? new Date(ilm.startDate).toLocaleDateString('en-IN') : '—'}
+                          </td>
+                          <td style={{ padding: '12px 16px', fontSize: '0.82rem', fontWeight: 600, color: 'var(--clr-success)' }}>
+                            ₹{(ilm.stipend?.amount || 0).toLocaleString()}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>

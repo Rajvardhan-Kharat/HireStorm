@@ -13,23 +13,29 @@ export default function StudentDashboard() {
   const { user, refreshUser } = useAuthStore();
   const navigate = useNavigate();
 
-  const [recentApps, setRecentApps]   = useState([]);
-  const [pendingOffer, setPendingOffer] = useState(null);  // internship with OFFER_SENT
+  const [recentApps, setRecentApps]       = useState([]);
+  const [pendingOffer, setPendingOffer]   = useState(null);  // internship with OFFER_SENT
   const [activeInternship, setActiveInternship] = useState(null); // ACTIVE internship
-  const [loading, setLoading]         = useState(true);
-  const [offerLoading, setOfferLoading] = useState(false);
+  const [hackathonCount, setHackathonCount] = useState(0);
+  const [loading, setLoading]             = useState(true);
+  const [offerLoading, setOfferLoading]   = useState(false);
 
   useEffect(() => {
     const load = async () => {
       try {
-        // Always try to get internship data (works for STUDENT and INTERN role)
-        const [appsRes, ilmRes] = await Promise.all([
+        // Fetch apps, internship data, and hackathon teams in parallel
+        const [appsRes, ilmRes, teamsRes] = await Promise.all([
           api.get('/applications/my').catch(() => ({ data: { data: [] } })),
           api.get('/ilm/my').catch(() => ({ data: { data: null } })),
+          api.get('/hackathons/my-teams').catch(() => ({ data: { data: [] } })),
         ]);
 
         const apps = appsRes.data.data || [];
         setRecentApps(apps.slice(0, 5));
+
+        // Count unique hackathons the student has registered for
+        const teams = teamsRes.data?.data || [];
+        setHackathonCount(teams.length);
 
         const ilm = ilmRes.data?.data;
         if (ilm) {
@@ -53,7 +59,8 @@ export default function StudentDashboard() {
     try {
       await api.post('/ilm/offer/accept');
       toast.success('🎉 Offer accepted! Your internship is now active.');
-      // Hard navigate to flush auth state and get fresh INTERN role
+      // Refresh user token to get new INTERN role, then navigate to ILM dashboard
+      await refreshUser().catch(() => {});
       window.location.replace('/ilm');
     } catch (err) {
       toast.error(err.response?.data?.message || 'Failed to accept offer');
@@ -255,8 +262,8 @@ export default function StudentDashboard() {
         {/* ── Stat Cards ────────────────────────────────────────── */}
         <div className="grid-4" style={{ marginBottom: 28 }}>
           {[
-            { icon: <Briefcase size={20} />, label: 'Applications', value: recentApps.length, clr: 'var(--clr-primary)', link: '/my-applications' },
-            { icon: <Code2 size={20} />,     label: 'Hackathons',   value: 0,                clr: 'var(--clr-accent)',   link: '/hackathons' },
+            { icon: <Briefcase size={20} />, label: 'Applications', value: recentApps.length,   clr: 'var(--clr-primary)', link: '/my-applications' },
+            { icon: <Code2 size={20} />,     label: 'Hackathons',   value: hackathonCount,     clr: 'var(--clr-accent)',   link: '/hackathons' },
             { icon: <BookOpen size={20} />,  label: 'Courses',      value: user?.coursesEnrolled?.length || 0, clr: 'var(--clr-success)', link: '/courses' },
             { icon: <Star size={20} />,      label: 'Profile Views', value: isPro ? (user?.profileViews?.length || 0) : '—', clr: 'var(--clr-warning)', link: isPro ? '/profile' : '/settings/subscription' },
           ].map(({ icon, label, value, clr, link }) => (

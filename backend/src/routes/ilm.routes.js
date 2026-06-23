@@ -17,21 +17,38 @@ const { generateExam, submitQuiz: submitExam } = require('../controllers/finalEx
 const { downloadCertificate } = require('../controllers/examAndCert.controller');
 
 const ADMIN = ['PLATFORM_ADMIN', 'SUPER_ADMIN'];
+const ALL_STUDENTS = ['INTERN', 'STUDENT', 'PRO_STUDENT'];
 
 // ── Intern: Accept Offer (MUST be before /offer/:userId to avoid wildcard match) ──
-router.post('/offer/accept',            protect, allowRoles('INTERN', 'STUDENT', 'PRO_STUDENT'), acceptOffer);
+router.post('/offer/accept',            protect, allowRoles(...ALL_STUDENTS), acceptOffer);
 
 // ── Admin: Send Offer & Manage ────────────────────────────────────────────────
 router.post('/offer/:userId',           protect, allowRoles(...ADMIN), sendOffer);
 
+// ── Admin: All Internships ─────────────────────────────────────────────────────
+router.get('/all',                      protect, allowRoles(...ADMIN), getAllInternships);
+
+// ── Admin: Assign Mentor ──────────────────────────────────────────────────────
+router.patch('/:id/assign-mentor',      protect, allowRoles(...ADMIN), assignMentor);
+
+// ── Admin/Mentor: Score Daily Log ─────────────────────────────────────────────
+router.put('/:ilmId/logs/:logId/score', protect, allowRoles(...ADMIN), scoreDailyLog);
+
+// ── Admin: Get Mentoring Internships ───────────────────────────────────────────
+router.get('/mentoring',                protect, allowRoles(...ADMIN), getMentoringInternships);
+
+// ── Admin: Submit Monthly Review ──────────────────────────────────────────────
+router.put('/mentoring/:ilmId/monthly-review', protect, allowRoles(...ADMIN), submitMonthlyReview);
+
 // ── Intern: My Internship ─────────────────────────────────────────────────────
 // Allow STUDENT + PRO_STUDENT so Dashboard can check for pending offers without 403
-router.get('/my',                       protect, allowRoles('INTERN', 'STUDENT', 'PRO_STUDENT'), getMyInternship);
-router.post('/my/daily-log',            protect, allowRoles('INTERN'), submitDailyLog);
-router.patch('/wbs/:weekIndex/:taskIndex', protect, allowRoles('INTERN'), updateWBSTask);
+router.get('/my',                       protect, allowRoles(...ALL_STUDENTS), getMyInternship);
+router.post('/my/daily-log',            protect, allowRoles(...ALL_STUDENTS), submitDailyLog);
+router.patch('/wbs/:weekIndex/:taskIndex', protect, allowRoles(...ALL_STUDENTS), updateWBSTask);
 
 // Daily log route used by DailyLog.jsx (/ilm/daily-log POST)
-router.post('/daily-log',               protect, allowRoles('INTERN'), submitDailyLog);
+// Allow STUDENT/PRO_STUDENT too — controller checks for active internship internally
+router.post('/daily-log',               protect, allowRoles(...ALL_STUDENTS), submitDailyLog);
 
 // ── Final Exam & Certificate ──────────────────────────────────────────────────
 router.get('/exam/generate',            protect, allowRoles('INTERN'), generateExam);
@@ -51,4 +68,3 @@ router.get('/offer-letter/download/:internshipId', downloadOfferLetter);
 router.get('/verify/:certId', verifyCertificate); // public
 
 module.exports = router;
-

@@ -5,7 +5,7 @@ import toast from 'react-hot-toast';
 import { Mail, Lock, User, ArrowRight, GraduationCap, Building2 } from 'lucide-react';
 
 export default function Register() {
-  const [form, setForm] = useState({ firstName:'', lastName:'', email:'', password:'', role:'STUDENT' });
+  const [form, setForm] = useState({ firstName:'', lastName:'', email:'', password:'', role:'STUDENT', companyName:'' });
   const { register, isLoading } = useAuthStore();
   const navigate = useNavigate();
   const set = (k, v) => setForm(p => ({ ...p, [k]: v }));
@@ -23,11 +23,21 @@ export default function Register() {
   const strengthColor = ['','var(--clr-danger)','var(--clr-warning)','var(--clr-primary)','var(--clr-success)'][strength];
   const strengthLabel = ['','Weak','Fair','Good','Strong'][strength];
 
+  const isCompany = form.role === 'COMPANY_ADMIN';
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (isCompany && !form.companyName.trim()) {
+      toast.error('Please enter your company name');
+      return;
+    }
     const res = await register(form);
     if (res.success) {
-      toast.success('Account created! Check your email to verify.');
+      if (isCompany) {
+        toast.success('Company account created! You can now sign in.');
+      } else {
+        toast.success('Account created! Check your email to verify.');
+      }
       navigate('/login');
     } else {
       toast.error(res.message);
@@ -57,16 +67,23 @@ export default function Register() {
             </span>
           </h1>
           <p style={{ color:'var(--clr-text-2)', fontSize:'0.95rem', lineHeight:1.7, marginBottom:36 }}>
-            Join thousands of students and companies on India's fastest-growing internship platform.
+            {isCompany
+              ? 'Post jobs, find talent, and manage your hiring pipeline on India\'s fastest-growing platform.'
+              : 'Join thousands of students and companies on India\'s fastest-growing internship platform.'}
           </p>
 
           <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:12 }}>
-            {[
+            {(isCompany ? [
+              { n:'500+', l:'Active Students' },
+              { n:'200+', l:'Partner Colleges' },
+              { n:'90',   l:'Day ILM Program' },
+              { n:'4.8★', l:'Platform Rating' },
+            ] : [
               { n:'500+', l:'Active Listings' },
               { n:'200+', l:'Verified Companies' },
               { n:'90',   l:'Day ILM Program' },
               { n:'4.8★', l:'Student Rating' },
-            ].map(({ n,l }) => (
+            ]).map(({ n,l }) => (
               <div key={l} style={{ padding:'14px 16px', background:'var(--clr-surface-2)', borderRadius:'var(--r-sm)', border:'1px solid var(--clr-border)' }}>
                 <div style={{ fontSize:'1.4rem', fontWeight:900, color:'var(--clr-primary)', letterSpacing:'-0.03em' }}>{n}</div>
                 <div style={{ fontSize:'0.75rem', color:'var(--clr-text-3)', marginTop:2 }}>{l}</div>
@@ -80,7 +97,9 @@ export default function Register() {
       <div className="auth-form-side">
         <div className="auth-form-card animate-fade-up">
           <h2 style={{ fontSize:'1.5rem', fontWeight:800, letterSpacing:'-0.03em', marginBottom:6 }}>Create your account</h2>
-          <p className="text-muted text-sm" style={{ marginBottom:28 }}>Free forever. Upgrade anytime.</p>
+          <p className="text-muted text-sm" style={{ marginBottom:28 }}>
+            {isCompany ? 'Start hiring top talent today.' : 'Free forever. Upgrade anytime.'}
+          </p>
 
           {/* Role Toggle */}
           <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:8, marginBottom:24 }}>
@@ -109,22 +128,39 @@ export default function Register() {
           </div>
 
           <form onSubmit={handleSubmit} style={{ display:'flex', flexDirection:'column', gap:14 }}>
+            {/* Company name field — only shown for COMPANY_ADMIN */}
+            {isCompany && (
+              <div className="form-group">
+                <label>Company Name *</label>
+                <div className="input-with-icon">
+                  <Building2 size={14}/>
+                  <input
+                    value={form.companyName}
+                    onChange={e => set('companyName', e.target.value)}
+                    placeholder="e.g. Innobytes Technologies"
+                    required={isCompany}
+                  />
+                </div>
+                <div className="form-hint">This will be your company's public name on HireStorm.</div>
+              </div>
+            )}
+
             <div className="form-row">
               <div className="form-group">
-                <label>First Name</label>
+                <label>{isCompany ? 'Your First Name' : 'First Name'}</label>
                 <div className="input-with-icon">
                   <User size={14}/>
                   <input value={form.firstName} onChange={e => set('firstName', e.target.value)} placeholder="John" required/>
                 </div>
               </div>
               <div className="form-group">
-                <label>Last Name</label>
+                <label>{isCompany ? 'Your Last Name' : 'Last Name'}</label>
                 <input value={form.lastName} onChange={e => set('lastName', e.target.value)} placeholder="Doe" required/>
               </div>
             </div>
 
             <div className="form-group">
-              <label>Email Address</label>
+              <label>{isCompany ? 'Work Email Address' : 'Email Address'}</label>
               <div className="input-with-icon">
                 <Mail size={14}/>
                 <input type="email" value={form.email} onChange={e => set('email', e.target.value)} placeholder="you@example.com" required/>
@@ -149,9 +185,15 @@ export default function Register() {
               )}
             </div>
 
+            {isCompany && (
+              <div style={{ padding:'10px 14px', background:'rgba(52,211,153,0.06)', border:'1px solid rgba(52,211,153,0.2)', borderRadius:'var(--r-sm)', fontSize:'0.8rem', color:'var(--clr-text-2)', lineHeight:1.6 }}>
+                ✅ Company accounts are <strong>instantly activated</strong> — no email verification needed.
+              </div>
+            )}
+
             <button className="btn btn-primary btn-lg w-full" type="submit" disabled={isLoading} style={{ marginTop:6 }}>
               {isLoading ? <span className="spinner" style={{ borderTopColor:'#fff' }}/> : (
-                <><span>Create Account</span><ArrowRight size={16}/></>
+                <><span>{isCompany ? 'Create Company Account' : 'Create Account'}</span><ArrowRight size={16}/></>
               )}
             </button>
           </form>

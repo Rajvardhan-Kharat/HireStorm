@@ -77,10 +77,7 @@ exports.login = async (req, res) => {
   try {
     const { email, password } = req.body;
     const user = await User.findOne({ email });
-    if (!user || !user.isActive || !user.isVerified) {
-      if (user && !user.isVerified) {
-        return res.status(401).json({ success: false, message: 'Please verify your email before logging in. Check your inbox.' });
-      }
+    if (!user || !user.isActive) {
       return res.status(401).json({ success: false, message: 'Invalid credentials' });
     }
     const isMatch = await user.comparePassword(password);

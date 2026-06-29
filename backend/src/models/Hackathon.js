@@ -23,6 +23,9 @@ const hackathonSchema = new mongoose.Schema({
     maxSize: { type: Number, default: 4 },
   },
 
+  // Internship duration for winners
+  internshipDuration: { type: Number, enum: [90, 180, 360], default: 90 },
+
   // Problem statements linked separately
   problemStatements: [{ type: mongoose.Schema.Types.ObjectId, ref: 'ProblemStatement' }],
 

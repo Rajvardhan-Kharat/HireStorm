@@ -88,7 +88,6 @@ exports.getRevenueDashboard = async (req, res) => {
     const User = require('../models/User');
     const Company = require('../models/Company');
     const Internship = require('../models/Internship');
-    const Course = require('../models/Course');
     const Listing = require('../models/Listing');
 
     const now = new Date();
@@ -96,15 +95,15 @@ exports.getRevenueDashboard = async (req, res) => {
     const lastMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
     const last6Months = new Date(now.getFullYear(), now.getMonth() - 5, 1);
 
-    const [allTxns, thisMonthTxns, lastMonthTxns, proStudents, paidCompanies, totalCourses, totalListings, activeInternships] = await Promise.all([
+    const [allTxns, thisMonthTxns, lastMonthTxns, proStudents, paidCompanies, totalListings, activeInternships, proCompanies] = await Promise.all([
       Transaction.find({ status: 'SUCCESS' }).populate('user', 'profile.firstName profile.lastName email').populate('company', 'name').sort('-createdAt'),
       Transaction.find({ status: 'SUCCESS', createdAt: { $gte: thisMonthStart } }),
       Transaction.find({ status: 'SUCCESS', createdAt: { $gte: lastMonthStart, $lt: thisMonthStart } }),
       User.countDocuments({ role: 'PRO_STUDENT' }),
       Company.countDocuments({ 'subscription.tier': { $ne: 'FREE' } }),
-      Course.countDocuments({ isPublished: true }),
       Listing.countDocuments({ status: 'ACTIVE' }),
       Internship.countDocuments({ status: 'ACTIVE' }),
+      Company.countDocuments({ isPro: true }),
     ]);
 
     const totalRevenue   = allTxns.reduce((s, t) => s + (t.amount || 0), 0);
@@ -144,7 +143,7 @@ exports.getRevenueDashboard = async (req, res) => {
       data: {
         totalRevenue, mrr, lastMonthRev, mrrGrowth,
         totalTransactions: allTxns.length,
-        proStudents, paidCompanies, totalCourses, totalListings, activeInternships,
+        proStudents, paidCompanies, proCompanies, totalListings, activeInternships,
         byType,
         monthlyTrend,
         topCompanies,

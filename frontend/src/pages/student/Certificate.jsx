@@ -42,10 +42,10 @@ export default function Certificate() {
           <div className="empty-state">
             <Award size={48} className="text-muted" style={{ marginBottom: 16 }} />
             <h3>Certificate Not Available Yet</h3>
-            <p className="text-muted">You must complete your 90-day WBS and pass the final exam to unlock your certificate.</p>
+            <p className="text-muted">You must complete your {internship?.durationDays || 90}-day WBS and pass the final exam to unlock your certificate.</p>
             
             <div style={{ marginTop: 24, padding: 16, background: 'rgba(239, 68, 68, 0.05)', border: '1px dashed var(--clr-danger)', borderRadius: 8 }}>
-              <p className="text-xs text-muted" style={{ marginBottom: 12 }}>DEV MODE: Bypass 90-day restriction and force generate certificate for testing.</p>
+              <p className="text-xs text-muted" style={{ marginBottom: 12 }}>DEV MODE: Bypass duration restriction and force generate certificate for testing.</p>
               <button 
                 className="btn" 
                 style={{ background: 'var(--clr-danger)', color: 'white', margin: '0 auto', gap: 6 }}

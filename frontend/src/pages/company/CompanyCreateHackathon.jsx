@@ -38,6 +38,7 @@ export default function CompanyCreateHackathon() {
     contactEmail:  '',
     website:       '',
     tags:          '',
+    internshipDuration: 90,
   });
 
   const set = (field, value) => setForm(p => ({ ...p, [field]: value }));
@@ -196,6 +197,14 @@ export default function CompanyCreateHackathon() {
                 <div className="form-group">
                   <label>Contact Email</label>
                   <input type="email" value={form.contactEmail} onChange={e => set('contactEmail', e.target.value)} placeholder="hackathon@yourcompany.com" />
+                </div>
+                <div className="form-group">
+                  <label>Internship Duration for Winners</label>
+                  <select value={form.internshipDuration} onChange={e => set('internshipDuration', parseInt(e.target.value))}>
+                    <option value={90}>90 Days</option>
+                    <option value={180}>180 Days</option>
+                    <option value={360}>360 Days</option>
+                  </select>
                 </div>
               </div>
               <div className="form-group">

@@ -18,7 +18,6 @@ const PLANS = [
       'Apply to internships & jobs',
       'Basic profile',
       'Hackathon participation',
-      'Course enrollment',
     ],
     striked: [
       'Profile analytics',

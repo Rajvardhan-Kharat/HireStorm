@@ -44,9 +44,10 @@ cron.schedule('30 3 * * 1-5', async () => {
 
       const workingDaysElapsed = countWorkingDaysBetween(internship.startDate, today);
 
-      // Check if it's exactly the 30th, 60th, or 90th working day
-      if (workingDaysElapsed > 0 && workingDaysElapsed % 30 === 0 && workingDaysElapsed <= 90) {
-        const month = workingDaysElapsed / 30; // 1, 2, or 3
+      // Check if it's exactly the 30th, 60th, 90th, etc. working day
+      const maxDays = internship.durationDays || 90;
+      if (workingDaysElapsed > 0 && workingDaysElapsed % 30 === 0 && workingDaysElapsed <= maxDays) {
+        const month = workingDaysElapsed / 30; // 1, 2, 3, etc.
 
         const alreadyReviewed = internship.monthlyReviews.some(
           r => r.month === month && r.status === 'COMPLETED'

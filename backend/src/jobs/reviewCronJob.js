@@ -15,7 +15,8 @@ cron.schedule('0 9 * * 1-5', async () => {
       const workingDays = getWorkingDaysElapsed(internship.startDate);
       
       // Prompt exactly demands pings actively bounding modulus 30 days
-      if (workingDays > 0 && workingDays % 30 === 0 && workingDays <= 90) {
+      const maxDays = internship.durationDays || 90;
+      if (workingDays > 0 && workingDays % 30 === 0 && workingDays <= maxDays) {
         console.log(`[CRON] Exact interval explicitly registered: ${workingDays} mapped elapsed mapped for ${internship.userId.name}. Pinging Mentor.`);
         
         const mentorEmail = internship.mentorId?.email;

@@ -152,15 +152,15 @@ exports.sendInterviewInvite = async (toEmail, teamName, meetLink, startTime) => 
 };
 
 /** Internship offer to a winning team member */
-exports.sendInternshipOffer = async (toEmail, studentName, teamName, pdfUrl, acceptUrl, rejectUrl) => {
+exports.sendInternshipOffer = async (toEmail, studentName, teamName, pdfUrl, acceptUrl, rejectUrl, durationDays = 90) => {
   return sendEmail(
     toEmail,
-    `🎊 Internship Offer — Innobytes (90-Day Program)`,
-    `Congratulations ${studentName}! You have been offered a 3-month internship at Innobytes.`,
+    `🎊 Internship Offer — Innobytes (${durationDays}-Day Program)`,
+    `Congratulations ${studentName}! You have been offered a ${durationDays}-day internship at Innobytes.`,
     `
     <div style="font-family:sans-serif;max-width:600px;margin:auto;padding:24px;background:#0f1623;color:#e8edf8;border-radius:12px">
       <h1 style="color:#34d399">🎊 Congratulations, ${studentName}!</h1>
-      <p>We are thrilled to offer you a <strong>90-Day Internship</strong> at <strong>Innobytes</strong>, as part of Team <strong>${teamName}</strong>'s winning performance in our hackathon.</p>
+      <p>We are thrilled to offer you a <strong>${durationDays}-Day Internship</strong> at <strong>Innobytes</strong>, as part of Team <strong>${teamName}</strong>'s winning performance in our hackathon.</p>
       <h3 style="color:#a78bfa">Your Offer Letter</h3>
       <p><a href="${pdfUrl}" style="color:#4f7ef8">📄 Download Offer Letter PDF</a></p>
       <h3 style="color:#a78bfa">Please Respond</h3>
@@ -175,7 +175,7 @@ exports.sendInternshipOffer = async (toEmail, studentName, teamName, pdfUrl, acc
 };
 
 /** Sent after accepted — welcome onboarding */
-exports.sendOfferAcceptedConfirmation = async (toEmail, studentName) => {
+exports.sendOfferAcceptedConfirmation = async (toEmail, studentName, durationDays = 90) => {
   return sendEmail(
     toEmail,
     '🚀 Welcome to Innobytes — Internship Confirmed!',
@@ -183,7 +183,7 @@ exports.sendOfferAcceptedConfirmation = async (toEmail, studentName) => {
     `
     <div style="font-family:sans-serif;max-width:600px;margin:auto;padding:24px;background:#0f1623;color:#e8edf8;border-radius:12px">
       <h1 style="color:#4f7ef8">🚀 Welcome to Innobytes, ${studentName}!</h1>
-      <p>Your internship offer has been confirmed. We're excited to have you on board for the 90-Day Innobytes Internship Program.</p>
+      <p>Your internship offer has been confirmed. We're excited to have you on board for the ${durationDays}-Day Innobytes Internship Program.</p>
       <h3 style="color:#a78bfa">What Happens Next</h3>
       <ul>
         <li>Your mentor will be assigned within 24 hours</li>
@@ -197,7 +197,7 @@ exports.sendOfferAcceptedConfirmation = async (toEmail, studentName) => {
 };
 
 /** Certificate email */
-exports.sendCertificateEmail = async (toEmail, studentName, certUrl) => {
+exports.sendCertificateEmail = async (toEmail, studentName, certUrl, durationDays = 90) => {
   return sendEmail(
     toEmail,
     '🏆 Your Innobytes Certificate of Completion is Ready!',
@@ -205,7 +205,7 @@ exports.sendCertificateEmail = async (toEmail, studentName, certUrl) => {
     `
     <div style="font-family:sans-serif;max-width:600px;margin:auto;padding:24px;background:#0f1623;color:#e8edf8;border-radius:12px">
       <h1 style="color:#fbbf24">🏆 Certificate of Completion</h1>
-      <p>Congratulations <strong>${studentName}</strong>! You have successfully completed the 90-Day Innobytes Internship Program and passed the final assessment.</p>
+      <p>Congratulations <strong>${studentName}</strong>! You have successfully completed the ${durationDays}-Day Innobytes Internship Program and passed the final assessment.</p>
       <p><a href="${certUrl}" style="display:inline-block;padding:12px 28px;background:#fbbf24;color:#0a1520;border-radius:8px;text-decoration:none;font-weight:bold;margin-top:12px">📜 Download Certificate</a></p>
       <p style="margin-top:16px">Share your achievement on LinkedIn and let the world know about your accomplishment!</p>
       <p style="color:#8a9ac0">Congratulations once again! — Team Innobytes</p>

@@ -2,8 +2,6 @@ const { createOrder, verifyPayment } = require('../services/paymentService');
 const Transaction = require('../models/Transaction');
 const User = require('../models/User');
 const Company = require('../models/Company');
-const Course = require('../models/Course');
-
 // POST /api/v1/payments/create-order
 exports.createPaymentOrder = async (req, res) => {
   try {
@@ -36,6 +34,10 @@ exports.verifyPaymentHandler = async (req, res) => {
         'subscription.endDate': new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
         'subscription.razorpaySubscriptionId': razorpayPaymentId,
       });
+    } else if (transaction.type === 'COMPANY_PRO_SUBSCRIPTION') {
+      await Company.findByIdAndUpdate(transaction.company, {
+        isPro: true,
+      });
     } else if (transaction.type === 'COMPANY_TIER_UPGRADE') {
       const { tier } = transaction.metadata;
       const tierFeatures = {
@@ -49,9 +51,6 @@ exports.verifyPaymentHandler = async (req, res) => {
         'subscription.startDate': new Date(),
         'subscription.endDate': new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
       });
-    } else if (transaction.type === 'COURSE_PURCHASE') {
-      await User.findByIdAndUpdate(transaction.user, { $push: { coursesEnrolled: transaction.metadata.courseId } });
-      await Course.findByIdAndUpdate(transaction.metadata.courseId, { $inc: { totalEnrollments: 1 } });
     }
 
     res.json({ success: true, data: transaction });
@@ -123,6 +122,27 @@ exports.activateCompanyUpgradeBypass = async (req, res) => {
       metadata: { tier, bypass: true },
     });
     res.json({ success: true, message: `Company upgraded to ${tier}` });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
+
+// POST /api/v1/payments/company-pro-bypass
+exports.activateCompanyProBypass = async (req, res) => {
+  try {
+    if (!req.user.companyRef) {
+      return res.status(400).json({ success: false, message: 'No company linked to this account' });
+    }
+    await Company.findByIdAndUpdate(req.user.companyRef, {
+      isPro: true,
+    });
+    await Transaction.create({
+      user: req.user._id, company: req.user.companyRef,
+      type: 'COMPANY_PRO_SUBSCRIPTION', amount: 15000,
+      currency: 'INR', status: 'SUCCESS',
+      metadata: { bypass: true },
+    });
+    res.json({ success: true, message: 'Company PRO activated' });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
   }

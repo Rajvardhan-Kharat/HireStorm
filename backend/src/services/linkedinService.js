@@ -23,13 +23,13 @@ const shareCertificateOnLinkedIn = async (internshipId) => {
     specificContent: {
       'com.linkedin.ugc.ShareContent': {
         shareCommentary: {
-          text: `🏆 I have successfully completed the 90-Day Internship Program at HireStorm!\n\nThis internship covered real-world projects, daily tracking, mentor reviews, and a final certification exam.\n\nCertificate ID: ${certId}\nVerify: ${verifyUrl}\n\n#internship #hirestorm #certificate #career`,
+          text: `🏆 I have successfully completed the ${internship.durationDays || 90}-Day Internship Program at HireStorm!\n\nThis internship covered real-world projects, daily tracking, mentor reviews, and a final certification exam.\n\nCertificate ID: ${certId}\nVerify: ${verifyUrl}\n\n#internship #hirestorm #certificate #career`,
         },
         shareMediaCategory: 'ARTICLE',
         media: [
           {
             status: 'READY',
-            description: { text: 'HireStorm 90-Day Internship Certificate' },
+            description: { text: `HireStorm ${internship.durationDays || 90}-Day Internship Certificate` },
             originalUrl: certUrl,
             title: { text: `Certificate of Completion — ${firstName} ${lastName}` },
           },

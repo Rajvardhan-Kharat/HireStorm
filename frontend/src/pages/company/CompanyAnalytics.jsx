@@ -35,16 +35,6 @@ const REVENUE_MODEL = [
     color: '#f59e0b',
     cta: 'Host Hackathon',
     link: '/company/hackathons/new',
-  },
-  {
-    icon: <BookOpen size={20} />,
-    title: 'Course Revenue Share',
-    price: '70% to you',
-    desc: 'Publish sponsored or branded courses. You earn 70% of every enrollment fee — 30% goes to the platform.',
-    color: 'var(--clr-success)',
-    cta: 'Propose a Course',
-    link: '/company/settings',
-  },
   {
     icon: <Star size={20} />,
     title: 'Campus Connect',
@@ -56,7 +46,10 @@ const REVENUE_MODEL = [
   },
 ];
 
+import useAuthStore from '../../store/authStore';
+
 export default function CompanyAnalytics() {
+  const { user } = useAuthStore();
   const [transactions, setTransactions] = useState([]);
   const [listings, setListings]         = useState([]);
   const [hackathons, setHackathons]     = useState([]);
@@ -79,6 +72,25 @@ export default function CompanyAnalytics() {
   const totalEarned = myTxns.reduce((s, t) => s + (t.amount || 0), 0);
   const totalApplicants = listings.reduce((s, l) => s + (l.applicationCount || 0), 0);
   const activeListings  = listings.filter(l => l.status === 'ACTIVE').length;
+
+  if (loading) return <CompanyLayout><div className="loading-screen"><div className="spinner" style={{ width: 36, height: 36 }} /></div></CompanyLayout>;
+
+  if (!user?.company?.isPro) {
+    return (
+      <CompanyLayout>
+        <div className="page" style={{ textAlign: 'center', marginTop: 100 }}>
+          <Star size={64} color="#8b5cf6" fill="#8b5cf6" style={{ marginBottom: 20 }} />
+          <h1>Company PRO Exclusive</h1>
+          <p className="text-muted" style={{ maxWidth: 500, margin: '0 auto 30px' }}>
+            Advanced analytics, verified badges, and priority support are available exclusively to Company PRO subscribers.
+          </p>
+          <Link to="/company/pricing" className="btn btn-primary" style={{ background: '#8b5cf6', borderColor: '#8b5cf6' }}>
+            Upgrade to Company PRO
+          </Link>
+        </div>
+      </CompanyLayout>
+    );
+  }
 
   return (
     <CompanyLayout>

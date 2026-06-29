@@ -10,6 +10,7 @@ const companySchema = new mongoose.Schema(
     description: String,
     location: String,
     isVerified: { type: Boolean, default: false },
+    isPro: { type: Boolean, default: false },
     subscription: {
       tier: { type: String, enum: ['FREE', 'STARTER', 'GROWTH', 'ENTERPRISE'], default: 'FREE' },
       startDate: Date,

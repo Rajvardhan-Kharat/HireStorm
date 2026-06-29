@@ -25,7 +25,7 @@ export default function ShareLinkedInButton({ certificateUrl }) {
     <div className="flex flex-col items-center p-6 bg-white shadow-lg rounded-xl border border-gray-100 max-w-sm mx-auto">
       <h3 className="text-xl font-bold mb-2 text-gray-800 text-center tracking-tight">Share Your Achievement!</h3>
       <p className="text-gray-600 mb-6 text-center text-sm">
-        Let your explicit network conceptually tracking you know you successfully mapped out the 90-Day MERN Internship at InnoBytes structurally!
+        Let your explicit network conceptually tracking you know you successfully mapped out the Internship at InnoBytes structurally!
       </p>
       <button
         onClick={handleLinkedInShare}

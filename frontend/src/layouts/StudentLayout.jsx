@@ -13,7 +13,6 @@ const navItems = [
   { to: '/listings',        icon: <Briefcase size={16} />,       label: 'Browse Jobs' },
   { to: '/my-applications', icon: <FileText size={16} />,        label: 'My Applications' },
   { to: '/hackathons',      icon: <Code2 size={16} />,           label: 'Hackathons' },
-  { to: '/courses',         icon: <BookOpen size={16} />,        label: 'Courses' },
 ];
 
 const ilmItems = [

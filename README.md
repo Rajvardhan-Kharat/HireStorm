@@ -13,7 +13,7 @@ The application serves three primary portals seamlessly: **Student/Intern Portal
 - **Job & Internship Board:** Browse 500+ verified listings with advanced filtering. Clear indicators for stipend amounts, remote flexibility, and required skills.
 - **Application Tracking:** Kanban-style pipeline (Applied → Shortlisted → Interview → Offer → Rejected) to track the real-time status of all submitted applications.
 - **Hackathons & Competitions:** View upcoming/ongoing hackathons, form teams, submit projects, and compete for prize pools.
-- **Course Enrollment (LMS):** Skill-up with curated e-learning courses, track enrollment, and boost employability.
+
 - **HireStorm PRO Subscription:** Upgrade via Razorpay to instantly access priority shortlisting, profile highlights, early access to listings, and application analytics.
 - **Internship Lifecycle Management (ILM):** *For hired interns only.* A fully gamified 90-day internship tracker. Submit Daily Logs, receive Mentor continuous assessment (CA) scores, participate in Daily Check-ins, manage Work Breakdown Structures (WBS), and generate verifiable final certificates.
 
@@ -27,7 +27,7 @@ The application serves three primary portals seamlessly: **Student/Intern Portal
 - **User Management:** Complete overview of all platform users. Instantly modify user roles (escalate to MENTOR, COMPANY_ADMIN, or PRO_STUDENT) and monitor growth metrics.
 - **Company Verification:** Approve or reject pending company registrations to maintain high platform quality. Includes rejection reasoning workflows.
 - **ILM Oversight:** Global dashboard tracking the progress of every active internship. Monitor day 1 to 90 progression, active CA scores, and resolve pending or terminated internships.
-- **Total Ecosystem CMS:** (Coming Soon) Manage all Hackathons, Courses, and Financial Transactions from a centralized interface.
+- **Total Ecosystem CMS:** (Coming Soon) Manage all Hackathons and Financial Transactions from a centralized interface.
 
 ---
 
@@ -44,7 +44,7 @@ HireStorm is a modular Monorepo encompassing a modern Javascript/Typescript stac
 
 ### Backend 
 - **Framework:** Node.js + Express.js
-- **Database:** MongoDB + Mongoose (robust schemas for `User`, `Company`, `Listing`, `Application`, `Internship`, `Hackathon`, `Course`, `DailyLog`).
+- **Database:** MongoDB + Mongoose (robust schemas for `User`, `Company`, `Listing`, `Application`, `Internship`, `Hackathon`, `DailyLog`).
 - **Authentication:** JWT (JSON Web Tokens) with short-lived Access Tokens and secure `httpOnly` cookie Refresh Tokens. 
 - **Payments:** Razorpay API integration (handling Subscription Upgrades and transaction tracking).
 - **Communication:** Socket.IO for real-time notifications and SendGrid for email delivery.
@@ -61,7 +61,7 @@ HireStorm is a modular Monorepo encompassing a modern Javascript/Typescript stac
 - **Internship (ILM):** The core lifecycle object created after hiring. Tracks the 90-day progress, continuous assessment (CA) score, Mentor linking, and certification thresholds.
 - **DailyLog & CheckIn:** Child models for the ILM tracking daily tasks, blockers, and mentor evaluations.
 - **Hackathon, Team & Submission:** Facilitates competitive programming and complex problem statements.
-- **Course:** Standalone content management mapping to user course enrollments.
+
 - **Notification:** Global multi-type notification system tracking system, hackathon, and application alerts.
 - **Transaction:** Standardized tracking for Razorpay payload responses securing payment data.
 

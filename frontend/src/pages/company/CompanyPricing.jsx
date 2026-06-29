@@ -112,6 +112,41 @@ export default function CompanyPricing() {
               </button>
             </div>
           ))}
+      </div>
+
+        {/* Company PRO Add-on */}
+        <div style={{ marginTop: 60, padding: 30, background: 'linear-gradient(135deg, rgba(139,92,246,0.1), rgba(139,92,246,0.02))', border: '1px solid var(--clr-primary)', borderRadius: 16, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 20 }}>
+          <div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
+              <Star size={28} color="#8b5cf6" fill="#8b5cf6" />
+              <h2 style={{ fontSize: '1.8rem', fontWeight: 800, margin: 0, color: '#8b5cf6' }}>Company PRO Add-on</h2>
+            </div>
+            <p style={{ fontSize: '1.05rem', margin: 0, maxWidth: 600 }}>
+              Supercharge your hiring with Company PRO. Unlock verified badges, priority support, and advanced candidate filtering.
+            </p>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 24 }}>
+            <div style={{ textAlign: 'right' }}>
+              <div style={{ fontSize: '1.8rem', fontWeight: 800 }}>₹15,000</div>
+              <div className="text-muted" style={{ fontSize: '0.9rem' }}>One-time / Lifetime</div>
+            </div>
+            {user?.company?.isPro ? (
+              <button className="btn btn-outline" disabled style={{ color: '#8b5cf6', borderColor: '#8b5cf6' }}>
+                <Check size={18} style={{ marginRight: 6 }} /> PRO Active
+              </button>
+            ) : (
+              <button 
+                className="btn" 
+                style={{ background: '#8b5cf6', color: '#fff', border: 'none', padding: '12px 24px', fontSize: '1rem' }}
+                onClick={() => {
+                  setActivePlan({ name: 'Company PRO', price: 15000, type: 'COMPANY_PRO_SUBSCRIPTION', metadata: {} });
+                  setShowPayment(true);
+                }}
+              >
+                Get Company PRO
+              </button>
+            )}
+          </div>
         </div>
       </div>
 
@@ -120,10 +155,10 @@ export default function CompanyPricing() {
         <PaymentModal
           open={showPayment}
           amount={activePlan.price}
-          description={`HireStorm ${activePlan.name} Plan — Monthly`}
-          itemName={`${activePlan.name} Subscription`}
-          type="COMPANY_TIER_UPGRADE"
-          metadata={{ tier: activePlan.tier }}
+          description={`HireStorm ${activePlan.name}`}
+          itemName={activePlan.name}
+          type={activePlan.type || "COMPANY_TIER_UPGRADE"}
+          metadata={activePlan.metadata || { tier: activePlan.tier }}
           onSuccess={() => {
             setShowPayment(false);
             toast.success(`✅ Upgraded to ${activePlan.name}! Refreshing...`);

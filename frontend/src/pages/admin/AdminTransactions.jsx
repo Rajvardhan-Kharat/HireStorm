@@ -32,15 +32,6 @@ const REVENUE_STREAMS = [
     model: 'Companies pay to sponsor/co-host a hackathon. HireStorm manages logistics, registrations, and prizes.',
     color: '#f59e0b',
     type: 'HACKATHON_SPONSOR',
-  },
-  {
-    icon: <BookOpen size={20} />,
-    name: 'Course Purchases',
-    desc: 'Per-course purchase · Revenue shared 70/30',
-    model: '70% revenue to course creator/company, 30% retained by HireStorm. Free courses drive student traffic.',
-    color: 'var(--clr-success)',
-    type: 'COURSE_PURCHASE',
-  },
   {
     icon: <Users size={20} />,
     name: 'Student PRO Subscription',
@@ -63,7 +54,6 @@ const TYPE_COLORS = {
   COMPANY_TIER_UPGRADE: 'badge-blue',
   LISTING_PIN:          'badge-yellow',
   HACKATHON_SPONSOR:    'badge-orange',
-  COURSE_PURCHASE:      'badge-green',
   PRO_SUBSCRIPTION:     'badge-purple',
   HACKATHON_ENTRY:      'badge-teal',
 };

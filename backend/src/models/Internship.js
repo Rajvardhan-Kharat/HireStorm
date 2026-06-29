@@ -14,6 +14,7 @@ const internshipSchema = new mongoose.Schema({
 
   startDate: { type: Date },
   endDate:   { type: Date },
+  durationDays: { type: Number, enum: [90, 180, 360], default: 90 },
 
   status: {
     type: String,

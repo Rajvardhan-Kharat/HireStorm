@@ -47,7 +47,7 @@ export default function ILMDashboard() {
           <div style={{ fontSize: '3rem', marginBottom: 16 }}>📋</div>
           <h2 style={{ fontWeight: 900, fontSize: '1.5rem', marginBottom: 8 }}>Internship Offer Waiting!</h2>
           <p className="text-muted" style={{ marginBottom: 28, lineHeight: 1.7, maxWidth: 440, margin: '0 auto 28px' }}>
-            You have a pending internship offer. Review the details and accept to begin your 90-day program.
+            You have a pending internship offer. Review the details and accept to begin your {internship.durationDays || 90}-day program.
           </p>
           <div className="card" style={{ textAlign: 'left', marginBottom: 28, background: 'var(--clr-surface-2)' }}>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
@@ -73,7 +73,7 @@ export default function ILMDashboard() {
           <button className="btn btn-primary btn-lg w-full" onClick={acceptOffer} disabled={accepting}>
             {accepting ? <span className="spinner" style={{ borderTopColor: '#fff' }} /> : '✅ Accept Offer & Begin Internship'}
           </button>
-          <p className="text-xs text-muted" style={{ marginTop: 14 }}>By accepting, you agree to the terms in the offer letter and commit to the 90-day program.</p>
+          <p className="text-xs text-muted" style={{ marginTop: 14 }}>By accepting, you agree to the terms in the offer letter and commit to the {internship.durationDays || 90}-day program.</p>
         </div>
       </div>
     </StudentLayout>
@@ -82,8 +82,8 @@ export default function ILMDashboard() {
   const { status, startDate, endDate, mentor, stipend, continuousAssessmentScore, assessmentThreshold,
     isExamUnlocked, exam, certificate, dailyLogs, monthlyReviews, wbs } = internship;
 
-  const progressDays = Math.floor((new Date() - new Date(startDate)) / (24*60*60*1000));
-  const totalDays = 90;
+  const totalDays = internship.durationDays || 90;
+  const progressDays = Math.max(0, Math.min(totalDays, Math.floor((new Date() - new Date(startDate)) / (24*60*60*1000))));
   const progress = Math.min(100, Math.round((progressDays / totalDays) * 100));
 
   const completedWeeks = wbs?.filter(w => w.tasks.every(t => t.status === 'DONE')).length || 0;
@@ -94,7 +94,7 @@ export default function ILMDashboard() {
         <div className="page-header" style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', flexWrap:'wrap', gap:12 }}>
           <div>
             <h1>My Internship</h1>
-            <p className="text-muted">90-Day Lifecycle Program</p>
+            <p className="text-muted">{totalDays}-Day Lifecycle Program</p>
           </div>
           <span className={`badge ${status === 'ACTIVE' ? 'badge-green' : status === 'COMPLETED' ? 'badge-blue' : 'badge-yellow'}`} style={{fontSize:'0.85rem', padding:'6px 14px'}}>{status}</span>
         </div>
@@ -116,7 +116,7 @@ export default function ILMDashboard() {
         <div className="grid-4" style={{ marginBottom: 24 }}>
           {[
             { label: 'Daily Logs', value: dailyLogs?.filter(l => l.status === 'SUBMITTED').length || 0, total: progressDays, clr: 'var(--clr-primary)' },
-            { label: 'WBS Weeks Done', value: completedWeeks, total: 13, clr: 'var(--clr-success)' },
+            { label: 'WBS Weeks Done', value: completedWeeks, total: Math.ceil(totalDays/7), clr: 'var(--clr-success)' },
             { label: 'CA Score', value: `${Math.round(continuousAssessmentScore || 0)}/100`, total: `Min ${assessmentThreshold} to pass`, clr: 'var(--clr-warning)' },
             { label: 'Stipend', value: `₹${stipend?.amount?.toLocaleString()}`, total: '/month', clr: 'var(--clr-accent)' },
           ].map(({ label, value, total, clr }) => (

@@ -1,6 +1,7 @@
 const Team        = require('../models/Team');
 const User        = require('../models/User');
 const Internship  = require('../models/Internship');
+const Hackathon   = require('../models/Hackathon');
 const crypto      = require('crypto');
 const { sendInternshipOffer, sendOfferAcceptedConfirmation } = require('../services/emailService');
 const { notify }  = require('../services/notificationService');
@@ -21,6 +22,9 @@ exports.selectWinningTeam = async (req, res) => {
 
     team.stage = 'WINNER';
     await team.save();
+
+    const hack = await Hackathon.findById(hackathonId);
+    const durationDays = hack?.internshipDuration || 90;
 
     const superAdmin = await User.findOne({ role: 'SUPER_ADMIN' });
     const mentorId = superAdmin ? superAdmin._id : process.env.DEFAULT_ADMIN_ID;
@@ -45,6 +49,7 @@ exports.selectWinningTeam = async (req, res) => {
         acceptToken,
         rejectToken,
         offerStatus:  'PENDING',
+        durationDays,
       });
 
       // Build backend download URL (no Cloudinary)
@@ -60,7 +65,7 @@ exports.selectWinningTeam = async (req, res) => {
       const rejectUrl = `${process.env.API_URL || 'http://localhost:5000'}/api/v1/internship/reject?token=${rejectToken}`;
 
       if (member.email) {
-        await sendInternshipOffer(member.email, studentName, team.name, pdfUrl, acceptUrl, rejectUrl);
+        await sendInternshipOffer(member.email, studentName, team.name, pdfUrl, acceptUrl, rejectUrl, durationDays);
       }
 
 
@@ -68,7 +73,7 @@ exports.selectWinningTeam = async (req, res) => {
         recipientId: member._id,
         type:    'INTERNSHIP_OFFER',
         title:   '🎊 Internship Offer from Innobytes!',
-        message: `Congratulations! You have been offered a 90-Day Internship at Innobytes. Please accept or reject through the platform.`,
+        message: `Congratulations! You have been offered a ${durationDays}-Day Internship at Innobytes. Please accept or reject through the platform.`,
         link:    '/internship/offer',
         channel: ['IN_APP'],
       });
@@ -100,6 +105,8 @@ exports.acceptOffer = async (req, res) => {
     internship.offerStatus = 'ACCEPTED';
     internship.status      = 'ACTIVE';
     internship.startDate   = new Date();
+    const duration         = internship.durationDays || 90;
+    internship.endDate     = new Date(Date.now() + duration * 24 * 60 * 60 * 1000);
     internship.acceptToken = undefined;
     internship.rejectToken = undefined;
     await internship.save();
@@ -108,14 +115,14 @@ exports.acceptOffer = async (req, res) => {
 
     const name = `${internship.intern.profile?.firstName || ''} ${internship.intern.profile?.lastName || ''}`.trim();
     if (internship.intern.email) {
-      await sendOfferAcceptedConfirmation(internship.intern.email, name);
+      await sendOfferAcceptedConfirmation(internship.intern.email, name, internship.durationDays || 90);
     }
 
     res.send(`
       <html><body style="font-family:sans-serif;background:#0f1623;color:#e8edf8;display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0">
         <div style="text-align:center;padding:40px">
           <h1 style="color:#34d399;font-size:2rem">🎉 Offer Accepted!</h1>
-          <p style="color:#8a9ac0">Welcome to Innobytes! You can now log in to the platform to start your 90-day internship journey.</p>
+          <p style="color:#8a9ac0">Welcome to Innobytes! You can now log in to the platform to start your ${internship.durationDays || 90}-day internship journey.</p>
           <a href="${process.env.CLIENT_URL}/dashboard" style="display:inline-block;margin-top:20px;padding:12px 28px;background:#4f7ef8;color:#fff;border-radius:8px;text-decoration:none;font-weight:bold">Go to Dashboard</a>
         </div>
       </body></html>
@@ -166,6 +173,8 @@ exports.acceptOfferPlatform = async (req, res) => {
     internship.offerStatus = 'ACCEPTED';
     internship.status      = 'ACTIVE';
     internship.startDate   = new Date();
+    const duration         = internship.durationDays || 90;
+    internship.endDate     = new Date(Date.now() + duration * 24 * 60 * 60 * 1000);
     internship.acceptToken = undefined;
     internship.rejectToken = undefined;
     await internship.save();
@@ -173,9 +182,9 @@ exports.acceptOfferPlatform = async (req, res) => {
     await User.findByIdAndUpdate(req.user._id, { role: 'INTERN', activeInternship: internship._id });
 
     const name = `${internship.intern.profile?.firstName || ''} ${internship.intern.profile?.lastName || ''}`.trim();
-    if (internship.intern.email) await sendOfferAcceptedConfirmation(internship.intern.email, name);
+    if (internship.intern.email) await sendOfferAcceptedConfirmation(internship.intern.email, name, internship.durationDays || 90);
 
-    res.json({ success: true, message: 'Offer accepted. Welcome to Innobytes!' });
+    res.json({ success: true, message: 'Offer accepted successfully' });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
   }

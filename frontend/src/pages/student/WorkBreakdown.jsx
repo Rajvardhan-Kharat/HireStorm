@@ -68,7 +68,7 @@ export default function WorkBreakdown() {
       <div className="page" style={{ maxWidth: 800, margin: '0 auto' }}>
         <div className="page-header">
           <h1>Work Breakdown Structure</h1>
-          <p className="text-muted">Your 13-week roadmap for the 90-day internship.</p>
+          <p className="text-muted">Your {Math.ceil((internship.durationDays || 90) / 7)}-week roadmap for the {internship.durationDays || 90}-day internship.</p>
         </div>
 
         {/* Overall Progress */}

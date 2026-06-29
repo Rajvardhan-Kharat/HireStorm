@@ -25,7 +25,6 @@ import HackathonDetail  from './pages/student/HackathonDetail';
 import HackathonSubmit  from './pages/student/HackathonSubmit';
 import AcceptInvite     from './pages/student/AcceptInvite';
 import FinalExam        from './pages/student/FinalExam';
-import Courses          from './pages/student/Courses';
 import Notifications    from './pages/student/Notifications';
 import ILMDashboard     from './pages/student/ILMDashboard';
 import DailyLog         from './pages/student/DailyLog';
@@ -46,8 +45,6 @@ import CompanyHackathons      from './pages/company/CompanyHackathons';
 import CompanyCreateHackathon from './pages/company/CompanyCreateHackathon';
 import CompanyAnalytics       from './pages/company/CompanyAnalytics';
 import CompanyNotifications   from './pages/company/CompanyNotifications';
-import CompanyCourses         from './pages/company/CompanyCourses';
-import CompanyCreateCourse    from './pages/company/CompanyCreateCourse';
 
 // ── Admin ─────────────────────────────────────────────────────────────
 import AdminDashboard        from './pages/admin/AdminDashboard';
@@ -59,9 +56,7 @@ import AdminHackathonReview  from './pages/admin/AdminHackathonReview';
 import AdminCreateHackathon  from './pages/admin/AdminCreateHackathon';
 import AdminTransactions     from './pages/admin/AdminTransactions';
 import AdminRevenue          from './pages/admin/AdminRevenue';
-import AdminCourseCMS        from './pages/admin/AdminCourseCMS';
 import AdminCampusDrives     from './pages/admin/AdminCampusDrives';
-import CourseDetail          from './pages/student/CourseDetail';
 
 // ── College ───────────────────────────────────────────────────────────
 import CollegeLogin         from './pages/college/CollegeLogin';
@@ -165,9 +160,7 @@ export default function App() {
           <Route path="/hackathons/:slug/team"                 element={<ProtectedRoute allowedRoles={STUDENT_ROLES}><TeamManagement  /></ProtectedRoute>} />
           <Route path="/hackathons/:slug/submit"               element={<ProtectedRoute allowedRoles={STUDENT_ROLES}><HackathonSubmit /></ProtectedRoute>} />
           <Route path="/hackathons/:slug/accept-invite/:token" element={<ProtectedRoute allowedRoles={STUDENT_ROLES}><AcceptInvite    /></ProtectedRoute>} />
-          <Route path="/courses"          element={<ProtectedRoute allowedRoles={ALL_ROLES}><Courses         /></ProtectedRoute>} />
-          <Route path="/courses/my"       element={<ProtectedRoute allowedRoles={STUDENT_ROLES}><Courses     /></ProtectedRoute>} />
-          <Route path="/courses/:slug"    element={<ProtectedRoute allowedRoles={ALL_ROLES}><CourseDetail    /></ProtectedRoute>} />
+
           <Route path="/notifications"    element={<ProtectedRoute allowedRoles={ALL_ROLES}><Notifications   /></ProtectedRoute>} />
 
           {/* ── ILM — STUDENT + PRO_STUDENT + INTERN ──────────── */}
@@ -186,8 +179,7 @@ export default function App() {
           <Route path="/company/hackathons"              element={<ProtectedRoute allowedRoles={COMPANY_ROLES}><CompanyHackathons        /></ProtectedRoute>} />
           <Route path="/company/hackathons/new"          element={<ProtectedRoute allowedRoles={['COMPANY_ADMIN']}><CompanyCreateHackathon /></ProtectedRoute>} />
           <Route path="/company/analytics"               element={<ProtectedRoute allowedRoles={COMPANY_ROLES}><CompanyAnalytics         /></ProtectedRoute>} />
-          <Route path="/company/courses/new"             element={<ProtectedRoute allowedRoles={['COMPANY_ADMIN']}><CompanyCreateCourse  /></ProtectedRoute>} />
-          <Route path="/company/courses"                 element={<ProtectedRoute allowedRoles={COMPANY_ROLES}><CompanyCourses            /></ProtectedRoute>} />
+
           <Route path="/company/pricing"                 element={<ProtectedRoute allowedRoles={['COMPANY_ADMIN']}><CompanyPricing       /></ProtectedRoute>} />
           <Route path="/company/notifications"           element={<ProtectedRoute allowedRoles={COMPANY_ROLES}><CompanyNotifications     /></ProtectedRoute>} />
           <Route path="/company/settings"                element={<ProtectedRoute allowedRoles={COMPANY_ROLES}><CompanySettings           /></ProtectedRoute>} />
@@ -202,7 +194,7 @@ export default function App() {
           <Route path="/admin/ilm"                   element={<ProtectedRoute allowedRoles={ADMIN_ROLES}><AdminILM             /></ProtectedRoute>} />
           <Route path="/admin/transactions"          element={<ProtectedRoute allowedRoles={ADMIN_ROLES}><AdminTransactions    /></ProtectedRoute>} />
           <Route path="/admin/revenue"               element={<ProtectedRoute allowedRoles={ADMIN_ROLES}><AdminRevenue         /></ProtectedRoute>} />
-          <Route path="/admin/courses"               element={<ProtectedRoute allowedRoles={ADMIN_ROLES}><AdminCourseCMS       /></ProtectedRoute>} />
+
           <Route path="/admin/drives"                element={<ProtectedRoute allowedRoles={ADMIN_ROLES}><AdminCampusDrives    /></ProtectedRoute>} />
 
           {/* ── 404 ───────────────────────────────────────────── */}

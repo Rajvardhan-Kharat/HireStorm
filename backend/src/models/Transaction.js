@@ -6,7 +6,7 @@ const transactionSchema = new mongoose.Schema(
     company: { type: mongoose.Schema.Types.ObjectId, ref: 'Company' },
     type: {
       type: String,
-      enum: ['PRO_SUBSCRIPTION', 'COMPANY_TIER_UPGRADE', 'HACKATHON_ENTRY', 'COURSE_PURCHASE', 'LISTING_PIN', 'HACKATHON_SPONSOR'],
+      enum: ['PRO_SUBSCRIPTION', 'COMPANY_PRO_SUBSCRIPTION', 'COMPANY_TIER_UPGRADE', 'HACKATHON_ENTRY', 'LISTING_PIN', 'HACKATHON_SPONSOR'],
       required: true,
     },
     amount: { type: Number, required: true },

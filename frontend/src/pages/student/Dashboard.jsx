@@ -142,7 +142,7 @@ export default function StudentDashboard() {
                   You have an Internship Offer!
                 </h3>
                 <p style={{ fontSize: '0.9rem', color: 'var(--clr-text-2)', marginBottom: 14, lineHeight: 1.6 }}>
-                  Congratulations! You've been selected for a <strong>90-Day Paid Internship</strong> at
+                  Congratulations! You've been selected for a <strong>{pendingOffer.durationDays || 90}-Day Paid Internship</strong> at
                   {' '}<strong>{pendingOffer.company?.name || 'HireStorm'}</strong>.
                   Stipend: <strong>₹{(pendingOffer.stipend?.amount || 10000).toLocaleString()}/month</strong>.
                   {pendingOffer.startDate && (
@@ -264,7 +264,6 @@ export default function StudentDashboard() {
           {[
             { icon: <Briefcase size={20} />, label: 'Applications', value: recentApps.length,   clr: 'var(--clr-primary)', link: '/my-applications' },
             { icon: <Code2 size={20} />,     label: 'Hackathons',   value: hackathonCount,     clr: 'var(--clr-accent)',   link: '/hackathons' },
-            { icon: <BookOpen size={20} />,  label: 'Courses',      value: user?.coursesEnrolled?.length || 0, clr: 'var(--clr-success)', link: '/courses' },
             { icon: <Star size={20} />,      label: 'Profile Views', value: isPro ? (user?.profileViews?.length || 0) : '—', clr: 'var(--clr-warning)', link: isPro ? '/profile' : '/settings/subscription' },
           ].map(({ icon, label, value, clr, link }) => (
             <Link to={link} key={label} style={{ textDecoration: 'none' }}>
@@ -332,7 +331,6 @@ export default function StudentDashboard() {
                 ] : [
                   { icon: <Briefcase size={15} />, label: 'Browse Jobs & Internships', link: '/listings',   clr: 'var(--clr-primary)' },
                   { icon: <Code2 size={15} />,     label: 'Join a Hackathon',          link: '/hackathons', clr: 'var(--clr-accent)' },
-                  { icon: <BookOpen size={15} />,  label: 'Explore Courses',           link: '/courses',    clr: 'var(--clr-success)' },
                   { icon: <TrendingUp size={15} />, label: 'Update My Profile',        link: '/profile',    clr: '#f59e0b' },
                 ]),
               ].map(({ icon, label, link, clr, hot }) => (

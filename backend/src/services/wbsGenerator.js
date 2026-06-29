@@ -73,9 +73,10 @@ const DEFAULT_TEMPLATE = TEMPLATES['Full Stack'];
  * @param {Date} startDate - Internship start date
  * @param {string[]} skills - Intern's skills array
  * @param {string} [domain] - Optional domain override
+ * @param {number} [durationDays] - Duration of the internship (90, 180, 360)
  * @returns {Array} WBS array matching schema: { week, topic, tasks: [{ task, status }] }
  */
-const generateWBS = (startDate, skills = [], domain = '') => {
+const generateWBS = (startDate, skills = [], domain = '', durationDays = 90) => {
   let template = DEFAULT_TEMPLATE;
 
   const combined = (skills.join(' ') + ' ' + domain).toLowerCase();
@@ -88,14 +89,23 @@ const generateWBS = (startDate, skills = [], domain = '') => {
     template = TEMPLATES['DevOps & Cloud'];
   }
 
-  return template.map(({ week, topic, tasks }) => ({
-    week,
-    topic,
-    tasks: tasks.map(task => ({
-      task,
-      status: 'PENDING',
-    })),
-  }));
+  const multiplier = Math.max(1, Math.round(durationDays / 90));
+  let finalWbs = [];
+
+  for (let m = 0; m < multiplier; m++) {
+    const phaseLabel = m > 0 ? ` (Phase ${m + 1})` : '';
+    const phaseWbs = template.map(({ week, topic, tasks }) => ({
+      week: week + (m * 13),
+      topic: `${topic}${phaseLabel}`,
+      tasks: tasks.map(task => ({
+        task: `${task}${phaseLabel}`,
+        status: 'PENDING',
+      })),
+    }));
+    finalWbs = finalWbs.concat(phaseWbs);
+  }
+
+  return finalWbs;
 };
 
 module.exports = { generateWBS };

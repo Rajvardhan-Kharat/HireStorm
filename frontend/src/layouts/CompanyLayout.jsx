@@ -11,7 +11,6 @@ const navItems = [
   { to: '/company/listings',       icon: <Briefcase size={16} />,       label: 'Listings' },
   { to: '/company/candidates',     icon: <Users size={16} />,           label: 'Candidates' },
   { to: '/company/hackathons',     icon: <Code2 size={16} />,           label: 'Hackathons' },
-  { to: '/company/courses',        icon: <BookOpen size={16} />,        label: 'Courses' },
   { to: '/company/analytics',      icon: <TrendingUp size={16} />,      label: 'Analytics & Revenue' },
   { to: '/company/notifications',  icon: <Bell size={16} />,            label: 'Notifications' },
   { to: '/company/settings',       icon: <Settings size={16} />,        label: 'Settings & Billing' },

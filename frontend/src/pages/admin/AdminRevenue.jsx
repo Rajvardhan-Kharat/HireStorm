@@ -11,8 +11,8 @@ import {
 
 const STREAM_META = {
   PRO_SUBSCRIPTION:    { label: 'Student PRO', color: '#a78bfa', icon: <Star size={14}/> },
+  COMPANY_PRO_SUBSCRIPTION: { label: 'Company PRO', color: '#8b5cf6', icon: <Star size={14}/> },
   COMPANY_TIER_UPGRADE:{ label: 'Company Plans', color: '#3b82f6', icon: <Building size={14}/> },
-  COURSE_PURCHASE:     { label: 'Course Sales', color: '#22c55e', icon: <BookOpen size={14}/> },
   HACKATHON_ENTRY:     { label: 'Hackathon Fees', color: '#f59e0b', icon: <Zap size={14}/> },
   LISTING_PIN:         { label: 'Listing Boost', color: '#06b6d4', icon: <Award size={14}/> },
   HACKATHON_SPONSOR:   { label: 'Sponsorships', color: '#ec4899', icon: <TrendingUp size={14}/> },
@@ -66,6 +66,11 @@ export default function AdminRevenue() {
       icon: <Star size={20}/>, label: 'PRO Students',
       value: data?.proStudents || 0,
       sub: 'Active subscribers', clr: '#f59e0b', bg: 'rgba(245,158,11,0.12)',
+    },
+    {
+      icon: <Star size={20}/>, label: 'PRO Companies',
+      value: data?.proCompanies || 0,
+      sub: 'Active subscribers', clr: '#8b5cf6', bg: 'rgba(139,92,246,0.12)',
     },
     {
       icon: <Building size={20}/>, label: 'Paid Companies',

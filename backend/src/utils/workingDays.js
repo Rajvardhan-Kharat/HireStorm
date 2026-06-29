@@ -61,21 +61,22 @@ const isWorkingDay = (date) => {
 };
 
 /**
- * add90WorkingDays
+ * addWorkingDays
  * ────────────────
- * Given a startDate, returns the Date exactly 90 working days later
+ * Given a startDate, returns the Date exactly N working days later
  * (ignoring weekends and Indian holidays).
  *
  * @param {Date|string} startDate
+ * @param {number} days
  * @returns {Date}
  */
-const add90WorkingDays = (startDate) => {
+const addWorkingDays = (startDate, days = 90) => {
   const date = new Date(startDate);
   date.setHours(0, 0, 0, 0);
 
   let workingDaysCount = 0;
 
-  while (workingDaysCount < 90) {
+  while (workingDaysCount < days) {
     date.setDate(date.getDate() + 1);
     if (isWorkingDay(date)) {
       workingDaysCount++;
@@ -84,6 +85,8 @@ const add90WorkingDays = (startDate) => {
 
   return date;
 };
+
+const add90WorkingDays = (startDate) => addWorkingDays(startDate, 90);
 
 /**
  * countWorkingDaysBetween
@@ -112,4 +115,4 @@ const countWorkingDaysBetween = (startDate, toDate = new Date()) => {
   return count;
 };
 
-module.exports = { isWorkingDay, add90WorkingDays, countWorkingDaysBetween };
+module.exports = { isWorkingDay, addWorkingDays, add90WorkingDays, countWorkingDaysBetween };

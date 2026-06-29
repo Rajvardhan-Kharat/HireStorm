@@ -35,7 +35,6 @@ const userSchema = new mongoose.Schema({
   refreshToken: String,
   companyRef: { type: mongoose.Schema.Types.ObjectId, ref: 'Company' },
   activeInternship: { type: mongoose.Schema.Types.ObjectId, ref: 'Internship', default: null },
-  coursesEnrolled: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Course' }],
   profileViews: [{ viewedBy: mongoose.Schema.Types.ObjectId, viewedAt: Date }]
 }, { timestamps: true });
 

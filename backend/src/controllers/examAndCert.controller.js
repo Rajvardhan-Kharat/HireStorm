@@ -151,7 +151,7 @@ exports.submitExam = async (req, res) => {
         const intern = await User.findById(internship.intern);
         const name   = `${intern.profile?.firstName || ''} ${intern.profile?.lastName || ''}`.trim();
 
-        await sendCertificateEmail(intern.email, name, certUrl);
+        await sendCertificateEmail(intern.email, name, certUrl, internship.durationDays || 90);
         await notify({
           recipientId: internship.intern,
           type:        'CERTIFICATE_READY',

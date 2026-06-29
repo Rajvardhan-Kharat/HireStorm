@@ -413,7 +413,7 @@ export default function HackathonDetail() {
                 <Trophy size={15} style={{ marginRight: 6 }} />
                 What You Win
               </h3>
-              {['90-Day Innobytes Internship','Offer Letter (Digitally Signed)','Certificate of Completion','LinkedIn Share Option','Expert Mentorship'].map(item => (
+              {[`${hackathon.internshipDuration || 90}-Day Innobytes Internship`,'Offer Letter (Digitally Signed)','Certificate of Completion','LinkedIn Share Option','Expert Mentorship'].map(item => (
                 <div key={item} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6, fontSize: '0.83rem' }}>
                   <CheckCircle2 size={13} style={{ color: 'var(--clr-success)', flexShrink: 0 }} />
                   {item}

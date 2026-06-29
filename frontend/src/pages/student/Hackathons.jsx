@@ -63,7 +63,7 @@ export default function Hackathons() {
         {/* Header */}
         <div className="page-header">
           <h1>Hackathons</h1>
-          <p className="text-muted">Compete in Innobytes hackathons and win a 90-day internship opportunity</p>
+          <p className="text-muted">Compete in Innobytes hackathons and win an internship opportunity</p>
         </div>
 
         {/* Feature Banner */}
@@ -81,10 +81,10 @@ export default function Hackathons() {
               </h2>
             </div>
             <p style={{ color: 'rgba(255,255,255,0.85)', fontSize: '0.9rem', maxWidth: 540, lineHeight: 1.6 }}>
-              Submit your solution → Get shortlisted → Build your final project → Interview online → Win a <strong>90-day Innobytes internship</strong> with offer letter & completion certificate.
+              Submit your solution → Get shortlisted → Build your final project → Interview online → Win an <strong>Innobytes internship</strong> with offer letter & completion certificate.
             </p>
             <div style={{ display: 'flex', gap: 12, marginTop: 16, flexWrap: 'wrap' }}>
-              {['2.5 Day Challenge','Live Problem Statements','Google Meet Interviews','90-Day Internship Offer','Completion Certificate'].map(f => (
+              {['2.5 Day Challenge','Live Problem Statements','Google Meet Interviews','Internship Offer','Completion Certificate'].map(f => (
                 <div key={f} style={{ padding: '4px 12px', background: 'rgba(255,255,255,0.15)', borderRadius: 99, fontSize: '0.8rem', color: '#fff', fontWeight: 600 }}>{f}</div>
               ))}
             </div>

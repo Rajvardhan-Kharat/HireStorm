@@ -10,15 +10,16 @@ const { generateOfferLetterPDF } = require('../services/letterGenerator');
 // POST /api/v1/ilm/offer/:userId — admin sends offer
 exports.sendOffer = async (req, res) => {
   try {
-    const { mentorId, hackathonId, companyId, startDate, stipendAmount, domain } = req.body;
+    const { mentorId, hackathonId, companyId, startDate, stipendAmount, domain, durationDays = 90 } = req.body;
     const intern = await User.findById(req.params.userId);
     if (!intern) return res.status(404).json({ success: false, message: 'User not found' });
 
     const start = new Date(startDate || Date.now());
-    const end   = new Date(start.getTime() + 90 * 24 * 60 * 60 * 1000);
+    const duration = Number(durationDays);
+    const end   = new Date(start.getTime() + duration * 24 * 60 * 60 * 1000);
 
     // Generate WBS — stored under 'wbs' field (not wbsTasks)
-    const wbs = generateWBS(start, intern.profile?.skills || []);
+    const wbs = generateWBS(start, intern.profile?.skills || [], domain, duration);
 
     // Generate official Erfinden / InnoByes branded offer letter PDF (validate only)
     // The actual PDF is served on-the-fly via the download endpoint below.
@@ -44,6 +45,7 @@ exports.sendOffer = async (req, res) => {
       company:   companyId  || null,
       startDate: start,
       endDate:   end,
+      durationDays: duration,
       status:    'OFFER_SENT',
       offerStatus: 'PENDING',
       stipend:   { amount: stipendAmount ?? 10000 },
@@ -85,7 +87,8 @@ exports.acceptOffer = async (req, res) => {
     internship.offerAcceptedAt = new Date();
     internship.status          = 'ACTIVE';
     internship.startDate       = internship.startDate || new Date();
-    internship.endDate         = internship.endDate   || new Date(Date.now() + 90 * 24 * 60 * 60 * 1000);
+    const duration = internship.durationDays || 90;
+    internship.endDate         = internship.endDate   || new Date(Date.now() + duration * 24 * 60 * 60 * 1000);
     await internship.save();
     await User.findByIdAndUpdate(req.user._id, { role: 'INTERN', activeInternship: internship._id });
     res.json({ success: true, data: internship });
@@ -247,8 +250,9 @@ exports.submitMonthlyReview = async (req, res) => {
         completed.reduce((sum, r) => sum + r.totalScore, 0) / completed.length;
     }
 
-    // Unlock exam after month 3
-    if (month === 3) {
+    // Unlock exam after last month
+    const requiredMonths = (internship.durationDays || 90) / 30;
+    if (month === requiredMonths) {
       if (internship.continuousAssessmentScore >= internship.assessmentThreshold) {
         internship.isExamUnlocked = true;
         await notify({
@@ -336,7 +340,7 @@ exports.generateDevCertificate = async (req, res) => {
     
     // Notify
     const intern = await User.findById(internship.intern);
-    await sendCertificateEmail(intern.email, `${intern.profile?.firstName} ${intern.profile?.lastName}`, certificateUrl).catch(() => {});
+    await sendCertificateEmail(intern.email, `${intern.profile?.firstName} ${intern.profile?.lastName}`, certificateUrl, internship.durationDays || 90).catch(() => {});
     await notify({ recipientId: internship.intern, type: 'CERTIFICATE_READY', title: '🏆 Certificate Ready!', message: 'Congratulations! Your certificate has been generated.', link: '/ilm/certificate', channel: ['IN_APP'] });
     
     res.json({ success: true, data: { certificateId, certificateUrl } });
@@ -382,7 +386,9 @@ exports.attemptExam = async (req, res) => {
       try {
         const { certificateId, certificateUrl } = await generateCertificate(internship._id);
         const intern = await User.findById(internship.intern);
-        await sendCertificateEmail(intern.email, `${intern.profile?.firstName} ${intern.profile?.lastName}`, certificateUrl);
+        if (intern.email) {
+          await sendCertificateEmail(intern.email, `${intern.profile?.firstName} ${intern.profile?.lastName}`, certificateUrl, internship.durationDays || 90);
+        }
         await notify({ recipientId: internship.intern, type: 'CERTIFICATE_READY', title: '🏆 Certificate Ready!', message: 'Congratulations! Your certificate has been generated.', link: '/ilm/certificate', channel: ['IN_APP'] });
       } catch (certErr) {
         console.error('[attemptExam] Certificate gen error:', certErr.message);

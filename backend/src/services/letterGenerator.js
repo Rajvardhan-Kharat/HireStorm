@@ -248,8 +248,9 @@ async function generateCompletionCertificatePDF({
     doc.fontSize(10.5).font('Helvetica').fillColor('#000000');
     doc.text('This is to certify that ', L, p1y, { continued: true, lineGap: 2 });
     doc.font('Helvetica-Bold').text(fullName, { continued: true });
+    const durationStr = opts.durationDays ? `${opts.durationDays}-Day` : '90-Day';
     doc.font('Helvetica')
-       .text(` has successfully completed the 90-Day Internship Program at Erfinden Technologies Pvt. Ltd. from `
+       .text(` has successfully completed the ${durationStr} Internship Program at Erfinden Technologies Pvt. Ltd. from `
              + `${startFmt} to ${endFmt}.`);
 
     const p2y = doc.y + gap;

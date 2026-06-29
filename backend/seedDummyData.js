@@ -17,7 +17,6 @@ const path     = require('path');
 // ─── Load models ────────────────────────────────────────────────────────────
 const User        = require('./src/models/User');
 const Company     = require('./src/models/Company');
-const Course      = require('./src/models/Course');
 const Listing     = require('./src/models/Listing');
 const Application = require('./src/models/Application');
 const Hackathon   = require('./src/models/Hackathon');
@@ -32,7 +31,7 @@ const MONGO_URI =
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 const counters = {
-  companies: 0, users: 0, courses: 0, listings: 0,
+  companies: 0, users: 0, listings: 0,
   applications: 0, hackathons: 0, internships: 0,
   transactions: 0, campusDrives: 0, colleges: 0,
 };
@@ -65,17 +64,6 @@ async function upsertCompany(data) {
   return company;
 }
 
-async function upsertCourse(data) {
-  const existing = await Course.findOne({ slug: data.slug });
-  if (existing) {
-    console.log(`  ↩  Course already exists: ${data.slug}`);
-    return existing;
-  }
-  const course = await Course.create(data);
-  counters.courses++;
-  console.log(`  ✔  Created course: ${data.title}`);
-  return course;
-}
 
 async function upsertListing(data) {
   const existing = await Listing.findOne({ title: data.title, company: data.company });
@@ -343,124 +331,6 @@ async function seed() {
   const ankita  = await upsertUser({ email: 'ankita@student.com', password: 'Pass123', role: 'PRO_STUDENT', profile: { firstName: 'Ankita', lastName: 'Rao'     }, isActive: true, isVerified: true  });
 
   const allStudents = [arjun, priya, rahul, sneha, amit, divya, karan, ankita];
-
-  // ── 5. COURSES ──────────────────────────────────────────────────────────────
-  console.log('\n━━━  COURSES  ━━━');
-
-  const makeLesson = (title, type, order, duration = 15) => ({ title, type, content: `Content for ${title}`, duration, order });
-
-  const course1 = await upsertCourse({
-    title: 'Full Stack Web Development',
-    slug: 'full-stack-web-development',
-    instructor: 'Vikram Nair',
-    description: 'Comprehensive full-stack web development course covering React, Node.js and MongoDB.',
-    category: 'Technical',
-    skills: ['React', 'Node.js', 'MongoDB', 'Express', 'JavaScript'],
-    price: { amount: 2999, currency: 'INR' },
-    isFree: false,
-    isPublished: true,
-    totalEnrollments: 342,
-    rating: 4.6,
-    modules: [
-      { title: 'HTML & CSS Fundamentals', order: 1, lessons: [makeLesson('Introduction to HTML', 'VIDEO', 1, 12), makeLesson('CSS Basics', 'VIDEO', 2, 18), makeLesson('HTML Quiz', 'QUIZ', 3, 10), makeLesson('CSS Assignment', 'ASSIGNMENT', 4, 30)] },
-      { title: 'JavaScript & React', order: 2, lessons: [makeLesson('JS Fundamentals', 'VIDEO', 1, 20), makeLesson('React Components', 'VIDEO', 2, 25), makeLesson('Hooks Deep Dive', 'VIDEO', 3, 22)] },
-      { title: 'Backend with Node.js', order: 3, lessons: [makeLesson('Node.js Intro', 'VIDEO', 1, 18), makeLesson('REST APIs', 'VIDEO', 2, 22), makeLesson('MongoDB Integration', 'VIDEO', 3, 20), makeLesson('Final Project', 'ASSIGNMENT', 4, 60)] },
-    ],
-  });
-
-  const course2 = await upsertCourse({
-    title: 'Machine Learning Fundamentals',
-    slug: 'machine-learning-fundamentals',
-    instructor: 'Meera Iyer',
-    description: 'Learn machine learning from scratch with Python, scikit-learn, and TensorFlow.',
-    category: 'Technical',
-    skills: ['Python', 'scikit-learn', 'TensorFlow', 'NumPy', 'Pandas'],
-    price: { amount: 3999, currency: 'INR' },
-    isFree: false,
-    isPublished: true,
-    totalEnrollments: 215,
-    rating: 4.7,
-    modules: [
-      { title: 'Python for ML', order: 1, lessons: [makeLesson('Python Basics', 'VIDEO', 1, 15), makeLesson('NumPy & Pandas', 'VIDEO', 2, 20), makeLesson('Data Viz', 'VIDEO', 3, 18)] },
-      { title: 'Supervised Learning', order: 2, lessons: [makeLesson('Linear Regression', 'VIDEO', 1, 22), makeLesson('Decision Trees', 'VIDEO', 2, 20), makeLesson('SVM Quiz', 'QUIZ', 3, 15), makeLesson('Model Evaluation', 'READING', 4, 10)] },
-      { title: 'Deep Learning Intro', order: 3, lessons: [makeLesson('Neural Networks', 'VIDEO', 1, 25), makeLesson('TensorFlow Basics', 'VIDEO', 2, 28), makeLesson('CNN Overview', 'VIDEO', 3, 22)] },
-    ],
-  });
-
-  const course3 = await upsertCourse({
-    title: 'UI/UX Design Masterclass',
-    slug: 'ui-ux-design-masterclass',
-    instructor: 'Ananya Gupta',
-    description: 'Master UI/UX design with Figma, user research, and prototyping.',
-    category: 'Design',
-    skills: ['Figma', 'User Research', 'Prototyping', 'Wireframing', 'Design Systems'],
-    price: { amount: 1999, currency: 'INR' },
-    isFree: false,
-    isPublished: true,
-    totalEnrollments: 178,
-    rating: 4.5,
-    modules: [
-      { title: 'Design Fundamentals', order: 1, lessons: [makeLesson('Design Principles', 'VIDEO', 1, 14), makeLesson('Color Theory', 'VIDEO', 2, 16), makeLesson('Typography', 'READING', 3, 8)] },
-      { title: 'Figma Mastery', order: 2, lessons: [makeLesson('Figma Interface', 'VIDEO', 1, 18), makeLesson('Auto Layout', 'VIDEO', 2, 20), makeLesson('Components & Variants', 'VIDEO', 3, 22), makeLesson('Figma Assignment', 'ASSIGNMENT', 4, 45)] },
-      { title: 'User Research & Testing', order: 3, lessons: [makeLesson('User Interviews', 'VIDEO', 1, 16), makeLesson('Usability Testing', 'VIDEO', 2, 18), makeLesson('Prototyping', 'VIDEO', 3, 20)] },
-    ],
-  });
-
-  const course4 = await upsertCourse({
-    title: 'Cloud Architecture with AWS',
-    slug: 'cloud-architecture-with-aws',
-    instructor: 'Rohit Sharma',
-    description: 'Build scalable cloud infrastructure using AWS services and best practices.',
-    category: 'Technical',
-    skills: ['AWS', 'EC2', 'S3', 'Lambda', 'CloudFormation', 'Docker'],
-    price: { amount: 4999, currency: 'INR' },
-    isFree: false,
-    isPublished: true,
-    totalEnrollments: 124,
-    rating: 4.8,
-    modules: [
-      { title: 'AWS Fundamentals', order: 1, lessons: [makeLesson('AWS Global Infra', 'VIDEO', 1, 15), makeLesson('IAM & Security', 'VIDEO', 2, 20), makeLesson('EC2 Deep Dive', 'VIDEO', 3, 25), makeLesson('AWS Quiz', 'QUIZ', 4, 15)] },
-      { title: 'Storage & Databases', order: 2, lessons: [makeLesson('S3 & Glacier', 'VIDEO', 1, 18), makeLesson('RDS & DynamoDB', 'VIDEO', 2, 22), makeLesson('Caching with ElastiCache', 'VIDEO', 3, 16)] },
-      { title: 'Serverless & DevOps', order: 3, lessons: [makeLesson('Lambda Functions', 'VIDEO', 1, 20), makeLesson('API Gateway', 'VIDEO', 2, 18), makeLesson('CloudFormation', 'VIDEO', 3, 22), makeLesson('Final Architecture', 'ASSIGNMENT', 4, 90)] },
-    ],
-  });
-
-  const course5 = await upsertCourse({
-    title: 'Communication & Leadership',
-    slug: 'communication-and-leadership',
-    instructor: 'Dr. Priya Krishnan',
-    description: 'Develop essential communication and leadership skills for the modern workplace.',
-    category: 'Soft Skills',
-    skills: ['Public Speaking', 'Leadership', 'Team Management', 'Negotiation'],
-    price: { amount: 0, currency: 'INR' },
-    isFree: true,
-    isPublished: true,
-    totalEnrollments: 891,
-    rating: 4.4,
-    modules: [
-      { title: 'Effective Communication', order: 1, lessons: [makeLesson('Active Listening', 'VIDEO', 1, 12), makeLesson('Non-Verbal Cues', 'VIDEO', 2, 10), makeLesson('Email Etiquette', 'READING', 3, 8)] },
-      { title: 'Leadership Essentials', order: 2, lessons: [makeLesson('Leadership Styles', 'VIDEO', 1, 15), makeLesson('Decision Making', 'VIDEO', 2, 18), makeLesson('Conflict Resolution', 'VIDEO', 3, 14), makeLesson('Leadership Quiz', 'QUIZ', 4, 10)] },
-    ],
-  });
-
-  const course6 = await upsertCourse({
-    title: 'Product Management Essentials',
-    slug: 'product-management-essentials',
-    instructor: 'Kavya Reddy',
-    description: 'Learn product management fundamentals from ideation to launch.',
-    category: 'Management',
-    skills: ['Product Strategy', 'Roadmapping', 'User Stories', 'Agile', 'Analytics'],
-    price: { amount: 2499, currency: 'INR' },
-    isFree: false,
-    isPublished: true,
-    totalEnrollments: 203,
-    rating: 4.5,
-    modules: [
-      { title: 'PM Fundamentals', order: 1, lessons: [makeLesson('What is PM?', 'VIDEO', 1, 12), makeLesson('Product Lifecycle', 'VIDEO', 2, 15), makeLesson('Stakeholder Management', 'READING', 3, 10)] },
-      { title: 'Agile & Roadmapping', order: 2, lessons: [makeLesson('Agile & Scrum', 'VIDEO', 1, 18), makeLesson('Writing User Stories', 'VIDEO', 2, 14), makeLesson('Building Roadmaps', 'VIDEO', 3, 16), makeLesson('PM Assignment', 'ASSIGNMENT', 4, 60)] },
-      { title: 'Metrics & Growth', order: 3, lessons: [makeLesson('Key Metrics (OKRs)', 'VIDEO', 1, 15), makeLesson('A/B Testing', 'VIDEO', 2, 18), makeLesson('Growth Hacking', 'VIDEO', 3, 12)] },
-    ],
-  });
 
   // ── 6. LISTINGS ─────────────────────────────────────────────────────────────
   console.log('\n━━━  LISTINGS  ━━━');
@@ -840,12 +710,7 @@ async function seed() {
       // 3x COMPANY_TIER_UPGRADE @14999 (ENTERPRISE)
       { company: dataPulse._id, type: 'COMPANY_TIER_UPGRADE', amount: 14999, currency: 'INR', status: 'SUCCESS', metadata: { fromTier: 'GROWTH', toTier: 'ENTERPRISE' } },
       { company: dataPulse._id, type: 'COMPANY_TIER_UPGRADE', amount: 14999, currency: 'INR', status: 'SUCCESS', metadata: { fromTier: 'GROWTH', toTier: 'ENTERPRISE', renewal: true } },
-      { company: techNova._id,  type: 'COMPANY_TIER_UPGRADE', amount: 14999, currency: 'INR', status: 'SUCCESS', metadata: { fromTier: 'GROWTH', toTier: 'ENTERPRISE' } },
-      // 3x COURSE_PURCHASE @2999
-      { user: arjun._id,  type: 'COURSE_PURCHASE', amount: 2999, currency: 'INR', status: 'SUCCESS', metadata: { courseId: course1._id.toString(), courseTitle: course1.title } },
-      { user: karan._id,  type: 'COURSE_PURCHASE', amount: 2999, currency: 'INR', status: 'SUCCESS', metadata: { courseId: course1._id.toString(), courseTitle: course1.title } },
-      { user: ankita._id, type: 'COURSE_PURCHASE', amount: 3999, currency: 'INR', status: 'SUCCESS', metadata: { courseId: course2._id.toString(), courseTitle: course2.title } },
-      // 2x HACKATHON_ENTRY @199
+      { company: techNova._id,  type: 'COMPANY_TIER_UPGRADE', amount: 14999, currency: 'INR', status: 'SUCCESS', metadata: { fromTier: 'GROWTH', toTier: 'ENTERPRISE' } },      // 2x HACKATHON_ENTRY @199
       { user: arjun._id, type: 'HACKATHON_ENTRY', amount: 199, currency: 'INR', status: 'SUCCESS', metadata: { hackathonId: hack3._id.toString() } },
       { user: divya._id, type: 'HACKATHON_ENTRY', amount: 199, currency: 'INR', status: 'SUCCESS', metadata: { hackathonId: hack3._id.toString() } },
       // 2x LISTING_PIN @499
@@ -961,32 +826,12 @@ async function seed() {
   } else {
     console.log('  ↩  Campus drive already exists: DataPulse');
   }
-
-  // ── ENROLL students in some courses ─────────────────────────────────────────
-  console.log('\n━━━  COURSE ENROLLMENTS  ━━━');
-  const enrollments = [
-    { user: arjun._id,  courses: [course1._id, course5._id] },
-    { user: priya._id,  courses: [course2._id, course3._id, course5._id] },
-    { user: rahul._id,  courses: [course1._id, course4._id] },
-    { user: sneha._id,  courses: [course2._id, course6._id] },
-    { user: amit._id,   courses: [course5._id] },
-    { user: divya._id,  courses: [course3._id, course5._id, course6._id] },
-    { user: karan._id,  courses: [course1._id] },
-    { user: ankita._id, courses: [course2._id, course4._id, course6._id] },
-  ];
-  for (const en of enrollments) {
-    await User.updateOne({ _id: en.user }, { $addToSet: { coursesEnrolled: { $each: en.courses } } });
-  }
-  console.log('  ✔  Enrolled students in courses');
-
   // ── SUMMARY ─────────────────────────────────────────────────────────────────
   console.log('\n' + '═'.repeat(60));
   console.log('🌱  SEED COMPLETE – Summary');
   console.log('═'.repeat(60));
   console.log(`  Companies     : ${counters.companies}`);
-  console.log(`  Users         : ${counters.users}`);
-  console.log(`  Courses       : ${counters.courses}`);
-  console.log(`  Listings      : ${counters.listings}`);
+  console.log(`  Users         : ${counters.users}`);  console.log(`  Listings      : ${counters.listings}`);
   console.log(`  Applications  : ${counters.applications}`);
   console.log(`  Hackathons    : ${counters.hackathons}`);
   console.log(`  Internships   : ${counters.internships}`);

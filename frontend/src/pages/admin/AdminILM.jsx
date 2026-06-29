@@ -40,7 +40,7 @@ export default function AdminILM() {
 
   // Send offer form — mentorId defaults to first admin after users load
   const [offerForm, setOfferForm] = useState({
-    userId: '', mentorId: '', startDate: '', stipendAmount: 10000, domain: 'Full Stack Development',
+    userId: '', mentorId: '', startDate: '', stipendAmount: 10000, domain: 'Full Stack Development', durationDays: 90,
   });
   const [sendingOffer, setSendingOffer] = useState(false);
 
@@ -81,11 +81,12 @@ export default function AdminILM() {
         startDate:     offerForm.startDate || new Date().toISOString(),
         stipendAmount: Number(offerForm.stipendAmount),
         domain:        offerForm.domain,
+        durationDays:  Number(offerForm.durationDays),
       });
       toast.success('✅ Offer sent! Student will see it on their dashboard.');
       // Reset form but keep mentor defaulted to SUPER_ADMIN
       const superAdmin = users.find(u => u.role === 'SUPER_ADMIN') || users.find(u => u.role === 'PLATFORM_ADMIN');
-      setOfferForm({ userId: '', mentorId: superAdmin?._id || '', startDate: '', stipendAmount: 10000, domain: 'Full Stack Development' });
+      setOfferForm({ userId: '', mentorId: superAdmin?._id || '', startDate: '', stipendAmount: 10000, domain: 'Full Stack Development', durationDays: 90 });
       fetchInternships();
     } catch (err) {
       toast.error(err.response?.data?.message || 'Failed to send offer');
@@ -356,16 +357,26 @@ export default function AdminILM() {
                   </select>
                 </div>
 
-                <div className="form-group">
-                  <label>Assign Mentor (defaults to Sachin Deshpande / Super Admin)</label>
-                  <select value={offerForm.mentorId} onChange={e => setOfferForm(p => ({ ...p, mentorId: e.target.value }))}>
-                    <option value="">— No mentor —</option>
-                    {admins.map(u => (
-                      <option key={u._id} value={u._id}>
-                        {u.profile?.firstName} {u.profile?.lastName} ({u.role})
-                      </option>
-                    ))}
-                  </select>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+                  <div className="form-group">
+                    <label>Duration (Days)</label>
+                    <select value={offerForm.durationDays} onChange={e => setOfferForm(p => ({ ...p, durationDays: e.target.value }))}>
+                      <option value="90">90 Days</option>
+                      <option value="180">180 Days</option>
+                      <option value="360">360 Days</option>
+                    </select>
+                  </div>
+                  <div className="form-group">
+                    <label>Assign Mentor (defaults to Super Admin)</label>
+                    <select value={offerForm.mentorId} onChange={e => setOfferForm(p => ({ ...p, mentorId: e.target.value }))}>
+                      <option value="">— No mentor —</option>
+                      {admins.map(u => (
+                        <option key={u._id} value={u._id}>
+                          {u.profile?.firstName} {u.profile?.lastName} ({u.role})
+                        </option>
+                      ))}
+                    </select>
+                  </div>
                 </div>
 
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>

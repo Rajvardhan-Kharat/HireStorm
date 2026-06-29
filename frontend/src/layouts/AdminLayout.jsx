@@ -10,7 +10,6 @@ const navItems = [
   { to: '/admin/hackathons',   icon: <Code2 size={16} />,           label: 'Hackathons' },
   { to: '/admin/drives',       icon: <GraduationCap size={16} />,   label: 'Campus Drives' },
   { to: '/admin/ilm',          icon: <Star size={16} />,            label: 'Internships' },
-  { to: '/admin/courses',      icon: <BookOpen size={16} />,        label: 'Course CMS' },
   { to: '/admin/transactions', icon: <CreditCard size={16} />,      label: 'Transactions' },
   { to: '/admin/revenue',      icon: <IndianRupee size={16} />,     label: 'Revenue' },
 ];

@@ -48,6 +48,7 @@ const generateCertificate = async (internshipId) => {
     certificateId,
     examScore:     internship.exam?.score ?? null,
     verifyUrl,
+    durationDays:  internship.durationDays || 90,
   });
 
   // ── Upload to Cloudinary ─────────────────────────────────────────────────────

@@ -56,6 +56,11 @@ const internshipSchema = new mongoose.Schema({
     hoursWorked: { type: Number },
     status:      { type: String, enum: ['SUBMITTED', 'REVIEWED', 'PENDING'], default: 'SUBMITTED' },
     mentorScore: { type: Number, min: 0, max: 10 },
+    comments: [{
+      role: { type: String, enum: ['MENTOR', 'INTERN'] },
+      message: { type: String, required: true },
+      createdAt: { type: Date, default: Date.now }
+    }],
   }],
 
   // Monthly reviews (3 months)

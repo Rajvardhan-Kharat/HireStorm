@@ -31,6 +31,8 @@ export default function AdminILM() {
   // Score daily log
   const [scoringLog, setScoringLog] = useState(null);
   const [scoreValue, setScoreValue] = useState('');
+  const [logFeedback, setLogFeedback] = useState('');
+  const [commentValue, setCommentValue] = useState('');
 
   // Monthly review form
   const [reviewingIlm, setReviewingIlm] = useState(null);
@@ -106,6 +108,29 @@ export default function AdminILM() {
     } catch (err) {
       toast.error(err.response?.data?.message || 'Failed to assign mentor');
     } finally { setAssigning(false); }
+  };
+
+  // ── Score & Comment Daily Log ──────────────────────────────────────────────
+  const handleScoreLog = async (ilmId, logId) => {
+    if (scoreValue === '' || scoreValue < 0 || scoreValue > 10) return toast.error('Score must be 0-10');
+    try {
+      await api.put(`/ilm/${ilmId}/logs/${logId}/score`, { score: Number(scoreValue), feedback: logFeedback });
+      toast.success('Log reviewed successfully!');
+      setScoringLog(null);
+      setScoreValue('');
+      setLogFeedback('');
+      fetchInternships();
+    } catch (err) { toast.error('Failed to submit review'); }
+  };
+
+  const handleAddComment = async (ilmId, logId) => {
+    if (!commentValue.trim()) return;
+    try {
+      await api.post(`/ilm/${ilmId}/logs/${logId}/comment`, { message: commentValue });
+      toast.success('Comment added');
+      setCommentValue('');
+      fetchInternships();
+    } catch (err) { toast.error('Failed to add comment'); }
   };
 
   // ── Monthly Review ─────────────────────────────────────────────────────────
@@ -219,11 +244,49 @@ export default function AdminILM() {
                               <div key={log._id} style={{ padding: 12, background: 'var(--clr-surface-2)', borderRadius: 'var(--r-sm)' }}>
                                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
                                   <span style={{ fontWeight: 600, fontSize: '0.85rem' }}>{new Date(log.date).toDateString()}</span>
+                                  {log.status === 'REVIEWED' && log.mentorScore !== undefined ? (
+                                    <span className="badge badge-green">Score: {log.mentorScore}/10</span>
+                                  ) : (
+                                    <button className="btn btn-outline btn-sm" onClick={() => setScoringLog(scoringLog === log._id ? null : log._id)}>
+                                      Review
+                                    </button>
+                                  )}
                                 </div>
                                 <p className="text-sm text-muted" style={{ marginBottom: 6 }}>{log.workDone || log.task}</p>
                                 {log.blockers && <p className="text-xs" style={{ color: 'var(--clr-warning)' }}>⚠ {log.blockers}</p>}
                                 {log.hoursWorked && (
                                   <p className="text-xs text-muted" style={{ marginTop: 4 }}>⏱ {log.hoursWorked} hours worked</p>
+                                )}
+
+                                {scoringLog === log._id && log.status !== 'REVIEWED' && (
+                                  <div style={{ marginTop: 12, padding: 12, background: 'rgba(0,0,0,0.1)', borderRadius: 'var(--r-sm)' }}>
+                                    <input type="number" min="0" max="10" placeholder="Score (0-10)" value={scoreValue} onChange={e => setScoreValue(e.target.value)} className="w-full mb-2" />
+                                    <textarea rows={2} placeholder="Feedback comment (optional)..." value={logFeedback} onChange={e => setLogFeedback(e.target.value)} className="w-full mb-2" />
+                                    <button className="btn btn-primary btn-sm w-full" onClick={() => handleScoreLog(ilm._id, log._id)}>Submit Review</button>
+                                  </div>
+                                )}
+
+                                {log.comments && log.comments.length > 0 && (
+                                  <div style={{ marginTop: 12, paddingTop: 12, borderTop: '1px solid var(--clr-border)' }}>
+                                    <p style={{ fontSize: '0.8rem', fontWeight: 600, marginBottom: 8 }}>Discussion Thread:</p>
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                                      {log.comments.map(c => (
+                                        <div key={c._id} style={{ padding: 8, background: c.role === 'MENTOR' ? 'rgba(79, 126, 248, 0.1)' : 'rgba(255,255,255,0.05)', borderRadius: 6 }}>
+                                          <div style={{ fontSize: '0.75rem', fontWeight: 700, color: c.role === 'MENTOR' ? 'var(--clr-primary)' : 'var(--clr-text-2)', marginBottom: 2 }}>
+                                            {c.role === 'MENTOR' ? 'Mentor' : 'Intern'}
+                                          </div>
+                                          <div style={{ fontSize: '0.85rem' }}>{c.message}</div>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  </div>
+                                )}
+                                
+                                {log.status === 'REVIEWED' && (
+                                  <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
+                                    <input type="text" placeholder="Reply..." value={scoringLog === log._id ? commentValue : ''} onChange={e => setCommentValue(e.target.value)} onFocus={() => setScoringLog(log._id)} className="w-full" style={{ padding: '6px 10px', fontSize: '0.85rem' }} />
+                                    <button className="btn btn-primary btn-sm" onClick={() => handleAddComment(ilm._id, log._id)}><Send size={14}/></button>
+                                  </div>
                                 )}
                               </div>
                             ))}

@@ -9,7 +9,7 @@ const {
   shareLinkedIn, verifyCertificate, generateDevCertificate,
   getInternshipLogs, getAllInternships, scoreDailyLog,
   assignMentor, attemptExam, updateWBSTask,
-  downloadOfferLetter, declineOffer,
+  downloadOfferLetter, declineOffer, addDailyLogComment,
 } = require('../controllers/ilm.controller');
 
 const { submitDailyLog } = require('../controllers/dailyLog.controller');
@@ -34,6 +34,9 @@ router.patch('/:id/assign-mentor',      protect, allowRoles(...ADMIN), assignMen
 
 // ── Admin/Mentor: Score Daily Log ─────────────────────────────────────────────
 router.put('/:ilmId/logs/:logId/score', protect, allowRoles(...ADMIN), scoreDailyLog);
+
+// ── Intern/Mentor: Add Comment to Daily Log ──────────────────────────────────
+router.post('/:ilmId/logs/:logId/comment', protect, addDailyLogComment);
 
 // ── Admin: Get Mentoring Internships ───────────────────────────────────────────
 router.get('/mentoring',                protect, allowRoles(...ADMIN), getMentoringInternships);

@@ -12,8 +12,12 @@ export default function DailyLog() {
   const [submitting, setSubmitting] = useState(false);
   const [form, setForm] = useState({ date: new Date().toISOString().split('T')[0], workDone:'', blockers:'', hoursWorked:8 });
   const [showForm, setShowForm] = useState(false);
-
   const [hasInternship, setHasInternship] = useState(true);
+  const [internshipId, setInternshipId] = useState(null);
+
+  // Comments
+  const [commentValue, setCommentValue] = useState('');
+  const [replyingLogId, setReplyingLogId] = useState(null);
 
   const fetchLogs = () => {
     api.get('/ilm/my').then(r => {
@@ -21,6 +25,8 @@ export default function DailyLog() {
       if (!ilm || (ilm.status !== 'ACTIVE' && ilm.status !== 'COMPLETED')) {
         setHasInternship(false);
       } else {
+        setHasInternship(true);
+        setInternshipId(ilm._id);
         setLogs(ilm.dailyLogs || []);
       }
       setLoading(false);
@@ -50,6 +56,17 @@ export default function DailyLog() {
     } catch (err) {
       toast.error(err.response?.data?.message || 'Could not submit log');
     } finally { setSubmitting(false); }
+  };
+
+  const handleAddComment = async (logId) => {
+    if (!commentValue.trim() || !internshipId) return;
+    try {
+      await api.post(`/ilm/${internshipId}/logs/${logId}/comment`, { message: commentValue });
+      toast.success('Comment added');
+      setCommentValue('');
+      setReplyingLogId(null);
+      fetchLogs();
+    } catch (err) { toast.error('Failed to add comment'); }
   };
 
   const today = new Date().toISOString().split('T')[0];
@@ -190,14 +207,62 @@ export default function DailyLog() {
                     </div>
                   )}
                 </div>
-                {log.mentorScore !== undefined && (
-                  <div style={{ textAlign:'center', padding:'8px 12px', background:'var(--clr-success-dim)', borderRadius:'var(--r-sm)' }}>
-                    <div style={{ fontWeight:800, color:'var(--clr-success)' }}>{log.mentorScore}</div>
-                    <div className="text-xs text-dimmed">Score</div>
-                  </div>
-                )}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 12, alignItems: 'flex-end' }}>
+                  {log.mentorScore !== undefined && (
+                    <div style={{ textAlign:'center', padding:'8px 12px', background:'var(--clr-success-dim)', borderRadius:'var(--r-sm)' }}>
+                      <div style={{ fontWeight:800, color:'var(--clr-success)' }}>{log.mentorScore}</div>
+                      <div className="text-xs text-dimmed">Score</div>
+                    </div>
+                  )}
+                  <button className="btn btn-outline btn-sm" onClick={() => setReplyingLogId(replyingLogId === log._id ? null : log._id)}>
+                    Discussion {log.comments?.length ? `(${log.comments.length})` : ''}
+                  </button>
+                </div>
               </div>
-            ))}
+
+              {(replyingLogId === log._id || (log.comments && log.comments.length > 0)) && (
+                <div style={{ 
+                  marginTop: -4, borderTop: 'none', border: '1px solid var(--clr-border)', 
+                  borderTop: 'none', borderBottomLeftRadius: 'var(--r-sm)', borderBottomRightRadius: 'var(--r-sm)',
+                  padding: 14, background: 'var(--clr-surface-2)' 
+                }}>
+                  {log.comments && log.comments.length > 0 && (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 12 }}>
+                      {log.comments.map(c => (
+                        <div key={c._id} style={{ 
+                          padding: 10, borderRadius: 8, 
+                          background: c.role === 'INTERN' ? 'var(--clr-primary-dim)' : 'var(--clr-surface)',
+                          border: c.role === 'INTERN' ? 'none' : '1px solid var(--clr-border)',
+                          marginLeft: c.role === 'INTERN' ? 'auto' : 0,
+                          marginRight: c.role === 'MENTOR' ? 'auto' : 0,
+                          maxWidth: '85%'
+                        }}>
+                          <div style={{ fontSize: '0.75rem', fontWeight: 700, color: c.role === 'INTERN' ? 'var(--clr-primary)' : 'var(--clr-text-2)', marginBottom: 4 }}>
+                            {c.role === 'INTERN' ? 'You' : 'Mentor'}
+                          </div>
+                          <div style={{ fontSize: '0.88rem', color: c.role === 'INTERN' ? 'var(--clr-primary)' : 'var(--clr-text-1)' }}>
+                            {c.message}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  {replyingLogId === log._id && (
+                    <div style={{ display: 'flex', gap: 8 }}>
+                      <input 
+                        type="text" 
+                        placeholder="Reply to mentor..." 
+                        value={commentValue} 
+                        onChange={e => setCommentValue(e.target.value)}
+                        className="w-full"
+                      />
+                      <button className="btn btn-primary btn-sm" onClick={() => handleAddComment(log._id)}>Send</button>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          ))}
           </div>
         )}
       </div>

@@ -178,7 +178,7 @@ exports.assignMentor = async (req, res) => {
 // PUT /api/v1/ilm/:ilmId/logs/:logId/score
 exports.scoreDailyLog = async (req, res) => {
   try {
-    const { score } = req.body;
+    const { score, feedback } = req.body;
     if (score === undefined || score < 0 || score > 10) {
       return res.status(400).json({ success: false, message: 'Score must be 0–10' });
     }
@@ -190,6 +190,44 @@ exports.scoreDailyLog = async (req, res) => {
 
     log.mentorScore = Number(score);
     log.status      = 'REVIEWED';
+
+    if (feedback && feedback.trim()) {
+      log.comments.push({
+        role: 'MENTOR',
+        message: feedback.trim()
+      });
+    }
+
+    await internship.save();
+
+    res.json({ success: true, data: internship });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
+
+// POST /api/v1/ilm/:ilmId/logs/:logId/comment
+exports.addDailyLogComment = async (req, res) => {
+  try {
+    const { message } = req.body;
+    if (!message || !message.trim()) {
+      return res.status(400).json({ success: false, message: 'Message is required' });
+    }
+    const internship = await Internship.findById(req.params.ilmId);
+    if (!internship) return res.status(404).json({ success: false, message: 'Not found' });
+
+    const log = internship.dailyLogs.id(req.params.logId);
+    if (!log) return res.status(404).json({ success: false, message: 'Log not found' });
+
+    const role = req.user.role === 'INTERN' || req.user.role === 'STUDENT' || req.user.role === 'PRO_STUDENT' 
+      ? 'INTERN' 
+      : 'MENTOR';
+
+    log.comments.push({
+      role,
+      message: message.trim()
+    });
+
     await internship.save();
 
     res.json({ success: true, data: internship });

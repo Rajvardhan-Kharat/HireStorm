@@ -9,9 +9,7 @@
  * Required env var: GEMINI_API_KEY
  */
 
-const { GoogleGenerativeAI } = require('@google/generative-ai');
-
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+const { generateContentWithFallback } = require('./aiFallbackService');
 
 /**
  * generateMCQs
@@ -22,7 +20,6 @@ const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
  * @returns {Promise<Array<{question, options, answer}>>}
  */
 const generateMCQs = async (logs) => {
-  const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
 
   // Build a readable summary of recent work
   const logSummary = logs
@@ -57,8 +54,7 @@ Required JSON format:
 ]
 `;
 
-  const result = await model.generateContent(prompt);
-  const text   = result.response.text().trim();
+  const text = await generateContentWithFallback(prompt);
 
   // Strip markdown code fences if present
   const clean = text.replace(/^```(?:json)?\n?/, '').replace(/\n?```$/, '').trim();

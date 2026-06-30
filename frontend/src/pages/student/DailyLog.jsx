@@ -176,13 +176,14 @@ export default function DailyLog() {
         ) : (
           <div style={{ display:'flex', flexDirection:'column', gap:10 }}>
             {[...logs].reverse().map(log => (
-              <div key={log._id || log.date} style={{
-                padding:'14px 18px',
-                background:'var(--clr-surface)',
-                border:'1px solid var(--clr-border)',
-                borderRadius:'var(--r-sm)',
-                display:'flex', justifyContent:'space-between', alignItems:'flex-start', gap:14, flexWrap:'wrap'
-              }}>
+              <div key={log._id || log.date} style={{ display: 'flex', flexDirection: 'column' }}>
+                <div style={{
+                  padding:'14px 18px',
+                  background:'var(--clr-surface)',
+                  border:'1px solid var(--clr-border)',
+                  borderRadius:'var(--r-sm)',
+                  display:'flex', justifyContent:'space-between', alignItems:'flex-start', gap:14, flexWrap:'wrap'
+                }}>
                 <div style={{ flex:1 }}>
                   <div style={{ display:'flex', gap:10, alignItems:'center', marginBottom:6 }}>
                     <span style={{ fontWeight:700, fontSize:'0.88rem' }}>

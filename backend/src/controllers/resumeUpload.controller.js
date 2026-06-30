@@ -11,9 +11,37 @@ const { Readable }           = require('stream');
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
-// ─── Stream buffer to Cloudinary (raw PDF) ────────────────────────────────────
+const fs = require('fs');
+const path = require('path');
+
+// ─── Stream buffer to Cloudinary (raw PDF) with local fallback ───────────────
 const uploadPDFBuffer = (buffer, token) => {
   return new Promise((resolve, reject) => {
+    const isCloudinaryConfigured = process.env.CLOUDINARY_CLOUD_NAME && process.env.CLOUDINARY_API_KEY && process.env.CLOUDINARY_API_SECRET;
+
+    const fallbackToLocal = () => {
+      try {
+        const uploadDir = path.join(__dirname, '../../../public/uploads/resumes');
+        if (!fs.existsSync(uploadDir)) {
+          fs.mkdirSync(uploadDir, { recursive: true });
+        }
+        const filename = `resume_${token}_${Date.now()}.pdf`;
+        const filePath = path.join(uploadDir, filename);
+        fs.writeFileSync(filePath, buffer);
+        
+        const serverUrl = process.env.API_URL || 'http://localhost:5000';
+        console.warn(`[Upload Fallback] Saved resume locally to ${filePath}`);
+        resolve({ secure_url: `${serverUrl}/uploads/resumes/${filename}` });
+      } catch (localErr) {
+        reject(localErr);
+      }
+    };
+
+    if (!isCloudinaryConfigured) {
+      console.warn('[Upload Fallback] Cloudinary not configured. Falling back to local disk.');
+      return fallbackToLocal();
+    }
+
     const stream = cloudinary.uploader.upload_stream(
       {
         folder:        'hirestorm/resumes',
@@ -23,7 +51,10 @@ const uploadPDFBuffer = (buffer, token) => {
         overwrite:     true,
       },
       (err, result) => {
-        if (err) return reject(err);
+        if (err) {
+          console.warn(`[Upload Fallback] Cloudinary upload failed: ${err.message}. Falling back to local disk.`);
+          return fallbackToLocal();
+        }
         resolve(result);
       }
     );

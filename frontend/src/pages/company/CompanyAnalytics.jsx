@@ -35,6 +35,7 @@ const REVENUE_MODEL = [
     color: '#f59e0b',
     cta: 'Host Hackathon',
     link: '/company/hackathons/new',
+  },
   {
     icon: <Star size={20} />,
     title: 'Campus Connect',

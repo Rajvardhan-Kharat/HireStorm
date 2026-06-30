@@ -57,6 +57,10 @@ app.use(cookieParser());
 // if (process.env.NODE_ENV !== 'test') app.use(morgan('dev'));
 app.use(globalLimiter);
 
+// Serve static files (for local file upload fallback)
+const path = require('path');
+app.use(express.static(path.join(__dirname, '../public')));
+
 // Health check
 app.get('/health', (req, res) => res.json({ status: 'ok', timestamp: new Date().toISOString() }));
 

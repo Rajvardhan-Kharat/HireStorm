@@ -4,8 +4,8 @@ const Hackathon = require('../../models/Hackathon');
 const Team      = require('../../models/Team');
 const { sendPhase1Rejection } = require('../../services/emailService');
 
-const worker = new Worker('hackathonQueue', async (job) => {
-  console.log(`[BullMQ Worker] Processing job: ${job.name}`);
+const handleHackathonJob = async (job) => {
+  console.log(`[Job Processor] Processing job: ${job.name}`);
 
   // ── Close Phase 1 submissions ─────────────────────────────────────────
   if (job.name === 'CLOSE_PHASE1_SUBMISSIONS') {
@@ -24,12 +24,12 @@ const worker = new Worker('hackathonQueue', async (job) => {
       await team.save();
       if (team.leader?.email) {
         await sendPhase1Rejection(team.leader.email, team.name).catch(e =>
-          console.error(`[Worker] Email failed for ${team.name}:`, e.message)
+          console.error(`[Job Processor] Email failed for ${team.name}:`, e.message)
         );
       }
     }
 
-    console.log(`[BullMQ Worker] Phase 1 closed for "${hackathon.title}" — auto-rejected ${emptyTeams.length} non-submitting teams.`);
+    console.log(`[Job Processor] Phase 1 closed for "${hackathon.title}" — auto-rejected ${emptyTeams.length} non-submitting teams.`);
   }
 
   // ── Close Phase 2 submissions ─────────────────────────────────────────
@@ -53,10 +53,11 @@ const worker = new Worker('hackathonQueue', async (job) => {
     hackathon.status = 'EVALUATION';
     await hackathon.save();
 
-    console.log(`[BullMQ Worker] Phase 2 closed for "${hackathon.title}" — ${noSubmit.length} teams auto-rejected for no submission.`);
+    console.log(`[Job Processor] Phase 2 closed for "${hackathon.title}" — ${noSubmit.length} teams auto-rejected for no submission.`);
   }
+};
 
-}, { connection });
+const worker = new Worker('hackathonQueue', handleHackathonJob, { connection });
 
 worker.on('completed', job => {
   console.log(`[BullMQ Worker] ✅ Job ${job.id} (${job.name}) completed`);
@@ -66,4 +67,4 @@ worker.on('failed', (job, err) => {
   console.error(`[BullMQ Worker] ❌ Job ${job.id} (${job.name}) failed: ${err.message}`);
 });
 
-module.exports = worker;
+module.exports = { worker, handleHackathonJob };

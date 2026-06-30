@@ -19,9 +19,31 @@ const hackathonQueue = new Queue('hackathonQueue', { connection });
  */
 const scheduleHackathonJob = async (jobName, data, runAt) => {
   const delay = Math.max(0, new Date(runAt).getTime() - Date.now());
-  const job   = await hackathonQueue.add(jobName, data, { delay });
-  console.log(`[BullMQ] Scheduled "${jobName}" in ${Math.round(delay / 1000)}s (jobId: ${job.id})`);
-  return job;
+  
+  try {
+    // If Redis is actively throwing or not ready, fallback immediately
+    if (connection.status !== 'ready' && connection.status !== 'connecting') {
+      throw new Error('Redis not ready');
+    }
+    const job = await hackathonQueue.add(jobName, data, { delay });
+    console.log(`[BullMQ] Scheduled "${jobName}" in ${Math.round(delay / 1000)}s (jobId: ${job.id})`);
+    return job;
+  } catch (err) {
+    console.warn(`[Job Fallback] Redis unavailable (${err.message}). Falling back to in-memory setTimeout for ${jobName}.`);
+    
+    // Fallback: Use standard JS setTimeout to execute the job logic directly
+    setTimeout(async () => {
+      console.log(`[Job Fallback] Executing delayed in-memory job: ${jobName}`);
+      try {
+        const { handleHackathonJob } = require('../workers/hackathonWorker');
+        await handleHackathonJob({ name: jobName, data });
+      } catch (workerErr) {
+        console.error(`[Job Fallback] In-memory job failed:`, workerErr);
+      }
+    }, delay);
+    
+    return { id: `in-memory-${Date.now()}`, fallback: true };
+  }
 };
 
 module.exports = { hackathonQueue, connection, scheduleHackathonJob };

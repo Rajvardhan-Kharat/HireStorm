@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import useAuthStore from '../../store/authStore';
 import toast from 'react-hot-toast';
 import { Mail, Lock, ArrowRight, CheckCircle2, GraduationCap, MailWarning, RefreshCw } from 'lucide-react';
@@ -30,6 +30,21 @@ export default function Login() {
   const resendVerification = useAuthStore(s => s.resendVerification);
   const isLoading          = useAuthStore(s => s.isLoading);
   const navigate           = useNavigate();
+  const { search }         = useLocation(); // fallback for oauth
+
+  // Detect OAuth fallback
+  useEffect(() => {
+    const params = new URLSearchParams(search);
+    if (params.get('error') === 'oauth_failed' || params.get('error') === 'oauth_failed_fallback_to_local') {
+      toast.error('Social login unavailable. Please sign in with your email and password.', {
+        duration: 5000,
+        icon: '⚠️'
+      });
+      setLoginError('Social login is temporarily unavailable. Please use local login.');
+      // Remove query param to prevent toast loop on refresh
+      navigate('/login', { replace: true });
+    }
+  }, [search, navigate]);
 
   // Clean up cooldown timer on unmount
   useEffect(() => () => clearInterval(cooldownRef.current), []);

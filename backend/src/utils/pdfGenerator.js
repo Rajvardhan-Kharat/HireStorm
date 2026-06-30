@@ -2,13 +2,44 @@ const PDFDocument = require('pdfkit');
 const { Readable } = require('stream');
 const { cloudinary } = require('../config/cloudinary');
 
-// ─── Upload buffer to Cloudinary ──────────────────────────────────────────────
+const fs = require('fs');
+const path = require('path');
+
+// ─── Upload buffer to Cloudinary (with local fallback) ───────────────────────
 const uploadBufferToCloudinary = (buffer, public_id) => {
   return new Promise((resolve, reject) => {
+    const isCloudinaryConfigured = process.env.CLOUDINARY_CLOUD_NAME && process.env.CLOUDINARY_API_KEY && process.env.CLOUDINARY_API_SECRET;
+
+    const fallbackToLocal = () => {
+      try {
+        const uploadDir = path.join(__dirname, '../../public/uploads/hirestorm');
+        if (!fs.existsSync(uploadDir)) {
+          fs.mkdirSync(uploadDir, { recursive: true });
+        }
+        const filename = `${public_id || Date.now()}.pdf`;
+        const filePath = path.join(uploadDir, filename);
+        fs.writeFileSync(filePath, buffer);
+        
+        const serverUrl = process.env.API_URL || 'http://localhost:5000';
+        console.warn(`[Upload Fallback] Saved PDF locally to ${filePath}`);
+        resolve({ secure_url: `${serverUrl}/uploads/hirestorm/${filename}` });
+      } catch (localErr) {
+        reject(localErr);
+      }
+    };
+
+    if (!isCloudinaryConfigured) {
+      console.warn('[Upload Fallback] Cloudinary not configured. Falling back to local disk.');
+      return fallbackToLocal();
+    }
+
     const stream = cloudinary.uploader.upload_stream(
       { folder: 'hirestorm', resource_type: 'raw', format: 'pdf', public_id },
       (err, result) => {
-        if (err) return reject(err);
+        if (err) {
+          console.warn(`[Upload Fallback] Cloudinary upload failed: ${err.message}. Falling back to local disk.`);
+          return fallbackToLocal();
+        }
         resolve(result);
       }
     );

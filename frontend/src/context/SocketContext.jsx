@@ -41,7 +41,41 @@ export const SocketProvider = ({ children }) => {
       toast(notif.title, { icon: '🔔' });
     });
 
+    // --- HTTP Polling Fallback ---
+    let pollInterval;
+    const startPolling = () => {
+      if (pollInterval) return;
+      console.warn('[Socket Fallback] Sockets disconnected. Starting HTTP polling fallback...');
+      pollInterval = setInterval(async () => {
+        try {
+          // Dynamic import of axios to avoid circular dependencies in context
+          const { default: api } = await import('../api/axios');
+          const res = await api.get('/notifications');
+          if (res.data?.success && res.data.data?.length > 0) {
+            // Get current notifications to avoid duplicates (assuming zustand store handles it or we check IDs)
+            const newNotifs = res.data.data.filter(n => !n.isRead);
+            newNotifs.forEach(n => addNotification(n));
+          }
+        } catch (e) {
+          console.error('[Socket Fallback] Polling failed', e.message);
+        }
+      }, 15000);
+    };
+
+    const stopPolling = () => {
+      if (pollInterval) {
+        clearInterval(pollInterval);
+        pollInterval = null;
+        console.log('[Socket Fallback] Sockets reconnected. Stopping HTTP polling.');
+      }
+    };
+
+    hackathonSocketRef.current.on('disconnect', startPolling);
+    hackathonSocketRef.current.on('connect_error', startPolling);
+    hackathonSocketRef.current.on('connect', stopPolling);
+
     return () => {
+      stopPolling();
       setTimeout(() => {
         if (hackathonSocketRef.current) hackathonSocketRef.current.disconnect();
         if (ilmSocketRef.current) ilmSocketRef.current.disconnect();

@@ -32,6 +32,7 @@ const REVENUE_STREAMS = [
     model: 'Companies pay to sponsor/co-host a hackathon. HireStorm manages logistics, registrations, and prizes.',
     color: '#f59e0b',
     type: 'HACKATHON_SPONSOR',
+  },
   {
     icon: <Users size={20} />,
     name: 'Student PRO Subscription',
